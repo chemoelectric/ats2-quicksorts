@@ -71,8 +71,9 @@ list_vt_insert_reverse
     in
     end
 
-fn {a : vt@ype}     (* An insertion sort that accepts a prefix of data
-                       already sorted in reverse. *)
+(* An insertion sort that accepts a prefix of data already sorted in
+   reverse. *)
+fn {a : vt@ype}
 list_vt_insertion_sort
           {m, n            : int}
           (lst             : list_vt (INV(a), m),
