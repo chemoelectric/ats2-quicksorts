@@ -34,7 +34,7 @@ uint64_t ats2_stable_quicksort_seed = 0;
 %}
 
 extern fn
-random_uint64 () :<> uint64 = "mac#%"
+random_uint64 () :<!wrt> uint64 = "mac#%"
 
 (*------------------------------------------------------------------*)
 (* An insertion sort for small sublists.                            *)
@@ -118,6 +118,36 @@ list_vt_insertion_sort
   in
     loop (lst, dst);
     list_vt_reverse<a> dst
+  end
+
+(*------------------------------------------------------------------*)
+
+fn {a : vt@ype}
+select_pivot
+          {n          : pos}
+          (lst        : list_vt (a, n),
+           n          : int n,
+           lst_before : &list_vt (a, 0)? >> list_vt (a, n_before),
+           lst_pivot  : &list_vt (a, 0)? >> list_vt (a, 1),
+           lst_after  : &list_vt (a, 0)? >> list_vt (a, n_after),
+           n_before   : &int? >> int n_before,
+           n_after    : &int? >> int n_after)
+    :<!wrt> #[n_before, n_after : int | n_before + 1 + n_after == n]
+            void =
+  let
+    val u64_n : uint64 n = g1i2u n
+    val u64_rand : [i : nat] uint64 i = g1ofg0 (random_uint64 ())
+    val u64_pivot = g1uint_mod (u64_rand, u64_n)
+    val i_pivot : [i : nat | i < n] int i = g1u2i u64_pivot
+
+    val @(left, right) = list_vt_split_at<a> (lst, i_pivot)
+    val @(pivot, right) = list_vt_split_at<a> (right, 1)
+  in
+    lst_before := left;
+    lst_pivot := pivot;
+    lst_after := right;
+    n_before := i_pivot;
+    n_after := pred (n - i_pivot)
   end
 
 (*------------------------------------------------------------------*)
