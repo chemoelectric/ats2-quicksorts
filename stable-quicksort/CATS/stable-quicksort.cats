@@ -98,8 +98,8 @@ ats2_stable_quicksort_random_uint64 (void)
 
   uint64_t old_seed = ats2_stable_quicksort_seed;
 
-  /* The following operation is modulo 2**64, by virtue of standard
-     C behavior for uint64_t. */
+  /* The following operation is modulo 2**64, by virtue of standard C
+     behavior for uint64_t. */
   ats2_stable_quicksort_seed =
     (ats2_stable_quicksort_LCG_A * old_seed) + ats2_stable_quicksort_LCG_C;
 
