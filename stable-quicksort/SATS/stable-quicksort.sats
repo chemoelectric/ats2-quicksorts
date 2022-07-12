@@ -19,6 +19,10 @@
 #define ATS_PACKNAME "ats2-stable-quicksort"
 #define ATS_EXTERN_PREFIX "ats2_stable_quicksort_"
 
+%{#
+#include <stable-quicksort/CATS/stable-quicksort.cats>
+%}
+
 fn {a : vt@ype}                (* ‘Less than’: the order predicate. *)
 list_vt_stable_quicksort$lt :
   (&RD(a), &RD(a)) -<> bool

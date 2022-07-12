@@ -25,6 +25,20 @@ staload "stable-quicksort/SATS/stable-quicksort.sats"
 #define NIL list_vt_nil ()
 #define ::  list_vt_cons
 
+(*------------------------------------------------------------------*)
+(* A simple linear congruential generator, for pivot selection.     *)
+
+%{
+ats2_stable_quicksort_spinlock_t ats2_stable_quicksort_seed_lock;
+uint64_t ats2_stable_quicksort_seed = 0;
+%}
+
+extern fn
+random_uint64 () :<> uint64 = "mac#%"
+
+(*------------------------------------------------------------------*)
+(* An insertion sort for small sublists.                            *)
+
 (* Inserting in reverse order minimizes the work for a list already
    nearly sorted, or for stably sorting a list whose entries often
    have equal keys. *)
@@ -105,3 +119,5 @@ list_vt_insertion_sort
     loop (lst, dst);
     list_vt_reverse<a> dst
   end
+
+(*------------------------------------------------------------------*)
