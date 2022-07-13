@@ -172,6 +172,26 @@ head_is_lt_pivot
   end
 
 (*
+fn {a : vt@ype}
+head_exists_and_is_lt_pivot
+          {n        : nat}
+          {np       : pos}
+          {p        : addr | null < p}
+          (lst      : &list_vt (a, n),
+           p2_pivot : p2tr (list_vt (a, np), p))
+    :<> bool =
+  case+ lst of
+  | NIL => false
+  | @ (head :: _) =>
+    let
+      val is_lt = is_lt_pivot<a> (head, p2_pivot)
+      prval () = fold@ lst
+    in
+      is_lt
+    end
+*)
+
+(*
 fun {a : vt@ype}
 list_vt_append_node
           {m       : nat}
@@ -222,6 +242,66 @@ list_vt_append_node
 *)
 
 fn {a : vt@ype}
+split_after_run
+          {m        : pos}
+          {np       : pos}
+          {p        : addr | null < p}
+          (lst      : list_vt (a, m),
+           m        : int m,
+           p2_pivot : p2tr (list_vt (a, np), p),
+           is_lt    : bool,
+           lst1     : &list_vt (a, 0)? >> list_vt (a, n),
+           n        : &int >> int n,
+           p2_last  : &P2tr1 (list_vt (a, 1))?
+                      >> P2tr1 (list_vt (a, 1)),
+           lst2     : &list_vt (a, 0)? >> list_vt (a, m - n))
+    :<!wrt> #[n : nat | n <= m] void =
+  let
+    fun
+    loop {m : pos}
+         .<m>.
+         (lst1 : &list_vt (a, m) >> list_vt (a, m1),
+          lst2 : &list_vt (a, 0)? >> list_vt (a, m2),
+          m    : int m)
+        :<!wrt> #[m1, m2 : nat | m1 + m2 == m]
+                @(int m2, P2tr1 (list_vt (a, 1))) =
+      let
+        val+ @ (head :: tail) = lst1
+      in
+        case+ tail of
+        | NIL =>
+          let
+            val () = lst2 := NIL
+            prval () = fold@ lst1
+          in
+            @(0, $UN.ptr2p2tr ($UN.cast2Ptr1 (addr@ lst1)))
+          end
+        | _ :: _ =>
+          if head_is_lt_pivot<a> (tail, p2_pivot) then
+            let
+              val retval = loop (tail, lst2, pred m)
+              prval () = fold@ lst1
+            in
+              retval
+            end
+          else
+            let
+              val () = lst2 := tail
+              val () = tail := NIL
+              prval () = fold@ lst1
+            in
+              @(m - 1, $UN.ptr2p2tr ($UN.cast2Ptr1 (addr@ lst1)))
+            end
+      end
+
+    val () = lst1 := lst
+    val @(m2, p2) = loop (lst1, lst2, m)
+  in
+    n := m - m2;
+    p2_last := p2
+  end
+
+fn {a : vt@ype}
 apply_pivot_index
           {n        : pos}
           (lst      : list_vt (a, n),
@@ -244,6 +324,7 @@ apply_pivot_index
                 (lst      : &list_vt (a, m)
                             >> list_vt (a, m - m_low - m_high),
                  m        : int m,
+                 head_lt_pivot : bool,
                  lst_low  : &list_vt (a, 0) >> list_vt (a, m_low),
                  lst_high : &list_vt (a, 0) >> list_vt (a, m_high),
                  m_low    : &int? >> int m_low,
@@ -253,26 +334,44 @@ apply_pivot_index
       let
         fn
         append_to_destination
-                  {m : pos}
-                  (lst : &list_vt (a, m)
-                          >> list_vt (a, m - m_dst),
-                   dst : &list_vt (a, 0) >> list_vt (a, m_dst),
-                   m_dst : &int? >> int m_dst)
+                  {m      : pos}
+                  (lst    : &list_vt (a, m) >> list_vt (a, m - m_dst),
+                   dst    : &list_vt (a, 0) >> list_vt (a, m_dst),
+                   m_dst  : &int? >> int m_dst)
             :<!wrt> #[m_dst : nat | m_dst <= m]
                     void =
           let
             val+ @ (head :: tail) = lst
-            val tl = tail
-            val () = tail := NIL
-            prval () = fold@ lst
-            val+ ~ NIL = dst
-            val () = dst := lst
-            val () = lst := tl
+(*
           in
-            m_dst := 1
+            if head_exists_and_is_lt_pivot<a> (tail, p2_pivot) then
+              let
+                val tl = tail
+                val () = tail := NIL
+                prval () = fold@ lst
+                val+ ~ NIL = dst
+                val () = dst := lst
+                val () = lst := tl
+              in
+                m_dst := 1
+              end
+            else
+              let
+*)
+                val tl = tail
+                val () = tail := NIL
+                prval () = fold@ lst
+                val+ ~ NIL = dst
+                val () = dst := lst
+                val () = lst := tl
+              in
+                m_dst := 1
+              end
+(*
           end
+*)
       in
-        if head_is_lt_pivot<a> (lst, p2_pivot) then
+        if head_lt_pivot then
           begin
             append_to_destination (lst, lst_low, m_low);
             m_high := 0
