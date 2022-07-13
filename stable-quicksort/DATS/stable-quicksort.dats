@@ -156,7 +156,7 @@ is_lt_pivot {m        : pos}
   end
 
 fn {a : vt@ype}
-head_is_lt_pivot                (* FIXME: WILL WE NEED THIS???? *)
+head_is_lt_pivot
           {n        : pos}
           {m        : pos}
           {p_pivot  : addr | null < p_pivot}
@@ -239,7 +239,7 @@ apply_pivot_index
 
     fun
     append_to_low_or_high
-                {m     : pos}
+                {m : pos}
                 .<m>.
                 (lst      : &list_vt (a, m)
                             >> list_vt (a, m - m_low - m_high),
@@ -251,31 +251,36 @@ apply_pivot_index
         :<!wrt> #[m_low, m_high : nat | m_low + m_high <= m]
                 void =
       let
-        val+ @ (head :: tail) = lst
-      in
-        if is_lt_pivot<a> (head, p2_pivot) then
+        fn
+        append_to_destination
+                  {m : pos}
+                  (lst : &list_vt (a, m)
+                          >> list_vt (a, m - m_dst),
+                   dst : &list_vt (a, 0) >> list_vt (a, m_dst),
+                   m_dst : &int? >> int m_dst)
+            :<!wrt> #[m_dst : nat | m_dst <= m]
+                    void =
           let
+            val+ @ (head :: tail) = lst
             val tl = tail
             val () = tail := NIL
             prval () = fold@ lst
-            val+ ~ NIL = lst_low
-            val () = lst_low := lst
+            val+ ~ NIL = dst
+            val () = dst := lst
             val () = lst := tl
           in
-            m_low := 1;
+            m_dst := 1
+          end
+      in
+        if head_is_lt_pivot<a> (lst, p2_pivot) then
+          begin
+            append_to_destination (lst, lst_low, m_low);
             m_high := 0
           end
         else
-          let
-            val tl = tail
-            val () = tail := NIL
-            prval () = fold@ lst
-            val+ ~ NIL = lst_high
-            val () = lst_high := lst
-            val () = lst := tl
-          in
-            m_low := 0;
-            m_high := 1
+          begin
+            append_to_destination (lst, lst_high, m_high);
+            m_low := 0
           end
       end
 
