@@ -250,12 +250,14 @@ split_after_run
            m        : int m,
            p2_pivot : p2tr (list_vt (a, np), p),
            is_lt    : bool,
-           lst1     : &list_vt (a, 0)? >> list_vt (a, n),
-           n        : &int >> int n,
+           lst1     : &list_vt (a, 0)? >> list_vt (a, m1),
+           m1       : &int >> int m1,
            p2_last  : &P2tr1 (list_vt (a, 1))?
                       >> P2tr1 (list_vt (a, 1)),
-           lst2     : &list_vt (a, 0)? >> list_vt (a, m - n))
-    :<!wrt> #[n : nat | n <= m] void =
+           lst2     : &list_vt (a, 0)? >> list_vt (a, m2),
+           m2       : &int >> int m2)
+    :<!wrt> #[m1, m2 : int | 1 <= m1; 0 <= m2; m1 + m2 == m]
+            void =
   let
     fun
     loop {m : pos}
@@ -263,7 +265,7 @@ split_after_run
          (lst1 : &list_vt (a, m) >> list_vt (a, m1),
           lst2 : &list_vt (a, 0)? >> list_vt (a, m2),
           m    : int m)
-        :<!wrt> #[m1, m2 : nat | m1 + m2 == m]
+        :<!wrt> #[m1, m2 : int | 1 <= m1; 0 <= m2; m1 + m2 == m]
                 @(int m2, P2tr1 (list_vt (a, 1))) =
       let
         val+ @ (head :: tail) = lst1
@@ -290,15 +292,16 @@ split_after_run
               val () = tail := NIL
               prval () = fold@ lst1
             in
-              @(m - 1, $UN.ptr2p2tr ($UN.cast2Ptr1 (addr@ lst1)))
+              @(pred m, $UN.ptr2p2tr ($UN.cast2Ptr1 (addr@ lst1)))
             end
       end
 
     val () = lst1 := lst
-    val @(m2, p2) = loop (lst1, lst2, m)
+    val @(m2_, p2_) = loop (lst1, lst2, m)
   in
-    n := m - m2;
-    p2_last := p2
+    m1 := m - m2_;
+    m2 := m2_;
+    p2_last := p2_
   end
 
 fn {a : vt@ype}
