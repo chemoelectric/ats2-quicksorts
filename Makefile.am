@@ -161,20 +161,20 @@ STABLE_QUICKSORT_DATS = stable-quicksort/DATS/stable-quicksort.dats
 STABLE_QUICKSORT_DATS_C = stable-quicksort/DATS/stable-quicksort_dats.c
 CLEANFILES += $(STABLE_QUICKSORT_DATS_C)
 
-# STABLE_QUICKSORT_CATS = stable-quicksort/CATS/stable-quicksort.cats
+STABLE_QUICKSORT_CATS = stable-quicksort/CATS/stable-quicksort.cats
 # STABLE_QUICKSORT_HATS = stable-quicksort/HATS/stable-quicksort.hats
 
 nobase_dist_pkginclude_HEADERS =
 nobase_dist_pkginclude_HEADERS += $(STABLE_QUICKSORT_SATS)
 nobase_dist_pkginclude_HEADERS += $(STABLE_QUICKSORT_DATS)
-# nobase_dist_pkginclude_HEADERS += $(STABLE_QUICKSORT_CATS)
+nobase_dist_pkginclude_HEADERS += $(STABLE_QUICKSORT_CATS)
 # nobase_dist_pkginclude_HEADERS += $(STABLE_QUICKSORT_HATS)
 
 nodist_libats2_stable_quicksort_la_SOURCES =
 nodist_libats2_stable_quicksort_la_SOURCES += $(STABLE_QUICKSORT_SATS_C)
 nodist_libats2_stable_quicksort_la_SOURCES += $(STABLE_QUICKSORT_DATS_C)
-# libats2_stable_quicksort_la_DEPENDENCIES =
-# libats2_stable_quicksort_la_DEPENDENCIES += $(STABLE_QUICKSORT_CATS)
+libats2_stable_quicksort_la_DEPENDENCIES =
+libats2_stable_quicksort_la_DEPENDENCIES += $(STABLE_QUICKSORT_CATS)
 
 
 #--------------------------------------------------------------------------

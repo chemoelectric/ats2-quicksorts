@@ -668,15 +668,14 @@ STABLE_QUICKSORT_SATS = stable-quicksort/SATS/stable-quicksort.sats
 STABLE_QUICKSORT_SATS_C = stable-quicksort/SATS/stable-quicksort_sats.c
 STABLE_QUICKSORT_DATS = stable-quicksort/DATS/stable-quicksort.dats
 STABLE_QUICKSORT_DATS_C = stable-quicksort/DATS/stable-quicksort_dats.c
-
-# STABLE_QUICKSORT_CATS = stable-quicksort/CATS/stable-quicksort.cats
+STABLE_QUICKSORT_CATS = stable-quicksort/CATS/stable-quicksort.cats
 # STABLE_QUICKSORT_HATS = stable-quicksort/HATS/stable-quicksort.hats
 nobase_dist_pkginclude_HEADERS = $(STABLE_QUICKSORT_SATS) \
-	$(STABLE_QUICKSORT_DATS)
-# nobase_dist_pkginclude_HEADERS += $(STABLE_QUICKSORT_CATS)
+	$(STABLE_QUICKSORT_DATS) $(STABLE_QUICKSORT_CATS)
 # nobase_dist_pkginclude_HEADERS += $(STABLE_QUICKSORT_HATS)
 nodist_libats2_stable_quicksort_la_SOURCES =  \
 	$(STABLE_QUICKSORT_SATS_C) $(STABLE_QUICKSORT_DATS_C)
+libats2_stable_quicksort_la_DEPENDENCIES = $(STABLE_QUICKSORT_CATS)
 nodist_list_ats_dependencies_SOURCES =  \
 	list-ats-dependencies_depsprog.c
 list_ats_dependencies_CPPFLAGS = $(AM_CPPFLAGS) -DATS_MEMALLOC_LIBC
