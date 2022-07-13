@@ -240,15 +240,16 @@ apply_pivot_index
     fun
     append_to_low_or_high
                 {m     : pos}
-                {m_low : nat}
                 .<m>.
-                (lst      : &list_vt (a, m) >> list_vt (a, m - 1),
+                (lst      : &list_vt (a, m)
+                            >> list_vt (a, m - m_low - m_high),
                  m        : int m,
                  lst_low  : &list_vt (a, 0) >> list_vt (a, m_low),
-                 lst_high : &list_vt (a, 0)
-                            >> list_vt (a, 1 - m_low))
-        :<!wrt> #[m_low : nat | m_low <= m]
-                int m_low =
+                 lst_high : &list_vt (a, 0) >> list_vt (a, m_high),
+                 m_low    : &int? >> int m_low,
+                 m_high   : &int? >> int m_high)
+        :<!wrt> #[m_low, m_high : nat | m_low + m_high <= m]
+                void =
       let
         val+ @ (head :: tail) = lst
       in
@@ -261,7 +262,8 @@ apply_pivot_index
             val () = lst_low := lst
             val () = lst := tl
           in
-            1
+            m_low := 1;
+            m_high := 0
           end
         else
           let
@@ -272,7 +274,8 @@ apply_pivot_index
             val () = lst_high := lst
             val () = lst := tl
           in
-            0
+            m_low := 0;
+            m_high := 1
           end
       end
 
