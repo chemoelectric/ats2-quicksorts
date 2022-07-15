@@ -171,75 +171,49 @@ head_is_lt_pivot
     is_lt
   end
 
-(*
+absvt@ype extensible_list_vt (a : vt@ype+, n : int) =
+  @(list_vt (a, n),
+    P2tr1 (List0_vt a))
+
 fn {a : vt@ype}
-head_exists_and_is_lt_pivot
-          {n        : nat}
-          {np       : pos}
-          {p        : addr | null < p}
-          (lst      : &list_vt (a, n),
-           p2_pivot : p2tr (list_vt (a, np), p))
-    :<> bool =
-  case+ lst of
-  | NIL => false
-  | @ (head :: _) =>
-    let
-      val is_lt = is_lt_pivot<a> (head, p2_pivot)
-      prval () = fold@ lst
-    in
-      is_lt
-    end
-*)
+extensible_list_vt_nil ()
+    :<> extensible_list_vt (a, 0) =
+  $UN.castvwtp0 @(NIL, 0)
 
-(*
-fun {a : vt@ype}
-list_vt_append_node
-          {m       : nat}
-          {p_xnode : addr}
-          {p_x     : addr}
-          {p_xs    : addr}
-          .<m>.
-          (pf_x  : a @ p_x,
-           pf_xs : list_vt (a, 0)? @ p_xs |
-           dst   : &list_vt (a, m) >> list_vt (a, m + 1),
-           xnode : list_vt_cons_unfold (p_xnode, p_x, p_xs),
-           p_x   : ptr p_x,
-           p_xs  : ptr p_xs)
-    :<!wrt> void =
-  let                         (* Put xnode at the end. *)
-    val () = dst := xnode
-    val () = !p_xs := NIL
-    prval () = fold@ dst
+fn {a : vt@ype}
+extensible_list_vt_append
+          {n1, n2 : int | 0 <= n1; 1 <= n2}
+          (lst1   : extensible_list_vt (a, n1),
+           lst2   : extensible_list_vt (a, n2))
+    :<!wrt> extensible_list_vt (a, n1 + n2) =
+  let
+    vtypedef elist_vt (n : int) = @(list_vt (a, n),
+                                    P2tr1 (List1_vt a))
+    val @(ls_1, p2_1) = $UN.castvwtp0{elist_vt n1} lst1
+    val @(pf, fpf | p) = $UN.p2tr_vtake p2_1
+    val+ @ (_ :: tail) = !p
+    val @(ls_2, p2_2) = $UN.castvwtp0{elist_vt n2} lst2
+    val- ~ NIL = tail     (* Extend only if the pointer is to the last
+                             node. *)
+    val () = tail := ls_2
+    prval () = fold@ (!p)
+    prval () = fpf pf
   in
+    $UN.castvwtp0 @(ls_1, p2_2)
   end
-*)
 
-(*
-  case+ dst of
-  | @ (y :: ys) =>
-    if list_vt_stable_quicksort$lt<a> (!p_x, y) then
-      let                     (* Move to the next destination node. *)
-        val () =
-          list_vt_insert_reverse (pf_x, pf_xs | ys, xnode, p_x, p_xs)
-        prval () = fold@ dst
-      in
-      end
-    else
-      let                       (* Insert xnode here. *)
-        prval () = fold@ dst
-        val () = !p_xs := dst
-        val () = dst := xnode
-        prval () = fold@ dst
-      in
-      end
-  | ~ NIL =>
-    let                         (* Put xnode at the end. *)
-      val () = dst := xnode
-      val () = !p_xs := NIL
-      prval () = fold@ dst
-    in
-    end
-*)
+fn {a : vt@ype}
+extensible_list_vt_finalize
+          {n   : nat}
+          (lst : extensible_list_vt (a, n))
+    :<!wrt> list_vt (a, n) =
+  let
+    vtypedef elist_vt (n : int) = @(list_vt (a, n),
+                                    P2tr1 (List0_vt a))
+    val @(ls_1, _) = $UN.castvwtp0{elist_vt n} lst
+  in
+    ls_1
+  end
 
 fn {a : vt@ype}
 split_after_run
@@ -249,15 +223,12 @@ split_after_run
           (lst      : list_vt (a, m),
            m        : int m,
            p2_pivot : p2tr (list_vt (a, np), p),
-           is_lt    : bool,
-           lst1     : &list_vt (a, 0)? >> list_vt (a, m1),
-           m1       : &int >> int m1,
-           p2_last  : &P2tr1 (list_vt (a, 1))?
-                      >> P2tr1 (list_vt (a, 1)),
-           lst2     : &list_vt (a, 0)? >> list_vt (a, m2),
-           m2       : &int >> int m2)
-    :<!wrt> #[m1, m2 : int | 1 <= m1; 0 <= m2; m1 + m2 == m]
-            void =
+           is_lt    : bool)
+    :<!wrt> [m1, m2 : int | 1 <= m1; 0 <= m2; m1 + m2 == m]
+            @(extensible_list_vt (a, m1),
+              list_vt (a, m2),
+              int m1,
+              int m2) =
   let
     fun
     loop {m : pos}
@@ -279,7 +250,7 @@ split_after_run
             @(0, $UN.ptr2p2tr ($UN.cast2Ptr1 (addr@ lst1)))
           end
         | _ :: _ =>
-          if head_is_lt_pivot<a> (tail, p2_pivot) then
+          if head_is_lt_pivot<a> (tail, p2_pivot) = is_lt then
             let
               val retval = loop (tail, lst2, pred m)
               prval () = fold@ lst1
@@ -296,138 +267,256 @@ split_after_run
             end
       end
 
-    val () = lst1 := lst
-    val @(m2_, p2_) = loop (lst1, lst2, m)
+    var lst1 = lst
+    var lst2 : List_vt a
+    val @(m2, p2_last) = loop (lst1, lst2, m)
   in
-    m1 := m - m2_;
-    m2 := m2_;
-    p2_last := p2_
+    @($UN.castvwtp0 @(lst1, p2_last), lst2, m - m2, m2)
   end
 
 fn {a : vt@ype}
-apply_pivot_index
-          {n        : pos}
-          (lst      : list_vt (a, n),
-           n        : int n,
-           lst_low  : &list_vt (a, 0)? >> list_vt (a, n_low),
-           lst_high : &list_vt (a, 0)? >> list_vt (a, n_high),
-           n_low    : &int? >> int n_low,
-           n_high   : &int? >> int n_high)
-    :<!wrt> #[n_low, n_high : int | n_low + n_high == n]
+apply_pivot
+          {m        : pos}
+          {np       : pos}
+          {p        : addr | null < p}
+          (lst      : list_vt (a, m),
+           m        : int m,
+           p2_pivot : p2tr (list_vt (a, np), p),
+           lst_low  : &list_vt (a, 0)? >> list_vt (a, m1),
+           lst_high : &list_vt (a, 0)? >> list_vt (a, m2),
+           m1       : &int? >> int m1,
+           m2       : &int? >> int m2)
+    :<!wrt> #[m1, m2 : int | m1 + m2 == m]
             void =
   let
-    var lst = lst
-    val i_pivot = select_pivot_index (lst, n)
-    val p2_pivot = list_vt_getref_at<a> (lst, i_pivot)
+    var elst_low : [n : nat] extensible_list_vt (a, n)
+    var elst_high : [n : nat] extensible_list_vt (a, n)
+
+    fn
+    run_of_low {n        : pos}
+               {m1, m2   : nat | m1 + m2 + n == m}
+               (lst      : list_vt (a, n),
+                n        : int n,
+                elst_low : &extensible_list_vt (a, m1)
+                            >> extensible_list_vt (a, mm1),
+                m1       : &int m1 >> int mm1,
+                m2       : int m2)
+        :<!wrt> #[mm1, n2 : int | m1 < mm1; 0 <= n2; n2 < n;
+                                  mm1 + m2 + n2 == m]
+                @(list_vt (a, n2), int n2) =
+      let
+        val @(elst1, lst2, n1, n2) =
+          split_after_run<a> (lst, n, p2_pivot, true)
+      in
+        elst_low := extensible_list_vt_append<a> (elst_low, elst1);
+        m1 := m1 + n1;
+        @(lst2, n2)
+      end
+
+    fn
+    run_of_high {n         : pos}
+                {m1, m2    : nat | m1 + m2 + n == m}
+                (lst       : list_vt (a, n),
+                 n         : int n,
+                 elst_high : &extensible_list_vt (a, m2)
+                              >> extensible_list_vt (a, mm2),
+                 m1        : int m1,
+                 m2        : &int m2 >> int mm2)
+        :<!wrt> #[mm2, n2 : int | m2 < mm2; 0 <= n2; n2 < n;
+                                  m1 + mm2 + n2 == m]
+                @(list_vt (a, n2), int n2) =
+      let
+        val @(elst1, lst2, n1, n2) =
+          split_after_run<a> (lst, n, p2_pivot, false)
+      in
+        elst_high := extensible_list_vt_append<a> (elst_high, elst1);
+        m2 := m2 + n1;
+        @(lst2, n2)
+      end
 
     fun
-    append_to_low_or_high
-                {m : pos}
-                .<m>.
-                (lst      : &list_vt (a, m)
-                            >> list_vt (a, m - m_low - m_high),
-                 m        : int m,
-                 head_lt_pivot : bool,
-                 lst_low  : &list_vt (a, 0) >> list_vt (a, m_low),
-                 lst_high : &list_vt (a, 0) >> list_vt (a, m_high),
-                 m_low    : &int? >> int m_low,
-                 m_high   : &int? >> int m_high)
-        :<!wrt> #[m_low, m_high : nat | m_low + m_high <= m]
+    loop {n      : nat}
+         {m1, m2 : nat | m1 + m2 + n == m}
+         .<n>.
+         (lst       : list_vt (a, n),
+          n         : int n,
+          is_lt     : bool,
+          elst_low  : &extensible_list_vt (a, m1)
+                       >> extensible_list_vt (a, mm1),
+          elst_high : &extensible_list_vt (a, m2)
+                       >> extensible_list_vt (a, mm2),
+          m1        : &int m1 >> int mm1,
+          m2        : &int m2 >> int mm2)
+        :<!wrt> #[mm1, mm2 : nat | mm1 + mm2 == m]
                 void =
+      if n = 0 then
+        let
+          val+ ~ NIL = lst
+        in
+        end
+      else if is_lt then
+        let
+          val @(lst, n) = run_of_low (lst, n, elst_low, m1, m2)
+        in
+          loop (lst, n, false, elst_low, elst_high, m1, m2)
+        end
+      else
+        let
+          val @(lst, n) = run_of_high (lst, n, elst_high, m1, m2)
+        in
+          loop (lst, n, true, elst_low, elst_high, m1, m2)
+        end
+
+    fn
+    head_lt_pivot
+              {n   : pos}
+              (lst : list_vt (a, n))
+        :<> @(bool, list_vt (a, n)) =
       let
-        fn
-        append_to_destination
-                  {m      : pos}
-                  (lst    : &list_vt (a, m) >> list_vt (a, m - m_dst),
-                   dst    : &list_vt (a, 0) >> list_vt (a, m_dst),
-                   m_dst  : &int? >> int m_dst)
-            :<!wrt> #[m_dst : nat | m_dst <= m]
-                    void =
-          let
-            val+ @ (head :: tail) = lst
-(*
-          in
-            if head_exists_and_is_lt_pivot<a> (tail, p2_pivot) then
-              let
-                val tl = tail
-                val () = tail := NIL
-                prval () = fold@ lst
-                val+ ~ NIL = dst
-                val () = dst := lst
-                val () = lst := tl
-              in
-                m_dst := 1
-              end
-            else
-              let
-*)
-                val tl = tail
-                val () = tail := NIL
-                prval () = fold@ lst
-                val+ ~ NIL = dst
-                val () = dst := lst
-                val () = lst := tl
-              in
-                m_dst := 1
-              end
-(*
-          end
-*)
+        var lst = lst
       in
-        if head_lt_pivot then
-          begin
-            append_to_destination (lst, lst_low, m_low);
-            m_high := 0
-          end
-        else
-          begin
-            append_to_destination (lst, lst_high, m_high);
-            m_low := 0
-          end
+        @(head_is_lt_pivot<a> (lst, p2_pivot), lst)
       end
 
-(*
-    fun (* FIXME: Add currently-active-list info to reduce the amount of writing. *)
-    loop {m : nat}
-         .<m>.
-         (lst      : &list_vt (a, m) >> list_vt (a, 0),
-          m        : int m,
-          lst_low  : &list_vt (a, 0)? >> list_vt (a, m_low),
-          lst_high : &list_vt (a, 0)? >> list_vt (a, m - m_low))
-        :<!wrt> #[m_low : nat | m_low <= m]
-                int m_low =
-      let
-        val @ (head :: tail) = lst
-      in
-        if is_lt_pivot<a> (head, p2_pivot) then
-          let
-            val tl = tail
-            prval () = fold@ lst
-            val () = lst_low := lst
-            val () = lst_high := NIL
-            val () = lst := tl
-*)
+    val @(is_lt, lst) = head_lt_pivot lst
   in
-    if head_is_lt_pivot<a> (lst, p2_pivot) then
-      let
-        val () = lst_low := lst
-        val () = lst_high := NIL
-        val n_lo = n
-      in
-        n_low := n_lo;
-        n_high := n - n_lo
-      end
-    else
-      let
-        val () = lst_low := NIL
-        val () = lst_high := lst
-        val n_lo = 0
-      in
-        n_low := n_lo;
-        n_high := n - n_lo
-      end
+    elst_low := extensible_list_vt_nil<a> ();
+    elst_high := extensible_list_vt_nil<a> ();
+    m1 := 0;
+    m2 := 0;
+    loop (lst, m, is_lt, elst_low, elst_high, m1, m2);
+    lst_low := extensible_list_vt_finalize<a> elst_low;
+    lst_high := extensible_list_vt_finalize<a> elst_high
   end
 
+
+
+
+// fn {a : vt@ype}
+// apply_pivot_index
+//           {n        : pos}
+//           (lst      : list_vt (a, n),
+//            n        : int n,
+//            lst_low  : &list_vt (a, 0)? >> list_vt (a, n_low),
+//            lst_high : &list_vt (a, 0)? >> list_vt (a, n_high),
+//            n_low    : &int? >> int n_low,
+//            n_high   : &int? >> int n_high)
+//     :<!wrt> #[n_low, n_high : int | n_low + n_high == n]
+//             void =
+//   let
+//     var lst = lst
+//     val i_pivot = select_pivot_index (lst, n)
+//     val p2_pivot = list_vt_getref_at<a> (lst, i_pivot)
+// 
+//     fun
+//     append_to_low_or_high
+//                 {m : pos}
+//                 .<m>.
+//                 (lst      : &list_vt (a, m)
+//                             >> list_vt (a, m - m_low - m_high),
+//                  m        : int m,
+//                  head_lt_pivot : bool,
+//                  lst_low  : &list_vt (a, 0) >> list_vt (a, m_low),
+//                  lst_high : &list_vt (a, 0) >> list_vt (a, m_high),
+//                  m_low    : &int? >> int m_low,
+//                  m_high   : &int? >> int m_high)
+//         :<!wrt> #[m_low, m_high : nat | m_low + m_high <= m]
+//                 void =
+//       let
+//         fn
+//         append_to_destination
+//                   {m      : pos}
+//                   (lst    : &list_vt (a, m) >> list_vt (a, m - m_dst),
+//                    dst    : &list_vt (a, 0) >> list_vt (a, m_dst),
+//                    m_dst  : &int? >> int m_dst)
+//             :<!wrt> #[m_dst : nat | m_dst <= m]
+//                     void =
+//           let
+//             val+ @ (head :: tail) = lst
+// (*
+//           in
+//             if head_exists_and_is_lt_pivot<a> (tail, p2_pivot) then
+//               let
+//                 val tl = tail
+//                 val () = tail := NIL
+//                 prval () = fold@ lst
+//                 val+ ~ NIL = dst
+//                 val () = dst := lst
+//                 val () = lst := tl
+//               in
+//                 m_dst := 1
+//               end
+//             else
+//               let
+// *)
+//                 val tl = tail
+//                 val () = tail := NIL
+//                 prval () = fold@ lst
+//                 val+ ~ NIL = dst
+//                 val () = dst := lst
+//                 val () = lst := tl
+//               in
+//                 m_dst := 1
+//               end
+// (*
+//           end
+// *)
+//       in
+//         if head_lt_pivot then
+//           begin
+//             append_to_destination (lst, lst_low, m_low);
+//             m_high := 0
+//           end
+//         else
+//           begin
+//             append_to_destination (lst, lst_high, m_high);
+//             m_low := 0
+//           end
+//       end
+//
+// 
+// (*
+//     fun (* FIXME: Add currently-active-list info to reduce the amount of writing. *)
+//     loop {m : nat}
+//          .<m>.
+//          (lst      : &list_vt (a, m) >> list_vt (a, 0),
+//           m        : int m,
+//           lst_low  : &list_vt (a, 0)? >> list_vt (a, m_low),
+//           lst_high : &list_vt (a, 0)? >> list_vt (a, m - m_low))
+//         :<!wrt> #[m_low : nat | m_low <= m]
+//                 int m_low =
+//       let
+//         val @ (head :: tail) = lst
+//       in
+//         if is_lt_pivot<a> (head, p2_pivot) then
+//           let
+//             val tl = tail
+//             prval () = fold@ lst
+//             val () = lst_low := lst
+//             val () = lst_high := NIL
+//             val () = lst := tl
+// *)
+//   in
+//     if head_is_lt_pivot<a> (lst, p2_pivot) then
+//       let
+//         val () = lst_low := lst
+//         val () = lst_high := NIL
+//         val n_lo = n
+//       in
+//         n_low := n_lo;
+//         n_high := n - n_lo
+//       end
+//     else
+//       let
+//         val () = lst_low := NIL
+//         val () = lst_high := lst
+//         val n_lo = 0
+//       in
+//         n_low := n_lo;
+//         n_high := n - n_lo
+//       end
+//   end
+// 
 //    list_vt_getref_at<a> (lst, i_pivot)
 (*
 fn {a : vt@ype}
