@@ -38,11 +38,60 @@ extern fn
 random_uint64 () :<!wrt> uint64 = "mac#%"
 
 (*------------------------------------------------------------------*)
+(* A list with a pointer to its last node.                          *)
+
+absvt@ype extensible_list_vt (a : vt@ype+, n : int) =
+  @(list_vt (a, n),
+    P2tr1 (List0_vt a))
+vtypedef extensible_list_vt (a : vt@ype+) =
+  [n : int] extensible_list_vt (a, n)
+
+fn {a : vt@ype}
+extensible_list_vt_nil ()
+    :<> extensible_list_vt (a, 0) =
+  $UN.castvwtp0 @(NIL, 0)
+
+fn {a : vt@ype}
+extensible_list_vt_append
+          {n1, n2 : int | 0 <= n1; 1 <= n2}
+          (lst1   : extensible_list_vt (a, n1),
+           lst2   : extensible_list_vt (a, n2))
+    :<!wrt> extensible_list_vt (a, n1 + n2) =
+  let
+    vtypedef elist_vt (n : int) = @(list_vt (a, n),
+                                    P2tr1 (List1_vt a))
+    val @(ls_1, p2_1) = $UN.castvwtp0{elist_vt n1} lst1
+    val @(pf, fpf | p) = $UN.p2tr_vtake p2_1
+    val+ @ (_ :: tail) = !p
+    val @(ls_2, p2_2) = $UN.castvwtp0{elist_vt n2} lst2
+    val- ~ NIL = tail     (* Extend only if the pointer is to the last
+                             node. *)
+    val () = tail := ls_2
+    prval () = fold@ (!p)
+    prval () = fpf pf
+  in
+    $UN.castvwtp0 @(ls_1, p2_2)
+  end
+
+fn {a : vt@ype}
+extensible_list_vt_finalize
+          {n   : nat}
+          (lst : extensible_list_vt (a, n))
+    :<!wrt> list_vt (a, n) =
+  let
+    vtypedef elist_vt (n : int) = @(list_vt (a, n),
+                                    P2tr1 (List0_vt a))
+    val @(ls_1, _) = $UN.castvwtp0{elist_vt n} lst
+  in
+    ls_1
+  end
+
+(*------------------------------------------------------------------*)
 (* An insertion sort for small sublists.                            *)
 
 (* Inserting in reverse order minimizes the work for a list already
    nearly sorted, or for stably sorting a list whose entries often
-   have equal keys. *)
+   have equal keys. It also makes the last node easy to find. *)
 fun {a : vt@ype}
 list_vt_insert_reverse
           {m       : nat}
@@ -92,8 +141,10 @@ fn {a : vt@ype}
 list_vt_insertion_sort
           {m, n            : int}
           (lst             : list_vt (INV(a), m),
-           reversed_prefix : list_vt (INV(a), n))
-    :<!wrt> list_vt (a, m + n) =
+           m               : int m,
+           reversed_prefix : list_vt (INV(a), n),
+           n               : int n)
+    :<!wrt> extensible_list_vt (a, m + n) =
   let
     fun                         (* Create a list sorted in reverse. *)
     loop {m, n : nat}
@@ -114,11 +165,22 @@ list_vt_insertion_sort
 
     prval () = lemma_list_vt_param lst
     prval () = lemma_list_vt_param reversed_prefix
-    
-    var dst : list_vt (a, n) = reversed_prefix
   in
-    loop (lst, dst);
-    list_vt_reverse<a> dst
+    if m + n = 0 then
+      let
+        val+ ~ NIL = lst
+        val+ ~ NIL = reversed_prefix
+      in
+        extensible_list_vt_nil<a> ()
+      end
+    else
+      let
+        var dst : list_vt (a, n) = reversed_prefix
+        val () = loop (lst, dst)
+        val p2_last = $UN.ptr2p2tr ($UN.cast2Ptr1 (addr@ dst))
+      in
+        $UN.castvwtp0 @(list_vt_reverse<a> dst, p2_last)
+      end
   end
 
 (*------------------------------------------------------------------*)
@@ -169,50 +231,6 @@ head_is_lt_pivot
     prval () = fold@ lst
   in
     is_lt
-  end
-
-absvt@ype extensible_list_vt (a : vt@ype+, n : int) =
-  @(list_vt (a, n),
-    P2tr1 (List0_vt a))
-
-fn {a : vt@ype}
-extensible_list_vt_nil ()
-    :<> extensible_list_vt (a, 0) =
-  $UN.castvwtp0 @(NIL, 0)
-
-fn {a : vt@ype}
-extensible_list_vt_append
-          {n1, n2 : int | 0 <= n1; 1 <= n2}
-          (lst1   : extensible_list_vt (a, n1),
-           lst2   : extensible_list_vt (a, n2))
-    :<!wrt> extensible_list_vt (a, n1 + n2) =
-  let
-    vtypedef elist_vt (n : int) = @(list_vt (a, n),
-                                    P2tr1 (List1_vt a))
-    val @(ls_1, p2_1) = $UN.castvwtp0{elist_vt n1} lst1
-    val @(pf, fpf | p) = $UN.p2tr_vtake p2_1
-    val+ @ (_ :: tail) = !p
-    val @(ls_2, p2_2) = $UN.castvwtp0{elist_vt n2} lst2
-    val- ~ NIL = tail     (* Extend only if the pointer is to the last
-                             node. *)
-    val () = tail := ls_2
-    prval () = fold@ (!p)
-    prval () = fpf pf
-  in
-    $UN.castvwtp0 @(ls_1, p2_2)
-  end
-
-fn {a : vt@ype}
-extensible_list_vt_finalize
-          {n   : nat}
-          (lst : extensible_list_vt (a, n))
-    :<!wrt> list_vt (a, n) =
-  let
-    vtypedef elist_vt (n : int) = @(list_vt (a, n),
-                                    P2tr1 (List0_vt a))
-    val @(ls_1, _) = $UN.castvwtp0{elist_vt n} lst
-  in
-    ls_1
   end
 
 fn {a : vt@ype}
@@ -276,22 +294,21 @@ split_after_run
 
 fn {a : vt@ype}
 apply_pivot
-          {m        : pos}
-          {np       : pos}
-          {p        : addr | null < p}
-          (lst      : list_vt (a, m),
-           m        : int m,
-           p2_pivot : p2tr (list_vt (a, np), p),
-           lst_low  : &list_vt (a, 0)? >> list_vt (a, m1),
-           lst_high : &list_vt (a, 0)? >> list_vt (a, m2),
-           m1       : &int? >> int m1,
-           m2       : &int? >> int m2)
-    :<!wrt> #[m1, m2 : int | m1 + m2 == m]
+          {m         : pos}
+          {np        : pos}
+          {p         : addr | null < p}
+          (lst       : list_vt (a, m),
+           m         : int m,
+           p2_pivot  : p2tr (list_vt (a, np), p),
+           elst_low  : &(extensible_list_vt a)?
+                        >> extensible_list_vt (a, m1),
+           elst_high : &(extensible_list_vt a)?
+                        >> extensible_list_vt (a, m2),
+           m1        : &int? >> int m1,
+           m2        : &int? >> int m2)
+    :<!wrt> #[m1, m2 : nat | m1 + m2 == m]
             void =
   let
-    var elst_low : [n : nat] extensible_list_vt (a, n)
-    var elst_high : [n : nat] extensible_list_vt (a, n)
-
     fn
     run_of_low {n        : pos}
                {m1, m2   : nat | m1 + m2 + n == m}
@@ -384,29 +401,108 @@ apply_pivot
     elst_high := extensible_list_vt_nil<a> ();
     m1 := 0;
     m2 := 0;
-    loop (lst, m, is_lt, elst_low, elst_high, m1, m2);
-    lst_low := extensible_list_vt_finalize<a> elst_low;
-    lst_high := extensible_list_vt_finalize<a> elst_high
+    loop (lst, m, is_lt, elst_low, elst_high, m1, m2)
   end
 
 fn {a : vt@ype}
 find_and_apply_pivot
-          {n        : pos}
-          (lst      : list_vt (a, n),
-           n        : int n,
-           lst_low  : &list_vt (a, 0)? >> list_vt (a, n_low),
-           lst_high : &list_vt (a, 0)? >> list_vt (a, n_high),
-           n_low    : &int? >> int n_low,
-           n_high   : &int? >> int n_high)
-    :<!wrt> #[n_low, n_high : int | n_low + n_high == n]
+          {n         : pos}
+          (lst       : list_vt (a, n),
+           n         : int n,
+           elst_low  : &(extensible_list_vt a)?
+                        >> extensible_list_vt (a, n_low),
+           elst_high : &(extensible_list_vt a)?
+                        >> extensible_list_vt (a, n_high),
+           n_low     : &int? >> int n_low,
+           n_high    : &int? >> int n_high)
+    :<!wrt> #[n_low, n_high : nat | n_low + n_high == n]
             void =
   let
     var lst = lst
     val i_pivot = select_pivot_index (lst, n)
     val p2_pivot = list_vt_getref_at<a> (lst, i_pivot)
   in
-    apply_pivot<a> (lst, n, p2_pivot, lst_low, lst_high,
+    apply_pivot<a> (lst, n, p2_pivot, elst_low, elst_high,
                     n_low, n_high)
+  end
+
+implement {a}
+list_vt_stable_quicksort lst =
+  let
+    #define THRESHOLD 10        (* FIXME: Tune this. *)
+
+    macdef finalize = extensible_list_vt_finalize<a>
+
+    fn
+    partition {m   : pos}
+              (lst : list_vt (a, m),
+               m   : int m)
+        :<!wrt> [m1, m2 : nat | m1 + m2 == m]
+                @(extensible_list_vt (a, m1),
+                  extensible_list_vt (a, m2),
+                  int m1,
+                  int m2) =
+      let
+        var elst1 : extensible_list_vt a
+        var elst2 : extensible_list_vt a
+        var m1 : int
+        var m2 : int
+      in
+        find_and_apply_pivot (lst, m, elst1, elst2, m1, m2);
+        @(elst1, elst2, m1, m2)
+      end
+
+    fun
+    recurs {m   : nat}
+           .<m>.
+           (lst : list_vt (a, m),
+            m   : int m)
+        :<!wrt> extensible_list_vt (a, m) =
+//        : extensible_list_vt (a, m) =
+      if m <= THRESHOLD then
+        list_vt_insertion_sort<a> (lst, m, NIL, 0)
+      else
+        let
+          val [n_low, n_high : int]
+              @(elst_low, elst_high, n_low, n_high) =
+            partition (lst, m)
+        in
+(*
+          if n_high = 0 then
+            let
+              prval () = prop_verify {n_low == m} ()
+              prval () = prop_verify {n_high == 0} ()
+              val lst_high = finalize elst_high
+              val+ ~ NIL = lst_high
+            in
+              recurs (finalize elst_low, n_low)
+            end
+*)
+          if n_low = 0 then
+            let
+//val _ = showtype elst_low
+              prval () = prop_verify {n_low == 0} ()
+              prval () = prop_verify {n_high == m} ()
+              val lst_low = finalize elst_low
+//val _ = showtype lst_low
+//              val+ ~ NIL = lst_low
+val- ~ NIL = lst_low
+            in
+              recurs (finalize elst_high, n_high)
+            end
+          else
+            let
+              val elst1 = recurs (finalize elst_low, n_low)
+              val elst2 = recurs (finalize elst_high, n_high)
+            in
+              extensible_list_vt_append<a> (elst1, elst2)
+            end
+        end
+
+    prval () = lemma_list_vt_param lst
+  in
+    finalize (recurs (lst, length lst))
+//    finalize ($effmask_all (* FIXME *) recurs (lst, length lst))
   end
 
 (*------------------------------------------------------------------*)
