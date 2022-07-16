@@ -118,9 +118,7 @@ extensible_list_vt_append
             unsafe_list_vt2extensible<a> (ls1, p1, n1)
           end
         else
-(**)
           let
-//            val @(pf, fpf | p) = $UN.p2tr_vtake p21
             val last_node = $UN.castvwtp0{list_vt (a, 1)} p1
             val+ @ (_ :: tail) = last_node
             val+ ~ NIL = tail
@@ -132,8 +130,6 @@ extensible_list_vt_append
               ($UN.castvwtp0{list_vt (a, n1 + n2)} ls1,
                p2, n1 + n2)
           end
-(**)
-//unsafe_list_vt2extensible<a> (list_vt_append<a> (ls1, ls2), p22, n1 + n2)
       end
   end
 
@@ -250,7 +246,6 @@ compare_with_pivot
     val sign = g1ofg0 sign
     val sign = max (sign, ~1)
     val sign = min (sign, 1)
-(* val() = $effmask_all println! ("x = ", $UN.castvwtp1{int} x, "  pivot = ", $UN.castvwtp1{int} pivot, "  sign = ", sign) *)
   in
     sign
   end
@@ -299,9 +294,6 @@ select_pivot
             void =
   let
     val i_pivot = select_pivot_index<a> (lst, n)
-(* val () = $effmask_all println! ("n = ", n, "  i_pivot = ", i_pivot) *)
-(* val () = $effmask_all println! ("length lst = ", length lst) *)
-(* val () = $effmask_all println! ("lst = ", $UN.castvwtp1{list (int, n)} lst) *)
     val @(left, right) = list_vt_split_at<a> (lst, i_pivot)
     val @(pivot, right) = list_vt_split_at<a> (right, 1)
   in
@@ -349,7 +341,6 @@ split_after_run
         | _ :: _ =>
           let
             val new_sign = compare_head_with_pivot<a> (tail, pivot)
-(* val()=$effmask_all println!("sign = ", sign, "  new_sign = ", new_sign) *)
           in
             if new_sign = sign then
               let
@@ -373,7 +364,6 @@ split_after_run
     var lst1 = lst
     var lst2 : List_vt a
     val @(n2, p_last, new_sign) = loop (lst1, lst2, pivot, n)
-//val()=$effmask_all println!("length lst1 = ", length lst1, "  n - n2 = ", n - n2, "  length lst2 = ", length lst2, "  n2 = ", n2)
     val elst1 = unsafe_list_vt2extensible (lst1, p_last, n - n2)
   in
     @(elst1, lst2, n2, new_sign)
@@ -416,9 +406,6 @@ partition_pivot_free_list
           if sign = ~1 then
             let
               val elst_lt = (elst_lt \appd elst)
-(* val () = $effmask_all println! ("elst_lt:") *)
-(* val () = $effmask_all println! ($UN.castvwtp1{@(List int,ptr, int)} elst_lt).2 *)
-(* val () = $effmask_all println! ($UN.castvwtp1{@(List int,ptr, int)} elst_lt).0 *)
             in
               loop (lst2, m2, pivot, new_sign,
                     elst_lt, elst_eq, elst_gt)
@@ -477,11 +464,6 @@ partition {n     : pos}
     val () =
       select_pivot<a> (lst, n, lst_before, lst_pivot, lst_after,
                        n_before, n_after)
-(* val () = $effmask_all println! ("n_before = ", n_before) *)
-(* val () = $effmask_all println! ("lst_before = ", lst_before) *)
-(* val () = $effmask_all println! ("lst_pivot = ", lst_pivot) *)
-(* val () = $effmask_all println! ("n_after  = ", n_after) *)
-(* val () = $effmask_all println! ("lst_after = ", lst_after) *)
 
     val+ @ (pivot :: _) = lst_pivot
     val @(elst1_lt, elst1_eq, elst1_gt) =
@@ -492,8 +474,6 @@ partition {n     : pos}
     prval () = fold@ lst_pivot
 
     val elst_lt = (elst1_lt \appd elst2_lt)
-//    val p2_pivot = $UN.ptr2p2tr ($UN.cast2Ptr1 (addr@ lst_pivot))
-//val p2_pivot = list_vt_getref_at (lst_pivot, 0)
     val p_pivot = $UN.castvwtp1{Ptr} lst_pivot
     val elst_pivot =
       unsafe_list_vt2extensible<a> (lst_pivot, p_pivot, 1)
@@ -525,8 +505,6 @@ list_vt_stable_quicksort lst =
             partition<a> (lst, m)
           val @(lst1, m1) = finalize elst_lt
           and @(lst2, m2) = finalize elst_gt
-(* val()=$effmask_all println! ("lst1 = ", $UN.castvwtp1{List int} lst1) *)
-(* val()=$effmask_all println! ("lst2 = ", $UN.castvwtp1{List int} lst2) *)
           val elst1 = recurs (lst1, m1)
           and elst2 = recurs (lst2, m2)
         in

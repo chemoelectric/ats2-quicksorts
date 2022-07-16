@@ -146,14 +146,6 @@ test_random_lists () =
 
         val () = check_sort_results (lst2, lst3)
 
-        (* val () = println! "--------------------" *)
-        (* val () = println! lst1 *)
-        (* val () = println! "---   ---   ---" *)
-        (* val () = println! lst2 *)
-        (* val () = println! "---   ---   ---" *)
-        (* val () = println! lst3 *)
-        (* val () = println! "--------------------" *)
-
         val () = free lst1
         val () = free lst2
         val () = free lst3
