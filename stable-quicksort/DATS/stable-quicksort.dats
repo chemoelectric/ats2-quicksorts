@@ -31,7 +31,7 @@ staload UN = "prelude/SATS/unsafe.sats"
 
 %{
 ats2_stable_quicksort_spinlock_t ats2_stable_quicksort_seed_lock;
-uint64_t ats2_stable_quicksort_seed = 0;
+uint64_t ats2_stable_quicksort_seed = UINT64_C (0x1234567891234567);
 %}
 
 extern fn

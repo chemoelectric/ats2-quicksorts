@@ -23,6 +23,9 @@
 #include <stdbool.h>
 #include <inttypes.h>
 
+extern atstype_ptr ats2_stable_quicksort_nil;
+extern atstype_ptr ats2_stable_quicksort_addr_of_nil;
+
 #if defined __GNUC__
 #define ats2_stable_quicksort_bswap64 __builtin_bswap64
 #else
@@ -85,8 +88,9 @@ ats2_stable_quicksort_release_spinlock
    arXiv:2001.05304v3 [cs.DS] */
 #define ats2_stable_quicksort_LCG_A (UINT64_C (0xf1357aea2e62a9c5))
 
-/* LCG_C must be odd. */
-#define ats2_stable_quicksort_LCG_C (UINT64_C (0x1234567891234567))
+/* LCG_C must be odd. (The value 1 may get optimized to an increment
+   instruction.) */
+#define ats2_stable_quicksort_LCG_C (UINT64_C (1))
 
 extern ats2_stable_quicksort_spinlock_t ats2_stable_quicksort_seed_lock;
 extern uint64_t ats2_stable_quicksort_seed;

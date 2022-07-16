@@ -23,9 +23,9 @@
 #include <stable-quicksort/CATS/stable-quicksort.cats>
 %}
 
-fn {a : vt@ype}                (* ‘Less than’: the order predicate. *)
-list_vt_stable_quicksort$lt :
-  (&RD(a), &RD(a)) -<> bool
+fn {a : vt@ype}
+list_vt_stable_quicksort$cmp :
+  (&RD(a), &RD(a)) -<> int
 
 fn {a : vt@ype}
 list_vt_stable_quicksort :
