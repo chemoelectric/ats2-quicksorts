@@ -23,9 +23,6 @@
 #include <stdbool.h>
 #include <inttypes.h>
 
-extern atstype_ptr ats2_stable_quicksort_nil;
-extern atstype_ptr ats2_stable_quicksort_addr_of_nil;
-
 #if defined __GNUC__
 #define ats2_stable_quicksort_bswap64 __builtin_bswap64
 #else
