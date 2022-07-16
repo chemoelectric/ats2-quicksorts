@@ -121,8 +121,16 @@ test_random_lists () =
             make_list (random_int (~1000, 1000) :: lst, succ n)
 
         val lst1 = make_list (NIL, 0)
+
+        val t21 = get_clock ()
         val lst2 = list_vt_mergesort<int> (copy<int> lst1)
+        val t22 = get_clock ()
+        val t2 = t22 - t21
+
+        val t31 = get_clock ()
         val lst3 = list_vt_stable_quicksort<int> (copy<int> lst1)
+        val t32 = get_clock ()
+        val t3 = t32 - t31
 
         fun
         check_sort_results
@@ -145,6 +153,12 @@ test_random_lists () =
             end
 
         val () = check_sort_results (lst2, lst3)
+
+        val () = print! "merge:"
+        val () = print! t2
+        val () = print! "  quick:"
+        val () = print! t3
+        val () = println! ()
 
         val () = free lst1
         val () = free lst2
