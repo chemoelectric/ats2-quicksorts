@@ -453,8 +453,7 @@ partition_pivot_free_list
 fn {a : vt@ype}
 partition {n     : pos}
           (lst   : list_vt (a, n),
-           n     : int n,
-           pivot : &a)
+           n     : int n)
     :<!wrt> [n_lt, n_eq, n_gt : int | 0 <= n_lt; 1 <= n_eq; 0 <= n_gt;
                                       n_lt + n_eq + n_gt == n]
             @(extensible_list_vt (a, n_lt),
@@ -491,223 +490,38 @@ partition {n     : pos}
     @(elst_lt, elst_eq, elst_gt)
   end
 
-(**************************************************************************************************
-
-fn {a : vt@ype}
-apply_pivot
-          {m         : pos}
-          {np        : pos}
-          {p         : addr | null < p}
-          (lst       : list_vt (a, m),
-           m         : int m,
-           p2_pivot  : p2tr (list_vt (a, np), p),
-           elst_low  : &(extensible_list_vt a)?
-                        >> extensible_list_vt (a, m1),
-           elst_high : &(extensible_list_vt a)?
-                        >> extensible_list_vt (a, m2),
-           m1        : &int? >> int m1,
-           m2        : &int? >> int m2)
-    :<!wrt> #[m1, m2 : nat | m1 + m2 == m]
-            void =
-  let
-    fn
-    run_of_low {n        : pos}
-               {m1, m2   : nat | m1 + m2 + n == m}
-               (lst      : list_vt (a, n),
-                n        : int n,
-                elst_low : &extensible_list_vt (a, m1)
-                            >> extensible_list_vt (a, mm1),
-                m1       : &int m1 >> int mm1,
-                m2       : int m2)
-        :<!wrt> #[mm1, n2 : int | m1 < mm1; 0 <= n2; n2 < n;
-                                  mm1 + m2 + n2 == m]
-                @(list_vt (a, n2), int n2) =
-      let
-        val @(elst1, lst2, n1, n2) =
-          split_after_run<a> (lst, n, p2_pivot, true)
-      in
-        elst_low := extensible_list_vt_append<a> (elst_low, elst1);
-        m1 := m1 + n1;
-        @(lst2, n2)
-      end
-
-    fn
-    run_of_high {n         : pos}
-                {m1, m2    : nat | m1 + m2 + n == m}
-                (lst       : list_vt (a, n),
-                 n         : int n,
-                 elst_high : &extensible_list_vt (a, m2)
-                              >> extensible_list_vt (a, mm2),
-                 m1        : int m1,
-                 m2        : &int m2 >> int mm2)
-        :<!wrt> #[mm2, n2 : int | m2 < mm2; 0 <= n2; n2 < n;
-                                  m1 + mm2 + n2 == m]
-                @(list_vt (a, n2), int n2) =
-      let
-        val @(elst1, lst2, n1, n2) =
-          split_after_run<a> (lst, n, p2_pivot, false)
-      in
-        elst_high := extensible_list_vt_append<a> (elst_high, elst1);
-        m2 := m2 + n1;
-        @(lst2, n2)
-      end
-
-    fun
-    loop {n      : nat}
-         {m1, m2 : nat | m1 + m2 + n == m}
-         .<n>.
-         (lst       : list_vt (a, n),
-          n         : int n,
-          is_lt     : bool,
-          elst_low  : &extensible_list_vt (a, m1)
-                       >> extensible_list_vt (a, mm1),
-          elst_high : &extensible_list_vt (a, m2)
-                       >> extensible_list_vt (a, mm2),
-          m1        : &int m1 >> int mm1,
-          m2        : &int m2 >> int mm2)
-        :<!wrt> #[mm1, mm2 : nat | mm1 + mm2 == m]
-                void =
-      if n = 0 then
-        let
-          val+ ~ NIL = lst
-        in
-        end
-      else if is_lt then
-        let
-          val @(lst, n) = run_of_low (lst, n, elst_low, m1, m2)
-        in
-          loop (lst, n, false, elst_low, elst_high, m1, m2)
-        end
-      else
-        let
-          val @(lst, n) = run_of_high (lst, n, elst_high, m1, m2)
-        in
-          loop (lst, n, true, elst_low, elst_high, m1, m2)
-        end
-
-    fn
-    head_lt_pivot
-              {n   : pos}
-              (lst : list_vt (a, n))
-        :<> @(bool, list_vt (a, n)) =
-      let
-        var lst = lst
-      in
-        @(head_is_lt_pivot<a> (lst, p2_pivot), lst)
-      end
-
-    val @(is_lt, lst) = head_lt_pivot lst
-  in
-    elst_low := extensible_list_vt_nil<a> ();
-    elst_high := extensible_list_vt_nil<a> ();
-    m1 := 0;
-    m2 := 0;
-    loop (lst, m, is_lt, elst_low, elst_high, m1, m2)
-  end
-
-fn {a : vt@ype}
-find_and_apply_pivot
-          {n         : pos}
-          (lst       : list_vt (a, n),
-           n         : int n,
-           elst_low  : &(extensible_list_vt a)?
-                        >> extensible_list_vt (a, n_low),
-           elst_high : &(extensible_list_vt a)?
-                        >> extensible_list_vt (a, n_high),
-           n_low     : &int? >> int n_low,
-           n_high    : &int? >> int n_high)
-    :<!wrt> #[n_low, n_high : nat | n_low + n_high == n]
-            void =
-  let
-    var lst = lst
-    val i_pivot = select_pivot_index (lst, n)
-    val p2_pivot = list_vt_getref_at<a> (lst, i_pivot)
-  in
-    apply_pivot<a> (lst, n, p2_pivot, elst_low, elst_high,
-                    n_low, n_high)
-  end
-
-(*
 implement {a}
 list_vt_stable_quicksort lst =
   let
     #define THRESHOLD 10        (* FIXME: Tune this. *)
 
     macdef finalize = extensible_list_vt_finalize<a>
-
-    fn
-    partition {m   : pos}
-              (lst : list_vt (a, m),
-               m   : int m)
-        :<!wrt> [m1, m2 : nat | m1 + m2 == m]
-                @(extensible_list_vt (a, m1),
-                  extensible_list_vt (a, m2),
-                  int m1,
-                  int m2) =
-      let
-        var elst1 : extensible_list_vt a
-        var elst2 : extensible_list_vt a
-        var m1 : int
-        var m2 : int
-      in
-        find_and_apply_pivot (lst, m, elst1, elst2, m1, m2);
-        @(elst1, elst2, m1, m2)
-      end
+    macdef appd = extensible_list_vt_append<a>
 
     fun
-    recurs {m   : nat}
+    recurs {m : nat}
            .<m>.
            (lst : list_vt (a, m),
             m   : int m)
         :<!wrt> extensible_list_vt (a, m) =
-//        : extensible_list_vt (a, m) =
       if m <= THRESHOLD then
         list_vt_insertion_sort<a> (lst, m, NIL, 0)
       else
         let
-          val [n_low, n_high : int]
-              @(elst_low, elst_high, n_low, n_high) =
-            partition (lst, m)
+          val @(elst_lt, elst_eq, elst_gt) =
+            partition<a> (lst, m)
+          val @(lst1, m1) = finalize elst_lt
+          and @(lst2, m2) = finalize elst_gt
+          val elst1 = recurs (lst1, m1)
+          and elst2 = recurs (lst2, m2)
         in
-(*
-          if n_high = 0 then
-            let
-              prval () = prop_verify {n_low == m} ()
-              prval () = prop_verify {n_high == 0} ()
-              val lst_high = finalize elst_high
-              val+ ~ NIL = lst_high
-            in
-              recurs (finalize elst_low, n_low)
-            end
-*)
-          if n_low = 0 then
-            let
-//val _ = showtype elst_low
-              prval () = prop_verify {n_low == 0} ()
-              prval () = prop_verify {n_high == m} ()
-              val lst_low = finalize elst_low
-//val _ = showtype lst_low
-//              val+ ~ NIL = lst_low
-val- ~ NIL = lst_low
-            in
-              recurs (finalize elst_high, n_high)
-            end
-          else
-            let
-              val elst1 = recurs (finalize elst_low, n_low)
-              val elst2 = recurs (finalize elst_high, n_high)
-            in
-              extensible_list_vt_append<a> (elst1, elst2)
-            end
+          ((elst1 \appd elst_eq) \appd elst2)
         end
 
     prval () = lemma_list_vt_param lst
+    val @(lst_sorted, _) = finalize (recurs (lst, length lst))
   in
-    finalize (recurs (lst, length lst))
-//    finalize ($effmask_all (* FIXME *) recurs (lst, length lst))
+    lst_sorted
   end
-*)
 
 (*------------------------------------------------------------------*)
-
-*)
