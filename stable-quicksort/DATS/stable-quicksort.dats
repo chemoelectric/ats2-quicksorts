@@ -486,7 +486,7 @@ partition {n     : pos}
 implement {a}
 list_vt_stable_quicksort lst =
   let
-    #define THRESHOLD 10
+    #define THRESHOLD 15
 
     macdef finalize = extensible_list_vt_finalize<a>
     macdef appd = extensible_list_vt_append<a>
