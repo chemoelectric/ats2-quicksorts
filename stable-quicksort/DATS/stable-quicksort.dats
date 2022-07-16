@@ -40,50 +40,103 @@ random_uint64 () :<!wrt> uint64 = "mac#%"
 (*------------------------------------------------------------------*)
 (* A list with a pointer to its last node.                          *)
 
-absvt@ype extensible_list_vt (a : vt@ype+, n : int) =
+absvt@ype extensible_list_vt (a : vt@ype+, n : int, p : addr) =
   @(list_vt (a, n),
-    P2tr1 (List0_vt a))
+    p2tr (list_vt (a, ifint (n == 0, 0, 1)), p),
+    int n)
+vtypedef extensible_list_vt (a : vt@ype+, n : int) =
+  [p : addr | null < p] extensible_list_vt (a, n, p)
 vtypedef extensible_list_vt (a : vt@ype+) =
   [n : int] extensible_list_vt (a, n)
 
 fn {a : vt@ype}
-extensible_list_vt_nil ()
-    :<> extensible_list_vt (a, 0) =
-  $UN.castvwtp0 @(NIL, 0)
+unsafe_list_vt2extensible
+          {n       : nat}
+          {p       : addr | null < p}
+          (lst     : list_vt (a, n),
+           p2_last : p2tr (list_vt (a, ifint (n == 0, 0, 1)), p),
+           n       : int n)
+    :<> extensible_list_vt (a, n, p) =
+  $UN.castvwtp0 @(lst, p2_last, n)
 
 fn {a : vt@ype}
-extensible_list_vt_append
-          {n1, n2 : int | 0 <= n1; 1 <= n2}
-          (lst1   : extensible_list_vt (a, n1),
-           lst2   : extensible_list_vt (a, n2))
-    :<!wrt> extensible_list_vt (a, n1 + n2) =
+extensible2list_vt
+          {n       : nat}
+          {p       : addr | null < p}
+          (lst     : extensible_list_vt (a, n, p))
+    :<> @(list_vt (a, n),
+          p2tr (list_vt (a, ifint (n == 0, 0, 1)), p),
+          int n) =
+  $UN.castvwtp0 lst
+
+%{
+atstype_ptr ats2_stable_quicksort_nil = NULL;
+atstype_ptr ats2_stable_quicksort_addr_of_nil =
+  &ats2_stable_quicksort_nil;
+%}
+
+fn {a : vt@ype}
+extensible_list_vt_nil ()
+    :<> extensible_list_vt (a, 0) =
   let
-    vtypedef elist_vt (n : int) = @(list_vt (a, n),
-                                    P2tr1 (List1_vt a))
-    val @(ls_1, p2_1) = $UN.castvwtp0{elist_vt n1} lst1
-    val @(pf, fpf | p) = $UN.p2tr_vtake p2_1
-    val+ @ (_ :: tail) = !p
-    val @(ls_2, p2_2) = $UN.castvwtp0{elist_vt n2} lst2
-    val- ~ NIL = tail     (* Extend only if the pointer is to the last
-                             node. *)
-    val () = tail := ls_2
-    prval () = fold@ (!p)
-    prval () = fpf pf
+    val p2 =
+      $UN.ptr2p2tr{list_vt (a, 0)}
+        $extval(Ptr1, "ats2_stable_quicksort_addr_of_nil")
   in
-    $UN.castvwtp0 @(ls_1, p2_2)
+    unsafe_list_vt2extensible<a> (NIL, p2, 0)
   end
 
 fn {a : vt@ype}
 extensible_list_vt_finalize
           {n   : nat}
           (lst : extensible_list_vt (a, n))
-    :<!wrt> list_vt (a, n) =
+    :<!wrt> @(list_vt (a, n), int n) =
   let
-    vtypedef elist_vt (n : int) = @(list_vt (a, n),
-                                    P2tr1 (List0_vt a))
-    val @(ls_1, _) = $UN.castvwtp0{elist_vt n} lst
+    val @(ls, _, n) = extensible2list_vt<a> lst
   in
-    ls_1
+    @(ls, n)
+  end
+
+fn {a : vt@ype}
+extensible_list_vt_append
+          {n1, n2 : nat}
+          {p1, p2 : addr | null < p1; null < p2}
+          (lst1   : extensible_list_vt (a, n1, p1),
+           lst2   : extensible_list_vt (a, n2, p2))
+    :<!wrt> extensible_list_vt (a, n1 + n2) =
+  let
+    val @(ls_1, p2_1, n_1) = extensible2list_vt<a> lst1
+  in
+    if n_1 = 0 then
+      let
+        val+ ~ NIL = ls_1
+      in
+        lst2
+      end
+    else
+      let
+        val @(ls_2, p2_2, n_2) = extensible2list_vt<a> lst2
+      in
+        if n_2 = 0 then
+          let
+            val+ ~ NIL = ls_2
+          in
+            unsafe_list_vt2extensible<a> (ls_1, p2_1, n_1)
+          end
+        else
+          let
+            val @(pf, fpf | p) = $UN.p2tr_vtake p2_1
+            val+ @ (_ :: tail) = !p
+            val+ ~ NIL = tail
+            val () = tail := ls_2
+            prval () = fold@ (!p)
+            prval pf = $UN.castview0{list_vt (a, 1) @ p1} pf
+            prval () = fpf pf
+          in
+            unsafe_list_vt2extensible<a>
+              ($UN.castvwtp0 ls_1, p2_2, n_1 + n_2)
+          end
+      end
   end
 
 (*------------------------------------------------------------------*)
@@ -112,7 +165,7 @@ list_vt_insert_reverse
      p_xs points to the node's CDR. *)
   case+ dst of
   | @ (y :: ys) =>
-    if list_vt_stable_quicksort$lt<a> (!p_x, y) then
+    if list_vt_stable_quicksort$cmp<a> (!p_x, y) < 0 then
       let                     (* Move to the next destination node. *)
         val () =
           list_vt_insert_reverse (pf_x, pf_xs | ys, xnode, p_x, p_xs)
@@ -179,7 +232,8 @@ list_vt_insertion_sort
         val () = loop (lst, dst)
         val p2_last = $UN.ptr2p2tr ($UN.cast2Ptr1 (addr@ dst))
       in
-        $UN.castvwtp0 @(list_vt_reverse<a> dst, p2_last)
+        unsafe_list_vt2extensible (list_vt_reverse<a> dst, p2_last,
+                                   m + n)
       end
   end
 
@@ -202,36 +256,133 @@ select_pivot_index
   end
 
 fn {a : vt@ype}
-is_lt_pivot {m        : pos}
-            {p_pivot  : addr | null < p_pivot}
-            (x        : &a,
-             p2_pivot : p2tr (list_vt (a, m), p_pivot))
-    :<> bool =
+select_pivot
+          {n          : pos}
+          (lst        : list_vt (a, n),
+           n          : int n,
+           lst_before : &(List_vt a)? >> list_vt (a, n_before),
+           lst_pivot  : &(List_vt a)? >> list_vt (a, 1),
+           lst_after  : &(List_vt a)? >> list_vt (a, n_after),
+           n_before   : &int? >> int n_before,
+           n_after    : &int? >> int n_after)
+    :<!wrt> #[n_before, n_after : int | n_before + 1 + n_after == n]
+            void =
   let
-    val @(pf, fpf | p) = $UN.p2tr_vtake p2_pivot
-    val+ @ (pivot :: _) = !p
-    val is_lt = list_vt_stable_quicksort$lt<a> (x, pivot)
-    prval () = fold@ (!p)
-    prval () = fpf pf
+    val i_pivot = select_pivot_index<a> (lst, n)
+    val @(left, right) = list_vt_split_at<a> (lst, i_pivot)
+    val @(pivot, right) = list_vt_split_at<a> (right, 1)
   in
-    is_lt
+    lst_before := left;
+    lst_pivot := pivot;
+    lst_after := right;
+    n_before := i_pivot;
+    n_after := pred (n - i_pivot)
+  end
+
+typedef sign_t (i : int) = [~1 <= i && i <= 1] int i
+typedef sign_t = [i : int] sign_t i
+
+fn {a : vt@ype}
+compare_with_pivot
+          (x     : &a,
+           pivot : &a)
+    :<> sign_t =
+  let
+    val sign = list_vt_stable_quicksort$cmp<a> (x, pivot)
+    val sign = g1ofg0 sign
+    val sign = max (sign, ~1)
+    val sign = min (sign, 1)
+  in
+    sign
   end
 
 fn {a : vt@ype}
-head_is_lt_pivot
-          {n        : pos}
-          {m        : pos}
-          {p_pivot  : addr | null < p_pivot}
-          (lst      : &list_vt (a, n),
-           p2_pivot : p2tr (list_vt (a, m), p_pivot))
-    :<> bool =
+compare_head_with_pivot
+          {n     : pos}
+          (lst   : &list_vt (a, n),
+           pivot : &a)
+    :<> sign_t =
   let
     val+ @ (head :: _) = lst
-    val is_lt = is_lt_pivot<a> (head, p2_pivot)
+    val sign = compare_with_pivot<a> (head, pivot)
     prval () = fold@ lst
   in
-    is_lt
+    sign
   end
+
+fn {a : vt@ype}
+split_after_run
+          {m     : pos}
+          (lst   : list_vt (a, m),
+           m     : int m,
+           pivot : &a,
+           sign  : sign_t)
+    :<!wrt> [m1, m2 : int | 1 <= m1; 0 <= m2; m1 + m2 == m]
+            @(extensible_list_vt (a, m1),
+              list_vt (a, m2),
+              int m2,
+              sign_t) =
+  let
+    fun
+    loop {m : pos}
+         .<m>.
+         (lst1  : &list_vt (a, m) >> list_vt (a, m1),
+          lst2  : &list_vt (a, 0)? >> list_vt (a, m2),
+          pivot : &a,
+          m     : int m)
+        :<!wrt> #[m1, m2 : int | 1 <= m1; 0 <= m2; m1 + m2 == m]
+                @(int m2,
+                  P2tr1 (list_vt (a, 1)),
+                  sign_t) =
+      let
+        val+ @ (head :: tail) = lst1
+      in
+        case+ tail of
+        | NIL =>
+          let
+            val () = lst2 := NIL
+            prval () = fold@ lst1
+          in
+            @(0,
+              $UN.ptr2p2tr ($UN.cast2Ptr1 (addr@ lst1)),
+              0)
+          end
+        | _ :: _ =>
+          let
+            val new_sign = compare_head_with_pivot<a> (tail, pivot)
+          in
+            if new_sign = sign then
+              let
+                val retval = loop (tail, lst2, pivot, pred m)
+                prval () = fold@ lst1
+              in
+                retval
+              end
+            else
+              let
+                val () = lst2 := tail
+                val () = tail := NIL
+                prval () = fold@ lst1
+              in
+                @(pred m,
+                  $UN.ptr2p2tr ($UN.cast2Ptr1 (addr@ lst1)),
+                  new_sign)
+              end
+          end
+      end
+
+    var lst1 = lst
+    var lst2 : List_vt a
+    val @(m2, p2_last, new_sign) = loop (lst1, lst2, pivot, m)
+    val elst1 = unsafe_list_vt2extensible (lst1, p2_last, m - m2)
+  in
+    @(elst1, lst2, m2, new_sign)
+  end
+
+
+
+
+(**************************************************************************************************
 
 fn {a : vt@ype}
 split_after_run
@@ -426,6 +577,7 @@ find_and_apply_pivot
                     n_low, n_high)
   end
 
+(*
 implement {a}
 list_vt_stable_quicksort lst =
   let
@@ -504,5 +656,8 @@ val- ~ NIL = lst_low
     finalize (recurs (lst, length lst))
 //    finalize ($effmask_all (* FIXME *) recurs (lst, length lst))
   end
+*)
 
 (*------------------------------------------------------------------*)
+
+*)
