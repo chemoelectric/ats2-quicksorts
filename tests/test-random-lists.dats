@@ -122,13 +122,15 @@ test_random_lists () =
 
         val lst1 = make_list (NIL, 0)
 
+        val lst2 = copy<int> lst1
         val t21 = get_clock ()
-        val lst2 = list_vt_mergesort<int> (copy<int> lst1)
+        val lst2 = list_vt_mergesort<int> lst2
         val t22 = get_clock ()
         val t2 = t22 - t21
 
+        val lst3 = copy<int> lst1
         val t31 = get_clock ()
-        val lst3 = list_vt_stable_quicksort<int> (copy<int> lst1)
+        val lst3 = list_vt_stable_quicksort<int> lst3
         val t32 = get_clock ()
         val t3 = t32 - t31
 
