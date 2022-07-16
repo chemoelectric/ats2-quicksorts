@@ -103,7 +103,10 @@ extensible_list_vt_finalize
           (lst : extensible_list_vt (a, n))
     :<!wrt> @(list_vt (a, n), int n) =
   let
-    val @(ls, _, n) = extensible2list_vt<a> lst
+//    val @(ls, _, n) = extensible2list_vt<a> lst
+val @(ls, p2, n) = extensible2list_vt<a> lst
+val () = $effmask_all println! ("finalize: length ls = ", length ls, "  n = ", n)
+val () = if 0 < n then $effmask_all println! ("finalize: length p2 = ", length ($UN.cast{List int} p2))
   in
     @(ls, n)
   end
@@ -244,7 +247,9 @@ list_vt_insertion_sort
       let
         var dst : list_vt (a, n) = reversed_prefix
         val () = loop (lst, dst)
-        val p2_last = $UN.ptr2p2tr ($UN.cast2Ptr1 (addr@ dst))
+//        val p2_last = $UN.ptr2p2tr ($UN.cast2Ptr1 (addr@ dst))
+val p2_last = list_vt_getref_at<a> (dst, 0)
+val p2_last = $UN.castvwtp0{P2tr1 (list_vt (a, 1))} p2_last
       in
         unsafe_list_vt2extensible (list_vt_reverse<a> dst, p2_last,
                                    m + n)
@@ -362,7 +367,8 @@ val()=$effmask_all println!("m = ", m, "  sign = ", sign)
             prval () = fold@ lst1
           in
             @(0,
-              $UN.ptr2p2tr ($UN.cast2Ptr1 (addr@ lst1)),
+//              $UN.ptr2p2tr ($UN.cast2Ptr1 (addr@ lst1)),
+list_vt_getref_at<a> (lst1, 0),
               0)
           end
         | _ :: _ =>
@@ -384,7 +390,8 @@ val()=$effmask_all println!("m = ", m, "  sign = ", sign)
 val()=$effmask_all println!("pred m = ", pred m, "  new_sign = ", sign)
               in
                 @(pred m,
-                  $UN.ptr2p2tr ($UN.cast2Ptr1 (addr@ lst1)),
+list_vt_getref_at<a> (lst1, 0),
+//                  $UN.ptr2p2tr ($UN.cast2Ptr1 (addr@ lst1)),
                   new_sign)
               end
           end
@@ -393,7 +400,7 @@ val()=$effmask_all println!("pred m = ", pred m, "  new_sign = ", sign)
     var lst1 = lst
     var lst2 : List_vt a
     val @(n2, p2_last, new_sign) = loop (lst1, lst2, pivot, n)
-val()=$effmask_all println!("n2 = ", n2)
+val()=$effmask_all println!("length lst1 = ", length lst1, "  n - n2 = ", n - n2, "  length lst2 = ", length lst2, "  n2 = ", n2)
     val elst1 = unsafe_list_vt2extensible (lst1, p2_last, n - n2)
   in
     @(elst1, lst2, n2, new_sign)
@@ -509,7 +516,8 @@ val () = $effmask_all println! ("lst_after = ", lst_after)
     prval () = fold@ lst_pivot
 
     val elst_lt = (elst1_lt \appd elst2_lt)
-    val p2_pivot = $UN.ptr2p2tr ($UN.cast2Ptr1 (addr@ lst_pivot))
+//    val p2_pivot = $UN.ptr2p2tr ($UN.cast2Ptr1 (addr@ lst_pivot))
+val p2_pivot = list_vt_getref_at (lst_pivot, 0)
     val elst_pivot =
       unsafe_list_vt2extensible<a> (lst_pivot, p2_pivot, 1)
     val elst_eq = ((elst1_eq \appd elst_pivot) \appd elst2_eq)
