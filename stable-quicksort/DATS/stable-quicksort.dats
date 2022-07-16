@@ -239,46 +239,6 @@ list_vt_insertion_sort
 
 (*------------------------------------------------------------------*)
 
-fn {a : vt@ype}
-select_pivot_index
-          {n   : pos}
-          (lst : !list_vt (a, n),
-           n   : int n)
-    :<!wrt> [i : nat | i < n]
-            int i =
-  let
-    val u64_n : uint64 n = g1i2u n
-    val u64_rand : [i : nat] uint64 i = g1ofg0 (random_uint64 ())
-    val u64_pivot = g1uint_mod (u64_rand, u64_n)
-    val i_pivot : [i : nat | i < n] int i = g1u2i u64_pivot
-  in
-    i_pivot
-  end
-
-fn {a : vt@ype}
-select_pivot
-          {n          : pos}
-          (lst        : list_vt (a, n),
-           n          : int n,
-           lst_before : &(List_vt a)? >> list_vt (a, n_before),
-           lst_pivot  : &(List_vt a)? >> list_vt (a, 1),
-           lst_after  : &(List_vt a)? >> list_vt (a, n_after),
-           n_before   : &int? >> int n_before,
-           n_after    : &int? >> int n_after)
-    :<!wrt> #[n_before, n_after : int | n_before + 1 + n_after == n]
-            void =
-  let
-    val i_pivot = select_pivot_index<a> (lst, n)
-    val @(left, right) = list_vt_split_at<a> (lst, i_pivot)
-    val @(pivot, right) = list_vt_split_at<a> (right, 1)
-  in
-    lst_before := left;
-    lst_pivot := pivot;
-    lst_after := right;
-    n_before := i_pivot;
-    n_after := pred (n - i_pivot)
-  end
-
 typedef sign_t (i : int) = [~1 <= i && i <= 1] int i
 typedef sign_t = [i : int] sign_t i
 
@@ -311,23 +271,63 @@ compare_head_with_pivot
   end
 
 fn {a : vt@ype}
+select_pivot_index
+          {n   : pos}
+          (lst : !list_vt (a, n),
+           n   : int n)
+    :<!wrt> [i : nat | i < n]
+            int i =
+  let
+    val u64_n : uint64 n = g1i2u n
+    val u64_rand : [i : nat] uint64 i = g1ofg0 (random_uint64 ())
+    val u64_pivot = g1uint_mod (u64_rand, u64_n)
+    val i_pivot : [i : nat | i < n] int i = g1u2i u64_pivot
+  in
+    i_pivot
+  end
+
+fn {a : vt@ype}
+select_pivot
+          {n          : pos}
+          (lst        : list_vt (a, n),
+           n          : int n,
+           lst_before : &(List_vt a)? >> list_vt (a, n_before),
+           lst_pivot  : &(List_vt a)? >> list_vt (a, 1),
+           lst_after  : &(List_vt a)? >> list_vt (a, n_after),
+           n_before   : &int? >> int n_before,
+           n_after    : &int? >> int n_after)
+    :<!wrt> #[n_before, n_after : nat | n_before + 1 + n_after == n]
+            void =
+  let
+    val i_pivot = select_pivot_index<a> (lst, n)
+    val @(left, right) = list_vt_split_at<a> (lst, i_pivot)
+    val @(pivot, right) = list_vt_split_at<a> (right, 1)
+  in
+    lst_before := left;
+    lst_pivot := pivot;
+    lst_after := right;
+    n_before := i_pivot;
+    n_after := pred (n - i_pivot)
+  end
+
+fn {a : vt@ype}
 split_after_run
-          {m     : pos}
-          (lst   : list_vt (a, m),
-           m     : int m,
+          {n     : pos}
+          (lst   : list_vt (a, n),
+           n     : int n,
            pivot : &a,
            sign  : sign_t)
-    :<!wrt> [m1, m2 : int | 1 <= m1; 0 <= m2; m1 + m2 == m]
-            @(extensible_list_vt (a, m1),
-              list_vt (a, m2),
-              int m2,
+    :<!wrt> [n1, n2 : int | 1 <= n1; 0 <= n2; n1 + n2 == n]
+            @(extensible_list_vt (a, n1),
+              list_vt (a, n2),
+              int n2,
               sign_t) =
   let
     fun
     loop {m : pos}
          .<m>.
          (lst1  : &list_vt (a, m) >> list_vt (a, m1),
-          lst2  : &list_vt (a, 0)? >> list_vt (a, m2),
+          lst2  : &(List_vt a)? >> list_vt (a, m2),
           pivot : &a,
           m     : int m)
         :<!wrt> #[m1, m2 : int | 1 <= m1; 0 <= m2; m1 + m2 == m]
@@ -373,75 +373,125 @@ split_after_run
 
     var lst1 = lst
     var lst2 : List_vt a
-    val @(m2, p2_last, new_sign) = loop (lst1, lst2, pivot, m)
-    val elst1 = unsafe_list_vt2extensible (lst1, p2_last, m - m2)
+    val @(n2, p2_last, new_sign) = loop (lst1, lst2, pivot, n)
+    val elst1 = unsafe_list_vt2extensible (lst1, p2_last, n - n2)
   in
-    @(elst1, lst2, m2, new_sign)
+    @(elst1, lst2, n2, new_sign)
   end
 
-
-
-
-(**************************************************************************************************
-
 fn {a : vt@ype}
-split_after_run
-          {m        : pos}
-          {np       : pos}
-          {p        : addr | null < p}
-          (lst      : list_vt (a, m),
-           m        : int m,
-           p2_pivot : p2tr (list_vt (a, np), p),
-           is_lt    : bool)
-    :<!wrt> [m1, m2 : int | 1 <= m1; 0 <= m2; m1 + m2 == m]
-            @(extensible_list_vt (a, m1),
-              list_vt (a, m2),
-              int m1,
-              int m2) =
+partition_pivot_free_list
+          {n     : nat}
+          (lst   : list_vt (a, n),
+           n     : int n,
+           pivot : &a)
+    :<!wrt> [n_lt, n_eq, n_gt : nat | n_lt + n_eq + n_gt == n]
+            @(extensible_list_vt (a, n_lt),
+              extensible_list_vt (a, n_eq),
+              extensible_list_vt (a, n_gt)) =
   let
     fun
-    loop {m : pos}
-         .<m>.
-         (lst1 : &list_vt (a, m) >> list_vt (a, m1),
-          lst2 : &list_vt (a, 0)? >> list_vt (a, m2),
-          m    : int m)
-        :<!wrt> #[m1, m2 : int | 1 <= m1; 0 <= m2; m1 + m2 == m]
-                @(int m2, P2tr1 (list_vt (a, 1))) =
-      let
-        val+ @ (head :: tail) = lst1
-      in
-        case+ tail of
-        | NIL =>
-          let
-            val () = lst2 := NIL
-            prval () = fold@ lst1
-          in
-            @(0, $UN.ptr2p2tr ($UN.cast2Ptr1 (addr@ lst1)))
-          end
-        | _ :: _ =>
-          if head_is_lt_pivot<a> (tail, p2_pivot) = is_lt then
+    loop {m1 : nat | m1 <= n}
+         {n1, n2, n3 : nat | m1 + n1 + n2 + n3 == n}
+         .<m1>.
+         (lst1    : list_vt (a, m1),
+          m1      : int m1,
+          pivot   : &a,
+          sign    : sign_t,
+          elst_lt : extensible_list_vt (a, n1),
+          elst_eq : extensible_list_vt (a, n2),
+          elst_gt : extensible_list_vt (a, n3))
+        :<!wrt> [n_lt, n_eq, n_gt : nat | n_lt + n_eq + n_gt == n]
+                @(extensible_list_vt (a, n_lt),
+                  extensible_list_vt (a, n_eq),
+                  extensible_list_vt (a, n_gt)) =
+      case+ lst1 of
+      | ~ NIL => @(elst_lt, elst_eq, elst_gt)
+      | _ :: _ =>
+        let
+          macdef appd = extensible_list_vt_append<a>
+          val @(elst, lst2, m2, sign) =
+            split_after_run<a> (lst1, m1, pivot, sign)
+        in
+          if sign = ~1 then
             let
-              val retval = loop (tail, lst2, pred m)
-              prval () = fold@ lst1
+              val elst_lt = (elst_lt \appd elst)
             in
-              retval
+              loop (lst2, m2, pivot, sign, elst_lt, elst_eq, elst_gt)
+            end
+          else if sign = 0 then
+            let
+              val elst_eq = (elst_eq \appd elst)
+            in
+              loop (lst2, m2, pivot, sign, elst_lt, elst_eq, elst_gt)
             end
           else
             let
-              val () = lst2 := tail
-              val () = tail := NIL
-              prval () = fold@ lst1
+              val elst_gt = (elst_gt \appd elst)
             in
-              @(pred m, $UN.ptr2p2tr ($UN.cast2Ptr1 (addr@ lst1)))
+              loop (lst2, m2, pivot, sign, elst_lt, elst_eq, elst_gt)
             end
-      end
-
-    var lst1 = lst
-    var lst2 : List_vt a
-    val @(m2, p2_last) = loop (lst1, lst2, m)
+        end
   in
-    @($UN.castvwtp0 @(lst1, p2_last), lst2, m - m2, m2)
+    case+ lst of
+    | ~ NIL =>
+      @(extensible_list_vt_nil<a> (),
+        extensible_list_vt_nil<a> (),
+        extensible_list_vt_nil<a> ())
+    | _ :: _ =>
+      let
+        var lst = lst
+        val sign = compare_head_with_pivot<a> (lst, pivot)
+      in
+        loop (lst, n, pivot, sign,
+              extensible_list_vt_nil<a> (),
+              extensible_list_vt_nil<a> (),
+              extensible_list_vt_nil<a> ())
+      end
   end
+
+fn {a : vt@ype}
+partition {n     : pos}
+          (lst   : list_vt (a, n),
+           n     : int n,
+           pivot : &a)
+    :<!wrt> [n_lt, n_eq, n_gt : int | 0 <= n_lt; 1 <= n_eq; 0 <= n_gt;
+                                      n_lt + n_eq + n_gt == n]
+            @(extensible_list_vt (a, n_lt),
+              extensible_list_vt (a, n_eq),
+              extensible_list_vt (a, n_gt)) =
+  let
+    macdef appd = extensible_list_vt_append<a>
+
+    var lst_before : List_vt a
+    var lst_pivot  : List_vt a
+    var lst_after  : List_vt a
+    var n_before   : int
+    var n_after    : int
+
+    val () = select_pivot<a> (lst, n,
+                              lst_before, lst_pivot, lst_after,
+                              n_before, n_after)
+
+    val+ @ (pivot :: _) = lst_pivot
+    val @(elst1_lt, elst1_eq, elst1_gt) =
+      partition_pivot_free_list<a> (lst_before, n_before, pivot)
+    val @(elst2_lt, elst2_eq, elst2_gt) =
+      partition_pivot_free_list<a> (lst_after, n_after, pivot)
+
+    prval () = fold@ lst_pivot
+
+    val elst_lt = (elst1_lt \appd elst2_lt)
+    val p2_pivot = $UN.ptr2p2tr ($UN.cast2Ptr1 (addr@ lst_pivot))
+    val elst_pivot =
+      unsafe_list_vt2extensible<a> (lst_pivot, p2_pivot, 1)
+    val elst_eq = ((elst1_eq \appd elst_pivot) \appd elst2_eq)
+    val elst_gt = (elst1_gt \appd elst2_gt)
+  in
+    @(elst_lt, elst_eq, elst_gt)
+  end
+
+(**************************************************************************************************
 
 fn {a : vt@ype}
 apply_pivot
