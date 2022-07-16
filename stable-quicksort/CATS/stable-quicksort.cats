@@ -40,6 +40,13 @@ extern atstype_ptr ats2_stable_quicksort_addr_of_nil;
    (((x) & UINT64_C (0xFF00000000000000)) >> 56))
 #endif
 
+ATSinline() atstype_uint64
+ats2_stable_quicksort_g1uint_mod_uint64 (atstype_uint64 x,
+                                         atstype_uint64 y)
+{
+  return (x % y);
+}
+
 /*------------------------------------------------------------------*/
 /* Spinlocks for random number generator seeds.                     */
 

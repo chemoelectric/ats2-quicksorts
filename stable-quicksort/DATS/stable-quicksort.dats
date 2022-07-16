@@ -16,6 +16,8 @@
   <https://www.gnu.org/licenses/>.
 *)
 
+#define ATS_DYNLOADFLAG 0
+
 #define ATS_PACKNAME "ats2-stable-quicksort"
 #define ATS_EXTERN_PREFIX "ats2_stable_quicksort_"
 
@@ -25,6 +27,15 @@ staload UN = "prelude/SATS/unsafe.sats"
 
 #define NIL list_vt_nil ()
 #define ::  list_vt_cons
+
+extern fn
+g1uint_mod_uint64 :
+  {x, y : int}
+  (uint64 x, uint64 y) -<> uint64 (x mod y) = "mac#%"
+
+implement
+g1uint_mod<uint64_kind> (x, y) =
+  g1uint_mod_uint64 (x, y)
 
 (*------------------------------------------------------------------*)
 (* A simple linear congruential generator, for pivot selection.     *)
@@ -278,10 +289,10 @@ select_pivot_index
     :<!wrt> [i : nat | i < n]
             int i =
   let
-    val u64_n : uint64 n = g1i2u n
+    val u64_n = $UN.cast{uint64 n} n
     val u64_rand : [i : nat] uint64 i = g1ofg0 (random_uint64 ())
     val u64_pivot = g1uint_mod (u64_rand, u64_n)
-    val i_pivot : [i : nat | i < n] int i = g1u2i u64_pivot
+    val i_pivot = $UN.cast{[i : nat | i < n] int i} u64_pivot
   in
     i_pivot
   end
@@ -300,6 +311,8 @@ select_pivot
             void =
   let
     val i_pivot = select_pivot_index<a> (lst, n)
+val () = $effmask_all println! ("lst = ", $UN.castvwtp1{list (int, n)} lst)
+val () = $effmask_all println! ("n = ", n, "  i_pivot = ", i_pivot)
     val @(left, right) = list_vt_split_at<a> (lst, i_pivot)
     val @(pivot, right) = list_vt_split_at<a> (right, 1)
   in
@@ -468,9 +481,14 @@ partition {n     : pos}
     var n_before   : int
     var n_after    : int
 
-    val () = select_pivot<a> (lst, n,
-                              lst_before, lst_pivot, lst_after,
-                              n_before, n_after)
+    val () =
+      select_pivot<a> (lst, n, lst_before, lst_pivot, lst_after,
+                       n_before, n_after)
+val () = $effmask_all println! ("n_before = ", n_before)
+val () = $effmask_all println! ("lst_before = ", lst_before)
+val () = $effmask_all println! ("lst_pivot = ", lst_pivot)
+val () = $effmask_all println! ("n_after  = ", n_after)
+val () = $effmask_all println! ("lst_after = ", lst_after)
 
     val+ @ (pivot :: _) = lst_pivot
     val @(elst1_lt, elst1_eq, elst1_gt) =

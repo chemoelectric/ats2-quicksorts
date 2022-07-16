@@ -162,13 +162,13 @@ STABLE_QUICKSORT_DATS_C = stable-quicksort/DATS/stable-quicksort_dats.c
 CLEANFILES += $(STABLE_QUICKSORT_DATS_C)
 
 STABLE_QUICKSORT_CATS = stable-quicksort/CATS/stable-quicksort.cats
-# STABLE_QUICKSORT_HATS = stable-quicksort/HATS/stable-quicksort.hats
+STABLE_QUICKSORT_HATS = stable-quicksort/HATS/stable-quicksort.hats
 
 nobase_dist_pkginclude_HEADERS =
 nobase_dist_pkginclude_HEADERS += $(STABLE_QUICKSORT_SATS)
 nobase_dist_pkginclude_HEADERS += $(STABLE_QUICKSORT_DATS)
 nobase_dist_pkginclude_HEADERS += $(STABLE_QUICKSORT_CATS)
-# nobase_dist_pkginclude_HEADERS += $(STABLE_QUICKSORT_HATS)
+nobase_dist_pkginclude_HEADERS += $(STABLE_QUICKSORT_HATS)
 
 nodist_libats2_stable_quicksort_la_SOURCES =
 nodist_libats2_stable_quicksort_la_SOURCES += $(STABLE_QUICKSORT_SATS_C)
@@ -180,25 +180,25 @@ libats2_stable_quicksort_la_DEPENDENCIES += $(STABLE_QUICKSORT_CATS)
 #--------------------------------------------------------------------------
 
 TESTS =
-# TESTS += tests/test-random-arrays
+TESTS += tests/test-random-lists
 # TESTS += tests/test-stability
 
-# EXTRA_PROGRAMS += tests/test-random-arrays
-# CLEANFILES += tests/test-random-arrays
-# CLEANFILES += tests/test-random-arrays_tests.c
-# tests_test_random_arrays_SOURCES =
-# tests_test_random_arrays_SOURCES += tests/test-random-arrays_tests.c
-# tests_test_random_arrays_DEPENDENCIES =
-# tests_test_random_arrays_DEPENDENCIES += tests/test-random-arrays.dats
-# tests_test_random_arrays_DEPENDENCIES += libats2-stable-quicksort.la
-# tests_test_random_arrays_DEPENDENCIES += $(STABLE_QUICKSORT_HATS)
-# tests_test_random_arrays_CPPFLAGS =
-# tests_test_random_arrays_CPPFLAGS += $(AM_CPPFLAGS)
-# tests_test_random_arrays_CPPFLAGS += -DATS_MEMALLOC_LIBC
-# tests_test_random_arrays_LDADD =
-# tests_test_random_arrays_LDADD += libats2-stable-quicksort.la
-# EXTRA_DIST += tests/test-random-arrays.dats
-# tests/test-random-arrays_tests.c: tests/test-random-arrays.dats
+EXTRA_PROGRAMS += tests/test-random-lists
+CLEANFILES += tests/test-random-lists
+CLEANFILES += tests/test-random-lists_tests.c
+tests_test_random_lists_SOURCES =
+tests_test_random_lists_SOURCES += tests/test-random-lists_tests.c
+tests_test_random_lists_DEPENDENCIES =
+tests_test_random_lists_DEPENDENCIES += tests/test-random-lists.dats
+tests_test_random_lists_DEPENDENCIES += libats2-stable-quicksort.la
+tests_test_random_lists_DEPENDENCIES += $(STABLE_QUICKSORT_HATS)
+tests_test_random_lists_CPPFLAGS =
+tests_test_random_lists_CPPFLAGS += $(AM_CPPFLAGS)
+tests_test_random_lists_CPPFLAGS += -DATS_MEMALLOC_LIBC
+tests_test_random_lists_LDADD =
+tests_test_random_lists_LDADD += libats2-stable-quicksort.la
+EXTRA_DIST += tests/test-random-lists.dats
+tests/test-random-lists_tests.c: tests/test-random-lists.dats
 
 # EXTRA_PROGRAMS += tests/test-stability
 # CLEANFILES += tests/test-stability
@@ -219,7 +219,6 @@ TESTS =
 
 tests-clean:
 	-rm -f tests/*.$(OBJEXT)
-	-rm -f tests/*.sh
 
 #--------------------------------------------------------------------------
 #
