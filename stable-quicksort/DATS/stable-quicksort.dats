@@ -250,6 +250,7 @@ compare_with_pivot
     val sign = g1ofg0 sign
     val sign = max (sign, ~1)
     val sign = min (sign, 1)
+(* val() = $effmask_all println! ("x = ", $UN.castvwtp1{int} x, "  pivot = ", $UN.castvwtp1{int} pivot, "  sign = ", sign) *)
   in
     sign
   end
@@ -334,7 +335,6 @@ split_after_run
         :<!wrt> #[m1, m2 : int | 1 <= m1; 0 <= m2; m1 + m2 == m]
                 @(int m2, Ptr, sign_t) =
       let
-(* val()=$effmask_all println!("m = ", m, "  sign = ", sign) *)
         val+ @ (head :: tail) = lst1
       in
         case+ tail of
@@ -349,6 +349,7 @@ split_after_run
         | _ :: _ =>
           let
             val new_sign = compare_head_with_pivot<a> (tail, pivot)
+(* val()=$effmask_all println!("sign = ", sign, "  new_sign = ", new_sign) *)
           in
             if new_sign = sign then
               let
@@ -363,7 +364,6 @@ split_after_run
                 val () = tail := NIL
                 prval () = fold@ lst1
                 val p_last = $UN.castvwtp1{Ptr} lst1
-(* val()=$effmask_all println!("pred m = ", pred m, "  new_sign = ", sign) *)
               in
                 @(pred m, p_last, new_sign)
               end
@@ -410,7 +410,7 @@ partition_pivot_free_list
       | _ :: _ =>
         let
           macdef appd = extensible_list_vt_append<a>
-          val @(elst, lst2, m2, sign) =
+          val @(elst, lst2, m2, new_sign) =
             split_after_run<a> (lst1, m1, pivot, sign)
         in
           if sign = ~1 then
@@ -420,19 +420,22 @@ partition_pivot_free_list
 (* val () = $effmask_all println! ($UN.castvwtp1{@(List int,ptr, int)} elst_lt).2 *)
 (* val () = $effmask_all println! ($UN.castvwtp1{@(List int,ptr, int)} elst_lt).0 *)
             in
-              loop (lst2, m2, pivot, sign, elst_lt, elst_eq, elst_gt)
+              loop (lst2, m2, pivot, new_sign,
+                    elst_lt, elst_eq, elst_gt)
             end
           else if sign = 0 then
             let
               val elst_eq = (elst_eq \appd elst)
             in
-              loop (lst2, m2, pivot, sign, elst_lt, elst_eq, elst_gt)
+              loop (lst2, m2, pivot, new_sign,
+                    elst_lt, elst_eq, elst_gt)
             end
           else
             let
               val elst_gt = (elst_gt \appd elst)
             in
-              loop (lst2, m2, pivot, sign, elst_lt, elst_eq, elst_gt)
+              loop (lst2, m2, pivot, new_sign,
+                    elst_lt, elst_eq, elst_gt)
             end
         end
   in
@@ -522,6 +525,8 @@ list_vt_stable_quicksort lst =
             partition<a> (lst, m)
           val @(lst1, m1) = finalize elst_lt
           and @(lst2, m2) = finalize elst_gt
+(* val()=$effmask_all println! ("lst1 = ", $UN.castvwtp1{List int} lst1) *)
+(* val()=$effmask_all println! ("lst2 = ", $UN.castvwtp1{List int} lst2) *)
           val elst1 = recurs (lst1, m1)
           and elst2 = recurs (lst2, m2)
         in

@@ -83,7 +83,7 @@ random_int (m : int, n : int)
 
 (*------------------------------------------------------------------*)
 
-#define MAX_SZ 10000000
+#define MAX_SZ 1000000
 
 #define NIL list_vt_nil ()
 #define ::  list_vt_cons
@@ -124,8 +124,35 @@ test_random_lists () =
         val lst2 = list_vt_mergesort<int> (copy<int> lst1)
         val lst3 = list_vt_stable_quicksort<int> (copy<int> lst1)
 
-        val () = println! "--------------------"
-        val () = println! lst3
+        fun
+        check_sort_results
+                  {n    : int}
+                  (lst2 : !list_vt (int, n),
+                   lst3 : !list_vt (int, n))
+            : void =
+          case+ lst2 of
+          | NIL => ()
+          | head2 :: tail2 =>
+            let
+              val+ head3 :: tail3 = lst3
+            in
+              if head2 <> head3 then
+                begin
+                  println! (head2, " <> ", head3);
+                  exit 1
+                end;
+              check_sort_results (tail2, tail3)
+            end
+
+        val () = check_sort_results (lst2, lst3)
+
+        (* val () = println! "--------------------" *)
+        (* val () = println! lst1 *)
+        (* val () = println! "---   ---   ---" *)
+        (* val () = println! lst2 *)
+        (* val () = println! "---   ---   ---" *)
+        (* val () = println! lst3 *)
+        (* val () = println! "--------------------" *)
 
         val () = free lst1
         val () = free lst2
