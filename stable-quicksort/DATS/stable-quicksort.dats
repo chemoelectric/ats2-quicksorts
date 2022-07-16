@@ -51,12 +51,12 @@ random_uint64 () :<!wrt> uint64 = "mac#%"
 (*------------------------------------------------------------------*)
 (* A list with a pointer to its last node.                          *)
 
-absvt@ype extensible_list_vt (a : vt@ype+, n : int, p : addr) =
+absvt@ype extensible_list_vt (a : vt@ype+, p : addr, n : int) =
   @(list_vt (a, n),
     p2tr (list_vt (a, ifint (n == 0, 0, 1)), p),
     int n)
 vtypedef extensible_list_vt (a : vt@ype+, n : int) =
-  [p : addr | null < p] extensible_list_vt (a, n, p)
+  [p : addr | null < p] extensible_list_vt (a, p, n)
 vtypedef extensible_list_vt (a : vt@ype+) =
   [n : int] extensible_list_vt (a, n)
 
@@ -67,14 +67,14 @@ unsafe_list_vt2extensible
           (lst     : list_vt (a, n),
            p2_last : p2tr (list_vt (a, ifint (n == 0, 0, 1)), p),
            n       : int n)
-    :<> extensible_list_vt (a, n, p) =
+    :<> extensible_list_vt (a, p, n) =
   $UN.castvwtp0 @(lst, p2_last, n)
 
 fn {a : vt@ype}
 extensible2list_vt
           {n       : nat}
           {p       : addr | null < p}
-          (lst     : extensible_list_vt (a, n, p))
+          (lst     : extensible_list_vt (a, p, n))
     :<> @(list_vt (a, n),
           p2tr (list_vt (a, ifint (n == 0, 0, 1)), p),
           int n) =
@@ -112,8 +112,8 @@ fn {a : vt@ype}
 extensible_list_vt_append
           {n1, n2 : nat}
           {p1, p2 : addr | null < p1; null < p2}
-          (lst1   : extensible_list_vt (a, n1, p1),
-           lst2   : extensible_list_vt (a, n2, p2))
+          (lst1   : extensible_list_vt (a, p1, n1),
+           lst2   : extensible_list_vt (a, p2, n2))
     :<!wrt> extensible_list_vt (a, n1 + n2) =
   let
     val @(ls_1, p2_1, n_1) = extensible2list_vt<a> lst1
@@ -135,6 +135,7 @@ extensible_list_vt_append
             unsafe_list_vt2extensible<a> (ls_1, p2_1, n_1)
           end
         else
+(**)
           let
             val @(pf, fpf | p) = $UN.p2tr_vtake p2_1
             val+ @ (_ :: tail) = !p
@@ -147,6 +148,8 @@ extensible_list_vt_append
             unsafe_list_vt2extensible<a>
               ($UN.castvwtp0 ls_1, p2_2, n_1 + n_2)
           end
+(**)
+//unsafe_list_vt2extensible<a> (list_vt_append<a> (ls_1, ls_2), p2_2, n_1 + n_2)
       end
   end
 
@@ -311,8 +314,9 @@ select_pivot
             void =
   let
     val i_pivot = select_pivot_index<a> (lst, n)
-val () = $effmask_all println! ("lst = ", $UN.castvwtp1{list (int, n)} lst)
 val () = $effmask_all println! ("n = ", n, "  i_pivot = ", i_pivot)
+val () = $effmask_all println! ("length lst = ", length lst)
+val () = $effmask_all println! ("lst = ", $UN.castvwtp1{list (int, n)} lst)
     val @(left, right) = list_vt_split_at<a> (lst, i_pivot)
     val @(pivot, right) = list_vt_split_at<a> (right, 1)
   in
@@ -348,6 +352,7 @@ split_after_run
                   P2tr1 (list_vt (a, 1)),
                   sign_t) =
       let
+val()=$effmask_all println!("m = ", m, "  sign = ", sign)
         val+ @ (head :: tail) = lst1
       in
         case+ tail of
@@ -376,6 +381,7 @@ split_after_run
                 val () = lst2 := tail
                 val () = tail := NIL
                 prval () = fold@ lst1
+val()=$effmask_all println!("pred m = ", pred m, "  new_sign = ", sign)
               in
                 @(pred m,
                   $UN.ptr2p2tr ($UN.cast2Ptr1 (addr@ lst1)),
@@ -387,6 +393,7 @@ split_after_run
     var lst1 = lst
     var lst2 : List_vt a
     val @(n2, p2_last, new_sign) = loop (lst1, lst2, pivot, n)
+val()=$effmask_all println!("n2 = ", n2)
     val elst1 = unsafe_list_vt2extensible (lst1, p2_last, n - n2)
   in
     @(elst1, lst2, n2, new_sign)
@@ -429,6 +436,9 @@ partition_pivot_free_list
           if sign = ~1 then
             let
               val elst_lt = (elst_lt \appd elst)
+val () = $effmask_all println! ("elst_lt:")
+val () = $effmask_all println! ($UN.castvwtp1{@(List int,ptr, int)} elst_lt).2
+val () = $effmask_all println! ($UN.castvwtp1{@(List int,ptr, int)} elst_lt).0
             in
               loop (lst2, m2, pivot, sign, elst_lt, elst_eq, elst_gt)
             end
