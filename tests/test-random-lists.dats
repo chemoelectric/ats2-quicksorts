@@ -104,6 +104,10 @@ list_vt_stable_quicksort$cmp<int> (x, y) =
 fn
 test_random_lists () =
   let
+    (* implement *)
+    (* list_vt_stable_quicksort$pivot_index<int> = *)
+    (*   list_vt_stable_quicksort_pivot_index_random<int> *)
+
     var sz : [i : nat] int i
   in
     for (sz := 0; sz <= MAX_SZ; sz := max (1, 10 * sz))

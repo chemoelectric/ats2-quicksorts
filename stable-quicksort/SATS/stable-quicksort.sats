@@ -23,12 +23,34 @@
 #include <stable-quicksort/CATS/stable-quicksort.cats>
 %}
 
-fn {a : vt@ype}
-list_vt_stable_quicksort$cmp :
-  (&RD(a), &RD(a)) -<> int
+typedef list_vt_stable_quicksort_pivot_index_t (a : vt@ype) =
+  {n : pos}
+  (!list_vt (a, n), int n) -< !wrt >
+    [i : int | 0 <= i; i < n]
+    int i
 
 fn {a : vt@ype}
 list_vt_stable_quicksort :
   {n : int}
   list_vt (INV(a), n) -< !wrt >
     list_vt (a, n)
+
+fn {a : vt@ype}
+list_vt_stable_quicksort$cmp :
+  (&RD(a), &RD(a)) -<> int
+
+fn {a : vt@ype}
+list_vt_stable_quicksort$pivot_index :
+  list_vt_stable_quicksort_pivot_index_t a
+
+fn {a : vt@ype}
+list_vt_stable_quicksort_pivot_index_random :
+  list_vt_stable_quicksort_pivot_index_t a
+
+fn {a : vt@ype}
+list_vt_stable_quicksort_pivot_index_middle :
+  list_vt_stable_quicksort_pivot_index_t a
+
+fn {a : vt@ype}
+list_vt_stable_quicksort_pivot_index_first :
+  list_vt_stable_quicksort_pivot_index_t a

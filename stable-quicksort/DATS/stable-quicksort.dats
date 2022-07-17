@@ -236,6 +236,29 @@ list_vt_insertion_sort
 typedef sign_t (i : int) = [~1 <= i && i <= 1] int i
 typedef sign_t = [i : int] sign_t i
 
+implement {a}
+list_vt_stable_quicksort_pivot_index_random {n} (lst, n) =
+  let
+    val u64_n = $UN.cast{uint64 n} n
+    val u64_rand : [i : nat] uint64 i = g1ofg0 (random_uint64 ())
+    val u64_pivot = g1uint_mod (u64_rand, u64_n)
+    val i_pivot = $UN.cast{[i : nat | i < n] int i} u64_pivot
+  in
+    i_pivot
+  end
+
+implement {a}
+list_vt_stable_quicksort_pivot_index_middle (lst, n) =
+  half n
+
+implement {a}
+list_vt_stable_quicksort_pivot_index_first (lst, n) =
+  0
+
+implement {a}                   (* The default is random pivot. *)
+list_vt_stable_quicksort$pivot_index (lst, n) =
+  list_vt_stable_quicksort_pivot_index_random (lst, n)
+
 fn {a : vt@ype}
 compare_with_pivot
           (x     : &a,
@@ -265,22 +288,6 @@ compare_head_with_pivot
   end
 
 fn {a : vt@ype}
-select_pivot_index
-          {n   : pos}
-          (lst : !list_vt (a, n),
-           n   : int n)
-    :<!wrt> [i : nat | i < n]
-            int i =
-  let
-    val u64_n = $UN.cast{uint64 n} n
-    val u64_rand : [i : nat] uint64 i = g1ofg0 (random_uint64 ())
-    val u64_pivot = g1uint_mod (u64_rand, u64_n)
-    val i_pivot = $UN.cast{[i : nat | i < n] int i} u64_pivot
-  in
-    i_pivot
-  end
-
-fn {a : vt@ype}
 select_pivot
           {n          : pos}
           (lst        : list_vt (a, n),
@@ -293,7 +300,7 @@ select_pivot
     :<!wrt> #[n_before, n_after : nat | n_before + 1 + n_after == n]
             void =
   let
-    val i_pivot = select_pivot_index<a> (lst, n)
+    val i_pivot = list_vt_stable_quicksort$pivot_index<a> (lst, n)
     val @(left, right) = list_vt_split_at<a> (lst, i_pivot)
     val @(pivot, right) = list_vt_split_at<a> (right, 1)
   in
