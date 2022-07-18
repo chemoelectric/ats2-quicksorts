@@ -25,7 +25,7 @@
 staload "stable-quicksort/SATS/stable-quicksort.sats"
 staload UN = "prelude/SATS/unsafe.sats"
 
-#define INSERTION_SORT_THRESHOLD 1 // 15
+#define INSERTION_SORT_THRESHOLD 32
 
 #define NIL list_vt_nil ()
 #define ::  list_vt_cons
@@ -375,6 +375,7 @@ insertion_sort
               val n_bytes = n_nodes * sizeof<node>
               prval () = lemma_g1uint_param n_bytes
               val () = unsafe_move_memory (p_dst, p_src, n_bytes)
+              val () = arr[j] := x
             in
               loop (arr, succ i)
             end
@@ -685,7 +686,6 @@ list_vt_stable_quicksort lst =
         end
       else if m <> 0 then
         insertion_sort (lst, m)
-//        list_vt_insertion_sort<a> (lst, m, NIL, 0)
       else
         unsafe_list_vt2extensible<a> (lst, the_null_ptr, 0)
 
