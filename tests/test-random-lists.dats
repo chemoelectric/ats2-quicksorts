@@ -106,6 +106,10 @@ test_random_lists () =
   let
     (* implement *)
     (* list_vt_stable_quicksort$pivot_index<int> = *)
+    (*   list_vt_stable_quicksort_pivot_index_random<int> *)
+
+    (* implement *)
+    (* list_vt_stable_quicksort$pivot_index<int> = *)
     (*   list_vt_stable_quicksort_pivot_index_middle<int> *)
 
     (* implement *)

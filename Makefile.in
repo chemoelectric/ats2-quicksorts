@@ -114,8 +114,8 @@ build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS =
 EXTRA_PROGRAMS = tests/test-random-lists$(EXEEXT) \
-	list-ats-dependencies$(EXEEXT)
-TESTS = tests/test-random-lists$(EXEEXT)
+	tests/test-stability$(EXEEXT) list-ats-dependencies$(EXEEXT)
+TESTS = tests/test-random-lists$(EXEEXT) tests/test-stability$(EXEEXT)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_ac_append_to_file.m4 \
@@ -192,6 +192,9 @@ am_tests_test_random_lists_OBJECTS =  \
 	tests/test_random_lists-test-random-lists_tests.$(OBJEXT)
 tests_test_random_lists_OBJECTS =  \
 	$(am_tests_test_random_lists_OBJECTS)
+am_tests_test_stability_OBJECTS =  \
+	tests/test_stability-test-stability_tests.$(OBJEXT)
+tests_test_stability_OBJECTS = $(am_tests_test_stability_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -210,7 +213,8 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/list_ats_dependencies-list-ats-dependencies_depsprog.Po \
 	stable-quicksort/DATS/$(DEPDIR)/stable-quicksort_dats.Plo \
 	stable-quicksort/SATS/$(DEPDIR)/stable-quicksort_sats.Plo \
-	tests/$(DEPDIR)/test_random_lists-test-random-lists_tests.Po
+	tests/$(DEPDIR)/test_random_lists-test-random-lists_tests.Po \
+	tests/$(DEPDIR)/test_stability-test-stability_tests.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -232,8 +236,10 @@ am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(nodist_libats2_stable_quicksort_la_SOURCES) \
 	$(nodist_list_ats_dependencies_SOURCES) \
-	$(tests_test_random_lists_SOURCES)
-DIST_SOURCES = $(tests_test_random_lists_SOURCES)
+	$(tests_test_random_lists_SOURCES) \
+	$(tests_test_stability_SOURCES)
+DIST_SOURCES = $(tests_test_random_lists_SOURCES) \
+	$(tests_test_stability_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -634,10 +640,12 @@ AUTOMAKE_OPTIONS = foreign subdir-objects -Wno-portability
 @CODE_COVERAGE_ENABLED_TRUE@code_coverage_sanitize = $(subst -,_,$(subst .,_,$(1)))
 @CODE_COVERAGE_ENABLED_TRUE@AM_DISTCHECK_CONFIGURE_FLAGS := $(AM_DISTCHECK_CONFIGURE_FLAGS) --disable-code-coverage
 EXTRA_DIST = $(srcdir)/silent-rules.mk COPYING INSTALL README AUTHORS \
-	tests/test-random-lists.dats list-ats-dependencies.dats
+	tests/test-random-lists.dats tests/test-stability.dats \
+	list-ats-dependencies.dats
 MOSTLYCLEANFILES = 
 CLEANFILES = $(STABLE_QUICKSORT_SATS_C) $(STABLE_QUICKSORT_DATS_C) \
 	tests/test-random-lists tests/test-random-lists_tests.c \
+	tests/test-stability tests/test-stability_tests.c \
 	list-ats-dependencies list-ats-dependencies_depsprog.c
 DISTCLEANFILES = Makefile GNUmakefile
 BUILT_SOURCES = 
@@ -691,6 +699,11 @@ tests_test_random_lists_DEPENDENCIES = tests/test-random-lists.dats \
 	libats2-stable-quicksort.la $(STABLE_QUICKSORT_HATS)
 tests_test_random_lists_CPPFLAGS = $(AM_CPPFLAGS) -DATS_MEMALLOC_LIBC
 tests_test_random_lists_LDADD = libats2-stable-quicksort.la
+tests_test_stability_SOURCES = tests/test-stability_tests.c
+tests_test_stability_DEPENDENCIES = tests/test-stability.dats \
+	libats2-stable-quicksort.la $(STABLE_QUICKSORT_HATS)
+tests_test_stability_CPPFLAGS = $(AM_CPPFLAGS) -DATS_MEMALLOC_LIBC
+tests_test_stability_LDADD = libats2-stable-quicksort.la
 nodist_list_ats_dependencies_SOURCES =  \
 	list-ats-dependencies_depsprog.c
 list_ats_dependencies_CPPFLAGS = $(AM_CPPFLAGS) -DATS_MEMALLOC_LIBC
@@ -859,6 +872,12 @@ tests/test_random_lists-test-random-lists_tests.$(OBJEXT):  \
 tests/test-random-lists$(EXEEXT): $(tests_test_random_lists_OBJECTS) $(tests_test_random_lists_DEPENDENCIES) $(EXTRA_tests_test_random_lists_DEPENDENCIES) tests/$(am__dirstamp)
 	@rm -f tests/test-random-lists$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(tests_test_random_lists_OBJECTS) $(tests_test_random_lists_LDADD) $(LIBS)
+tests/test_stability-test-stability_tests.$(OBJEXT):  \
+	tests/$(am__dirstamp) tests/$(DEPDIR)/$(am__dirstamp)
+
+tests/test-stability$(EXEEXT): $(tests_test_stability_OBJECTS) $(tests_test_stability_DEPENDENCIES) $(EXTRA_tests_test_stability_DEPENDENCIES) tests/$(am__dirstamp)
+	@rm -f tests/test-stability$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(tests_test_stability_OBJECTS) $(tests_test_stability_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -875,6 +894,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@stable-quicksort/DATS/$(DEPDIR)/stable-quicksort_dats.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@stable-quicksort/SATS/$(DEPDIR)/stable-quicksort_sats.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_random_lists-test-random-lists_tests.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_stability-test-stability_tests.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -933,6 +953,20 @@ tests/test_random_lists-test-random-lists_tests.obj: tests/test-random-lists_tes
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/test-random-lists_tests.c' object='tests/test_random_lists-test-random-lists_tests.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_random_lists_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tests/test_random_lists-test-random-lists_tests.obj `if test -f 'tests/test-random-lists_tests.c'; then $(CYGPATH_W) 'tests/test-random-lists_tests.c'; else $(CYGPATH_W) '$(srcdir)/tests/test-random-lists_tests.c'; fi`
+
+tests/test_stability-test-stability_tests.o: tests/test-stability_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_stability_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tests/test_stability-test-stability_tests.o -MD -MP -MF tests/$(DEPDIR)/test_stability-test-stability_tests.Tpo -c -o tests/test_stability-test-stability_tests.o `test -f 'tests/test-stability_tests.c' || echo '$(srcdir)/'`tests/test-stability_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/test_stability-test-stability_tests.Tpo tests/$(DEPDIR)/test_stability-test-stability_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/test-stability_tests.c' object='tests/test_stability-test-stability_tests.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_stability_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tests/test_stability-test-stability_tests.o `test -f 'tests/test-stability_tests.c' || echo '$(srcdir)/'`tests/test-stability_tests.c
+
+tests/test_stability-test-stability_tests.obj: tests/test-stability_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_stability_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tests/test_stability-test-stability_tests.obj -MD -MP -MF tests/$(DEPDIR)/test_stability-test-stability_tests.Tpo -c -o tests/test_stability-test-stability_tests.obj `if test -f 'tests/test-stability_tests.c'; then $(CYGPATH_W) 'tests/test-stability_tests.c'; else $(CYGPATH_W) '$(srcdir)/tests/test-stability_tests.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/test_stability-test-stability_tests.Tpo tests/$(DEPDIR)/test_stability-test-stability_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/test-stability_tests.c' object='tests/test_stability-test-stability_tests.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_stability_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tests/test_stability-test-stability_tests.obj `if test -f 'tests/test-stability_tests.c'; then $(CYGPATH_W) 'tests/test-stability_tests.c'; else $(CYGPATH_W) '$(srcdir)/tests/test-stability_tests.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -1222,6 +1256,13 @@ tests/test-random-lists.log: tests/test-random-lists$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+tests/test-stability.log: tests/test-stability$(EXEEXT)
+	@p='tests/test-stability$(EXEEXT)'; \
+	b='tests/test-stability'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 .test.log:
 	@p='$<'; \
 	$(am__set_b); \
@@ -1477,6 +1518,7 @@ distclean: distclean-am
 	-rm -f stable-quicksort/DATS/$(DEPDIR)/stable-quicksort_dats.Plo
 	-rm -f stable-quicksort/SATS/$(DEPDIR)/stable-quicksort_sats.Plo
 	-rm -f tests/$(DEPDIR)/test_random_lists-test-random-lists_tests.Po
+	-rm -f tests/$(DEPDIR)/test_stability-test-stability_tests.Po
 	-rm -f GNUmakefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-libtool distclean-local distclean-tags
@@ -1530,6 +1572,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f stable-quicksort/DATS/$(DEPDIR)/stable-quicksort_dats.Plo
 	-rm -f stable-quicksort/SATS/$(DEPDIR)/stable-quicksort_sats.Plo
 	-rm -f tests/$(DEPDIR)/test_random_lists-test-random-lists_tests.Po
+	-rm -f tests/$(DEPDIR)/test_stability-test-stability_tests.Po
 	-rm -f GNUmakefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -1734,23 +1777,7 @@ ats-includes-distclean:
 	@$(MKDIR_P) $(@D)
 	$(call v,PATSOPT)$(PATSOPT) -o $(@) $(TOTAL_PATSOPTFLAGS) -d $(<)
 tests/test-random-lists_tests.c: tests/test-random-lists.dats
-
-# EXTRA_PROGRAMS += tests/test-stability
-# CLEANFILES += tests/test-stability
-# CLEANFILES += tests/test-stability_tests.c
-# tests_test_stability_SOURCES =
-# tests_test_stability_SOURCES += tests/test-stability_tests.c
-# tests_test_stability_DEPENDENCIES =
-# tests_test_stability_DEPENDENCIES += tests/test-stability.dats
-# tests_test_stability_DEPENDENCIES += libats2-stable-quicksort.la
-# tests_test_stability_DEPENDENCIES += $(STABLE_QUICKSORT_HATS)
-# tests_test_stability_CPPFLAGS =
-# tests_test_stability_CPPFLAGS += $(AM_CPPFLAGS)
-# tests_test_stability_CPPFLAGS += -DATS_MEMALLOC_LIBC
-# tests_test_stability_LDADD =
-# tests_test_stability_LDADD += libats2-stable-quicksort.la
-# EXTRA_DIST += tests/test-stability.dats
-# tests/test-stability_tests.c: tests/test-stability.dats
+tests/test-stability_tests.c: tests/test-stability.dats
 
 tests-clean:
 	-rm -f tests/*.$(OBJEXT)
