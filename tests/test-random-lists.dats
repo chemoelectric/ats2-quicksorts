@@ -106,7 +106,11 @@ test_random_lists () =
   let
     (* implement *)
     (* list_vt_stable_quicksort$pivot_index<int> = *)
-    (*   list_vt_stable_quicksort_pivot_index_random<int> *)
+    (*   list_vt_stable_quicksort_pivot_index_middle<int> *)
+
+    (* implement *)
+    (* list_vt_stable_quicksort$pivot_index<int> = *)
+    (*   list_vt_stable_quicksort_pivot_index_first<int> *)
 
     var sz : [i : nat] int i
   in
@@ -134,41 +138,50 @@ test_random_lists () =
 
         val lst3 = copy<int> lst1
         val t31 = get_clock ()
-        val lst3 = list_vt_stable_quicksort<int> lst3
-        val t32 = get_clock ()
-        val t3 = t32 - t31
+        val lst3 = list_vt_quicksort<int> lst3 (* Not stable. *)
+        val t33 = get_clock ()
+        val t3 = t33 - t31
+
+        val lst4 = copy<int> lst1
+        val t41 = get_clock ()
+        val lst4 = list_vt_stable_quicksort<int> lst4
+        val t42 = get_clock ()
+        val t4 = t42 - t41
 
         fun
         check_sort_results
                   {n    : int}
                   (lst2 : !list_vt (int, n),
-                   lst3 : !list_vt (int, n))
+                   lst4 : !list_vt (int, n))
             : void =
           case+ lst2 of
           | NIL => ()
           | head2 :: tail2 =>
             let
-              val+ head3 :: tail3 = lst3
+              val+ head4 :: tail4 = lst4
             in
-              if head2 <> head3 then
+              if head2 <> head4 then
                 begin
-                  println! (head2, " <> ", head3);
+                  println! (head2, " <> ", head4);
                   exit 1
                 end;
-              check_sort_results (tail2, tail3)
+              check_sort_results (tail2, tail4)
             end
 
-        val () = check_sort_results (lst2, lst3)
+        val () = check_sort_results (lst2, lst4)
 
         val () = print! "merge:"
         val () = print! t2
         val () = print! "  quick:"
         val () = print! t3
+        val () = print! "  stable-quick:"
+        val () = print! t4
         val () = println! ()
 
         val () = free lst1
         val () = free lst2
         val () = free lst3
+        val () = free lst4
       in
       end
   end
