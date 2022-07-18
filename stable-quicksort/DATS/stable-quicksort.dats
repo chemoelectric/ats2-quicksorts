@@ -685,7 +685,7 @@ list_vt_stable_quicksort lst =
           ((elst1 \appd elst_eq) \appd elst2)
         end
       else if m <> 0 then
-        insertion_sort (lst, m)
+        list_vt_insertion_sort<a> (lst, m, NIL, 0)
       else
         unsafe_list_vt2extensible<a> (lst, the_null_ptr, 0)
 
