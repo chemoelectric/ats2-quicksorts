@@ -25,6 +25,8 @@
 staload "stable-quicksort/SATS/stable-quicksort.sats"
 staload UN = "prelude/SATS/unsafe.sats"
 
+#define INSERTION_SORT_THRESHOLD 1 // 15
+
 #define NIL list_vt_nil ()
 #define ::  list_vt_cons
 
@@ -36,6 +38,13 @@ g1uint_mod_uint64 :
 implement
 g1uint_mod<uint64_kind> (x, y) =
   g1uint_mod_uint64 (x, y)
+
+extern fn
+unsafe_move_memory :
+  {p_dst : addr}
+  {p_src : addr}
+  {n     : nat}
+  (ptr p_dst, ptr p_src, size_t n) -< !wrt > void = "mac#%"
 
 (*------------------------------------------------------------------*)
 (* A simple linear congruential generator, for pivot selection.     *)
@@ -229,6 +238,167 @@ list_vt_insertion_sort
         unsafe_list_vt2extensible (list_vt_reverse<a> dst, p_last,
                                    m + n)
       end
+  end
+
+fn {a : vt@ype}                 (* FIXME *)
+insertion_sort
+          {n   : pos | n <= INSERTION_SORT_THRESHOLD}
+          (lst : list_vt (a, n),
+           n   : int n)
+    :<!wrt> extensible_list_vt (a, n) =
+  let
+    #define THRESHOLD INSERTION_SORT_THRESHOLD
+
+    macdef cmp = list_vt_stable_quicksort$cmp<a>
+
+    typedef node = ptr
+
+    fun
+    fill_arr {i     : nat | i <= n}
+             .<n - i>.
+             (arr : &array (node, THRESHOLD) >> _,
+              lst : !list_vt (a, n - i),
+              i   : int i)
+        :<!wrt> void =
+      case+ lst of
+      | NIL => ()
+      | head :: tail =>
+        let
+          val () = arr[i] := $UN.castvwtp1{node} lst
+          val () = fill_arr (arr, tail, succ i)
+        in
+        end
+
+    fun
+    make_links {i     : nat | i <= n}
+               .<i>.
+               (arr : &array (node, THRESHOLD),
+                lst : &list_vt (a, n - i) >> list_vt (a, n),
+                i   : int i)
+        :<!wrt> void =
+      if i <> 0 then
+        let
+          val node = $UN.castvwtp0{list_vt (a, 1)} arr[pred i]
+          val+ @ (head :: tail) = node
+          (* The NIL of the length-1 list is fake, so let us consume
+             it with the following cast, instead of with a ‘~’. *)
+          val () = $UN.castvwtp0{void} tail
+          val () = tail := lst
+          prval () = fold@ node
+          val () = lst := node
+          val () = make_links (arr, lst, pred i)
+        in
+        end
+
+    fn
+    sort (arr : &array (node, THRESHOLD) >> _)
+        :<!wrt> void =
+      let
+        fun
+        loop {i : pos | i <= n}
+             .<n - i>.
+             (arr : &array (node, THRESHOLD) >> _,
+              i   : int i)
+            :<!wrt> void =
+          if i <> n then
+            let
+              val x = arr[i]
+
+              (*
+
+                find_place -- a Bottenbruch search.
+
+                References:
+
+                  * H. Bottenbruch, "Structure and use of ALGOL 60",
+                    Journal of the ACM, Volume 9, Issue 2, April 1962,
+                    pp.161-221.  https://doi.org/10.1145/321119.321120
+
+                    The general algorithm is described on pages 214
+                    and 215.
+
+                  * https://en.wikipedia.org/w/index.php?title=Binary_search_algorithm&oldid=1062988272#Alternative_procedure
+
+                *)
+              fun
+              find_place {j, k : nat | j <= k; k < i}
+                         .<k - j>.
+                         (arr : &array (node, THRESHOLD),
+                          j   : int j,
+                          k   : int k)
+                  :<> [h : nat | h <= i]
+                      int h =
+                if j <> k then
+                  let
+                    val h = j + half (k - j)
+                    val y = arr[h]
+                    val x_lst = $UN.castvwtp0{List1_vt a} x
+                    and y_lst = $UN.castvwtp0{List1_vt a} y
+                    val+ @ (x_head :: _) = x_lst
+                    val+ @ (y_head :: _) = y_lst
+                    val x_lt_y = (x_head \cmp y_head) < 0
+                    prval () = fold@ x_lst
+                    prval () = fold@ y_lst
+                    prval () = $UN.castvwtp0{void} x_lst
+                    prval () = $UN.castvwtp0{void} y_lst
+                  in
+                    if x_lt_y then (* FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME: IS THIS STABLE? *)
+                      find_place (arr, j, h)
+                    else
+                      find_place (arr, succ h, k)
+                  end
+                else if j <> pred i then
+                  j
+                else
+                  let
+                    val y = arr[j]
+                    val x_lst = $UN.castvwtp0{List1_vt a} x
+                    and y_lst = $UN.castvwtp0{List1_vt a} y
+                    val+ @ (x_head :: _) = x_lst
+                    val+ @ (y_head :: _) = y_lst
+                    val x_lt_y = (x_head \cmp y_head) < 0
+                    prval () = fold@ x_lst
+                    prval () = fold@ y_lst
+                    prval () = $UN.castvwtp0{void} x_lst
+                    prval () = $UN.castvwtp0{void} y_lst
+                  in
+                    if x_lt_y then (* FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME: IS THIS STABLE? *)
+                      j
+                    else
+                      i
+                  end
+
+              val j = find_place (arr, 0, pred i)
+              val p_src = ptr_add<node> (addr@ arr, j)
+              val p_dst = ptr1_succ<node> p_src
+              val n_nodes = i2sz (i - j)
+              val n_bytes = n_nodes * sizeof<node>
+              prval () = lemma_g1uint_param n_bytes
+              val () = unsafe_move_memory (p_dst, p_src, n_bytes)
+            in
+              loop (arr, succ i)
+            end
+      in
+        loop (arr, 1)
+      end          
+
+    var arr : @[node][THRESHOLD]
+
+    (* Fake initialization of arr. *)
+    prval () =
+      $UN.castview2void_at{array (node, THRESHOLD)} (view@ arr)
+
+    val () = fill_arr (arr, lst, 0)
+    val () = $UN.castvwtp0{void} lst
+
+    val () = sort arr
+
+    val p_last = g1ofg0 arr[pred n]
+
+    var lst = (NIL : list_vt (a, 0))
+    val () = make_links {n} (arr, lst, n)
+  in
+    unsafe_list_vt2extensible (lst, p_last, n)
   end
 
 (*------------------------------------------------------------------*)
@@ -493,8 +663,6 @@ partition {n     : pos}
 implement {a}
 list_vt_stable_quicksort lst =
   let
-    #define THRESHOLD 15
-
     macdef finalize = extensible_list_vt_finalize<a>
     macdef appd = extensible_list_vt_append<a>
 
@@ -504,9 +672,7 @@ list_vt_stable_quicksort lst =
            (lst : list_vt (a, m),
             m   : int m)
         :<!wrt> extensible_list_vt (a, m) =
-      if m <= THRESHOLD then
-        list_vt_insertion_sort<a> (lst, m, NIL, 0)
-      else
+      if INSERTION_SORT_THRESHOLD < m then
         let
           val @(elst_lt, elst_eq, elst_gt) =
             partition<a> (lst, m)
@@ -517,6 +683,11 @@ list_vt_stable_quicksort lst =
         in
           ((elst1 \appd elst_eq) \appd elst2)
         end
+      else if m <> 0 then
+        insertion_sort (lst, m)
+//        list_vt_insertion_sort<a> (lst, m, NIL, 0)
+      else
+        unsafe_list_vt2extensible<a> (lst, the_null_ptr, 0)
 
     prval () = lemma_list_vt_param lst
     val @(lst_sorted, _) = finalize (recurs (lst, length lst))

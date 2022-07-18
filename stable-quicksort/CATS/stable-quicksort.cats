@@ -19,9 +19,10 @@
 #ifndef STABLE_QUICKSORT__CATS__STABLE_QUICKSORT_CATS__HEADER_GUARD__
 #define STABLE_QUICKSORT__CATS__STABLE_QUICKSORT_CATS__HEADER_GUARD__
 
+#include <inttypes.h>
 #include <stdatomic.h>
 #include <stdbool.h>
-#include <inttypes.h>
+#include <string.h>
 
 #if defined __GNUC__
 #define ats2_stable_quicksort_bswap64 __builtin_bswap64
@@ -42,6 +43,18 @@ ats2_stable_quicksort_g1uint_mod_uint64 (atstype_uint64 x,
                                          atstype_uint64 y)
 {
   return (x % y);
+}
+
+ATSinline() atstype_void
+ats2_stable_quicksort_unsafe_move_memory (atstype_ptr dst,
+                                          atstype_ptr src,
+                                          atstype_size n)
+{
+#if defined __GNUC__
+  (void) __builtin_memmove (dst, src, n);
+#else
+  (void) memmove (dst, src, n);
+#endif
 }
 
 /*------------------------------------------------------------------*/
