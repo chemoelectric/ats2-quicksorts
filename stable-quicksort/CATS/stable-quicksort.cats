@@ -45,18 +45,6 @@ ats2_stable_quicksort_g1uint_mod_uint64 (atstype_uint64 x,
   return (x % y);
 }
 
-ATSinline() atstype_void
-ats2_stable_quicksort_unsafe_move_memory (atstype_ptr dst,
-                                          atstype_ptr src,
-                                          atstype_size n)
-{
-#if defined __GNUC__
-  (void) __builtin_memmove (dst, src, n);
-#else
-  (void) memmove (dst, src, n);
-#endif
-}
-
 /*------------------------------------------------------------------*/
 /* Spinlocks for random number generator seeds.                     */
 
