@@ -293,24 +293,19 @@ fn {a : vt@ype}
 select_pivot
           {n          : pos}
           (lst        : list_vt (a, n),
-           n          : int n,
-           lst_before : &(List_vt a)? >> list_vt (a, n_before),
-           lst_pivot  : &(List_vt a)? >> list_vt (a, 1),
-           lst_after  : &(List_vt a)? >> list_vt (a, n_after),
-           n_before   : &int? >> int n_before,
-           n_after    : &int? >> int n_after)
-    :<!wrt> #[n_before, n_after : nat | n_before + 1 + n_after == n]
-            void =
+           n          : int n)
+    :<!wrt> [n_before, n_after : nat | n_before + 1 + n_after == n]
+            @(list_vt (a, n_before),
+              list_vt (a, 1),
+              list_vt (a, n_after),
+              int n_before,
+              int n_after) =
   let
     val i_pivot = list_vt_stable_quicksort$pivot_index<a> (lst, n)
     val @(left, right) = list_vt_split_at<a> (lst, i_pivot)
     val @(pivot, right) = list_vt_split_at<a> (right, 1)
   in
-    lst_before := left;
-    lst_pivot := pivot;
-    lst_after := right;
-    n_before := i_pivot;
-    n_after := pred (n - i_pivot)
+    @(left, pivot, right, i_pivot, pred (n - i_pivot))
   end
 
 fn {a : vt@ype}
@@ -464,17 +459,12 @@ partition {n     : pos}
   let
     macdef appd = extensible_list_vt_append<a>
 
-    var lst_before : List_vt a
-    var lst_pivot  : List_vt a
-    var lst_after  : List_vt a
-    var n_before   : int
-    var n_after    : int
+    val @(lst_before, lst_pivot, lst_after, n_before, n_after) =
+      select_pivot<a> (lst, n)
 
-    val () =
-      select_pivot<a> (lst, n, lst_before, lst_pivot, lst_after,
-                       n_before, n_after)
-
+    var lst_pivot = lst_pivot
     val+ @ (pivot :: _) = lst_pivot
+
     val @(elst1_lt, elst1_eq, elst1_gt) =
       partition_pivot_free_list<a> (lst_before, n_before, pivot)
     val @(elst2_lt, elst2_eq, elst2_gt) =
