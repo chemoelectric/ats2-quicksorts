@@ -89,7 +89,7 @@ random_int (m : int, n : int)
 #define ::  list_vt_cons
 
 implement
-list_vt_mergesort$cmp<int> (x, y) =
+list_vt_stable_quicksort$cmp<int> (x, y) =
   if x < y then
     ~1
   else if x = y then
@@ -98,8 +98,8 @@ list_vt_mergesort$cmp<int> (x, y) =
     1
 
 implement
-list_vt_stable_quicksort$cmp<int> (x, y) =
-  list_vt_mergesort$cmp<int> (x, y)
+list_vt_mergesort$cmp<int> (x, y) =
+  list_vt_stable_quicksort$cmp<int> (x, y)
 
 fn
 test_random_lists () =

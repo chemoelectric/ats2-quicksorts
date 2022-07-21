@@ -37,7 +37,9 @@ list_vt_stable_quicksort :
 
 fn {a : vt@ype}
 list_vt_stable_quicksort$cmp :
-  (&RD(a), &RD(a)) -<> int
+  (&RD(a), &RD(a)) -<>
+    [i : int | ~1 <= i; i <= 1]
+    int i
 
 fn {a : vt@ype}
 list_vt_stable_quicksort$pivot_index :

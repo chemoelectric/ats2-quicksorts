@@ -262,20 +262,6 @@ list_vt_stable_quicksort$pivot_index (lst, n) =
   list_vt_stable_quicksort_pivot_index_random (lst, n)
 
 fn {a : vt@ype}
-compare_with_pivot
-          (x     : &a,
-           pivot : &a)
-    :<> sign_t =
-  let
-    val sign = list_vt_stable_quicksort$cmp<a> (x, pivot)
-    val sign = g1ofg0 sign
-    val sign = max (sign, ~1)
-    val sign = min (sign, 1)
-  in
-    sign
-  end
-
-fn {a : vt@ype}
 compare_head_with_pivot
           {n     : pos}
           (lst   : &list_vt (a, n),
@@ -283,7 +269,7 @@ compare_head_with_pivot
     :<> sign_t =
   let
     val+ @ (head :: _) = lst
-    val sign = compare_with_pivot<a> (head, pivot)
+    val sign = list_vt_stable_quicksort$cmp<a> (head, pivot)
     prval () = fold@ lst
   in
     sign
