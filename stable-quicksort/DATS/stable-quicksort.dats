@@ -664,4 +664,30 @@ partition_array_before_pivot
           i2sz 0, i2sz 0, i2sz 0)
   end
 
+fn {a : vt@ype}
+move_pivot {n         : pos}
+           {n_ge      : nat | n_ge + 1 < n}
+           {p_work    : addr}
+           {p_pivot   : addr}
+           (pf_work   : array_v (a?, p_work + (n_ge * sizeof a),
+                                 n - n_ge),
+            pf_pivot  : a @ p_pivot |
+            p_work    : ptr p_work,
+            p_pivot   : ptr p_pivot,
+            n_ge      : size_t n_ge)
+    :<!wrt> @(a?! @ p_pivot,
+              array_v (a?, p_work + (n_ge * sizeof a) + sizeof a,
+                       n - n_ge - 1),
+              a @ (p_work + (n_ge * sizeof a)) |
+              ptr (p_work + (n_ge * sizeof a))) =
+  let
+    prval @(pf_new_pivot, pf_work) = array_v_uncons pf_work
+    val p_new_pivot = ptr_add<a> (p_work, n_ge)
+    val () =
+      ptr_set<a>
+        (pf_new_pivot | p_new_pivot, ptr_get<a> (pf_pivot | p_pivot))
+  in
+    @(pf_pivot, pf_work, pf_new_pivot | p_new_pivot)
+  end
+
 (*------------------------------------------------------------------*)
