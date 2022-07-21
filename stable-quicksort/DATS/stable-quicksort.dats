@@ -30,6 +30,9 @@ staload UN = "prelude/SATS/unsafe.sats"
 #define NIL list_vt_nil ()
 #define ::  list_vt_cons
 
+typedef sign_t (i : int) = [~1 <= i && i <= 1] int i
+typedef sign_t = [i : int] sign_t i
+
 extern fn
 g1uint_mod_uint64 :
   {x, y : int}
@@ -235,9 +238,6 @@ list_vt_insertion_sort
 
 (*------------------------------------------------------------------*)
 
-typedef sign_t (i : int) = [~1 <= i && i <= 1] int i
-typedef sign_t = [i : int] sign_t i
-
 implement {a}
 list_vt_stable_quicksort_pivot_index_random {n} (lst, n) =
   let
@@ -276,7 +276,7 @@ compare_head_with_pivot
   end
 
 fn {a : vt@ype}
-select_pivot
+list_vt_select_pivot
           {n          : pos}
           (lst        : list_vt (a, n),
            n          : int n)
@@ -434,7 +434,8 @@ partition_pivot_free_list
   end
 
 fn {a : vt@ype}
-partition {n     : pos}
+partition_list
+          {n     : pos}
           (lst   : list_vt (a, n),
            n     : int n)
     :<!wrt> [n_lt, n_eq, n_gt : int | 0 <= n_lt; 1 <= n_eq; 0 <= n_gt;
@@ -446,7 +447,7 @@ partition {n     : pos}
     macdef appd = extensible_list_vt_append<a>
 
     val @(lst_before, lst_pivot, lst_after, n_before, n_after) =
-      select_pivot<a> (lst, n)
+      list_vt_select_pivot<a> (lst, n)
 
     var lst_pivot = lst_pivot
     val+ @ (pivot :: _) = lst_pivot
@@ -483,7 +484,7 @@ list_vt_stable_quicksort lst =
       if INSERTION_SORT_THRESHOLD < m then
         let
           val @(elst_lt, elst_eq, elst_gt) =
-            partition<a> (lst, m)
+            partition_list<a> (lst, m)
           val @(lst1, m1) = finalize elst_lt
           and @(lst2, m2) = finalize elst_gt
           val elst1 = recurs (lst1, m1)

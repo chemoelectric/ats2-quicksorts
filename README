@@ -1,5 +1,7 @@
-Stable list quicksort for ATS2/Postiats
----------------------------------------
+Stable quicksorts for ATS2/Postiats
+-----------------------------------
+
+  List quicksort
 
 Currently this sort has sometimes tested as faster than the prelude's
 list_vt_mergesort, if the list is of notable size, the input list is
@@ -7,3 +9,7 @@ randomized, and the first element is used as pivot.
 
 The current default is to randomly select a pivot, using a built-in
 linear congruential generator.
+
+  Array quicksort
+
+THIS IS A WORK IN PROGRESS

@@ -23,6 +23,9 @@
 #include <stable-quicksort/CATS/stable-quicksort.cats>
 %}
 
+(*------------------------------------------------------------------*)
+(* List quicksort                                                   *)
+
 typedef list_vt_stable_quicksort_pivot_index_t (a : vt@ype) =
   {n : pos}
   (!list_vt (a, n), int n) -< !wrt >
@@ -56,3 +59,42 @@ list_vt_stable_quicksort_pivot_index_middle :
 fn {a : vt@ype}
 list_vt_stable_quicksort_pivot_index_first :
   list_vt_stable_quicksort_pivot_index_t a
+
+(*------------------------------------------------------------------*)
+(* Array quicksort                                                  *)
+
+typedef array_stable_quicksort_pivot_index_t (a : vt@ype) =
+  {n : pos}
+  (!array (a, n), size_t n) -< !wrt >
+    [i : int | 0 <= i; i < n]
+    size_t i
+
+fn {a : vt@ype}
+array_stable_quicksort :
+  {n : int}
+  (&array (INV(a), n), size_t n) -< !wrt >
+    void
+
+fn {a : vt@ype}
+array_stable_quicksort$cmp :
+  (&RD(a), &RD(a)) -<>
+    [i : int | ~1 <= i; i <= 1]
+    int i
+
+fn {a : vt@ype}
+array_stable_quicksort$pivot_index :
+  array_stable_quicksort_pivot_index_t a
+
+fn {a : vt@ype}
+array_stable_quicksort_pivot_index_random :
+  array_stable_quicksort_pivot_index_t a
+
+fn {a : vt@ype}
+array_stable_quicksort_pivot_index_middle :
+  array_stable_quicksort_pivot_index_t a
+
+fn {a : vt@ype}
+array_stable_quicksort_pivot_index_median_of_three :
+  array_stable_quicksort_pivot_index_t a
+
+(*------------------------------------------------------------------*)
