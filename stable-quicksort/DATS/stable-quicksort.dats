@@ -611,7 +611,7 @@ partition_array_before_pivot
           val sign = array_stable_quicksort$cmp<a> (!p_src, !p_pivot)
         in
           if 0 <= sign then
-            let         (* Move the element to the gespace array. *)
+            let         (* Move the element to the workspace array. *)
               prval @(pf_dst, pf_work) =
                 array_v_uncons pf_work
               val p_dst = ptr_add<a> (p_work, n0_ge)
