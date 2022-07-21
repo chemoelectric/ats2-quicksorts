@@ -33,6 +33,20 @@ staload UN = "prelude/SATS/unsafe.sats"
 typedef sign_t (i : int) = [~1 <= i && i <= 1] int i
 typedef sign_t = [i : int] sign_t i
 
+prfn
+lemma_mul_isfun
+          {m1, n1 : int}
+          {m2, n2 : int | m1 == m2; n1 == n2}
+          ()
+    :<prf> [m1 * n1 == m2 * n2]
+           void =
+  let
+    prval pf1 = mul_make {m1, n1} ()
+    prval pf2 = mul_make {m2, n2} ()
+    prval () = mul_isfun {m1, n1} {m1 * n1, m2 * n2} (pf1, pf2)
+  in
+  end
+
 extern fn
 g1uint_mod_uint64 :
   {x, y : int}
@@ -613,7 +627,8 @@ partition_array_before_pivot
             end
           else if i = n0_lt then
             let     (* The element is already in the correct place. *)
-prval () = $UN.prop_assert {p_before + i * sizeof a == (p_before + (n0_lt * sizeof a)) + (0 * sizeof a)} ()
+              prval () = lemma_mul_isfun {i, sizeof a}
+                                         {n0_lt, sizeof a} ()
               prval pf_between = array_v_unnil_nil{a?!, a} pf_between
               prval pf_between = array_v_extend (pf_between, pf_src)
               prval @(pf_dst, pf_between) = array_v_uncons pf_between
