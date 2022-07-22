@@ -526,6 +526,10 @@ list_vt_stable_quicksort lst =
 
 (*------------------------------------------------------------------*)
 
+implement {a : vt@ype}
+array_stable_quicksort$lt (x, y) =
+  array_stable_quicksort$cmp<a> (x, y) < 0
+
 fn {a : vt@ype}
 array_select_pivot
           {n      : pos}
@@ -615,9 +619,8 @@ partition_array_before_pivot
         let
           prval @(pf_src, pf_before) = array_v_uncons pf_before
           val p_src = ptr_add<a> (p_arr, i)
-          val sign = array_stable_quicksort$cmp<a> (!p_src, !p_pivot)
         in
-          if 0 <= sign then
+          if array_stable_quicksort$lt<a> (!p_src, !p_pivot) then
             let         (* Move the element to the workspace array. *)
               prval @(pf_dst, pf_work) =
                 array_v_uncons pf_work
@@ -779,9 +782,8 @@ partition_array_after_pivot
           prval @(pf_src, pf_after) = array_v_uncons pf_after
           val p_src = ptr_add<a> (p_arr, i)
           and p_pivot = ptr_add<a> (p_work, n0_ge) 
-          val sign = array_stable_quicksort$cmp<a> (!p_src, !p_pivot)
         in
-          if 0 <= sign then
+          if array_stable_quicksort$lt<a> (!p_src, !p_pivot) then
             let         (* Move the element to the workspace array. *)
               prval @(pf_dst, pf_work) = array_v_uncons pf_work
               val p_dst = ptr_add<a> (p_work, n1_ge)
