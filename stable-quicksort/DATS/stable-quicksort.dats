@@ -47,6 +47,13 @@ lemma_mul_isfun
   in
   end
 
+extern praxi
+discard_used_contents :
+  {a : vt@ype}
+  {p : addr}
+  {n : int}
+  array_v (a?!, p, n) -<prf> array_v (a?, p, n)
+
 extern fn
 g1uint_mod_uint64 :
   {x, y : int}
@@ -841,16 +848,49 @@ partition_array_after_pivot_selection
               size_t n_ge) =
   let
     val @(pf_lt, pf_between, pf_ge, pf_work | n_lt, n_ge) =
-      partition_array_before_pivot (pf_before, pf_work, pf_pivot |
-                                    p_arr, p_work, p_pivot, n_before)
+      partition_array_before_pivot<a> (pf_before, pf_work, pf_pivot |
+                                       p_arr, p_work, p_pivot,
+                                       n_before)
     val @(pf_between, pf_work, pf_pivot | ) =
-      move_pivot (pf_between, pf_pivot, pf_work |
-                  p_arr, p_work, n, n_lt, n_before, n_ge)
+      move_pivot<a> (pf_between, pf_pivot, pf_work |
+                     p_arr, p_work, n, n_lt, n_before, n_ge)
   in
-    partition_array_after_pivot (pf_lt, pf_between, pf_after,
-                                 pf_ge, pf_pivot, pf_work |
-                                 p_arr, p_work, n, n_lt,
-                                 succ n_before, n_ge)
+    partition_array_after_pivot<a> (pf_lt, pf_between, pf_after,
+                                    pf_ge, pf_pivot, pf_work |
+                                    p_arr, p_work, n, n_lt,
+                                    succ n_before, n_ge)
+  end
+
+fn {a : vt@ype}
+partition_array
+          {n         : pos}
+          {p_arr     : addr}
+          {p_work    : addr}
+          (pf_arr    : array_v (a, p_arr, n),
+           pf_work   : array_v (a?, p_work, n) |
+           p_arr     : ptr p_arr,
+           p_work    : ptr p_work,
+           n         : size_t n)
+    :<!wrt> [n_lt, n_ge : nat | n_lt + n_ge == n]
+            @(array_v (a, p_arr, n),
+              array_v (a?, p_work, n) |
+              size_t n_lt,
+              size_t n_ge) =
+  let
+    val @(pf_before, pf_pivot, pf_after |
+          _, p_pivot, _, n_before, n_after) =
+      array_select_pivot<a> (pf_arr | p_arr, n)
+    val @(pf_lt, pf_after_lt, pf_ge, pf_after_ge | n_lt, n_ge) =
+      partition_array_after_pivot_selection<a>
+        (pf_before, pf_pivot, pf_after, pf_work |
+         p_arr, p_work, p_pivot, n, n_before, n_after)
+    val p_after_lt = ptr_add<a> (p_arr, n_lt)
+    val () = array_copy<a> (!p_after_lt, !p_work, n_ge)
+    prval pf_arr = array_v_unsplit (pf_lt, pf_after_lt)
+    prval pf_ge = discard_used_contents {a} pf_ge
+    prval pf_work = array_v_unsplit (pf_ge, pf_after_ge)
+  in
+    @(pf_arr, pf_work | n_lt, n_ge)
   end
 
 (*------------------------------------------------------------------*)
