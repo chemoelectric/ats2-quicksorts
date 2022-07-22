@@ -615,7 +615,7 @@ partition_array_before_pivot
         in
           (* Move anything <= the pivot to the beginning of the array,
              and anything else to the workspace array. *)
-          if ~array_stable_quicksort$lt<a> (!p_pivot, !p_src) then
+          if array_stable_quicksort$lt<a> (!p_pivot, !p_src) then
             let          (* The element is > the pivot. Move it to the
                             workspace array. *)
               prval @(pf_dst, pf_work) = array_v_uncons pf_work
