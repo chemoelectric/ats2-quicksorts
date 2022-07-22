@@ -538,16 +538,12 @@ array_select_pivot
           (pf_arr : array_v (a, p_arr, n) |
            p_arr  : ptr p_arr,
            n      : size_t n)
-    :<!wrt> [n_before, n_after : nat | n_before + 1 + n_after == n]
+    :<!wrt> [n_before : nat | n_before + 1 <= n]
             @(array_v (a, p_arr, n_before),
               a @ (p_arr + (n_before * sizeof a)),
               array_v (a, p_arr + (n_before * sizeof a) + sizeof a,
-                       n_after) |
-              ptr p_arr,
-              ptr (p_arr + (n_before * sizeof a)),
-              ptr (p_arr + (n_before * sizeof a) + sizeof a),
-              size_t n_before,
-              size_t n_after) =
+                       n - n_before - 1) |
+              size_t n_before) =
   let
     val [n_before : int] n_before =
       array_stable_quicksort$pivot_index<a> (!p_arr, n)
@@ -555,43 +551,39 @@ array_select_pivot
       array_v_split {a} {p_arr} {n} {n_before} pf_arr
     prval @(pf_pivot, pf_after) = array_v_uncons pf_more
   in
-    @(pf_before, pf_pivot, pf_after |
-      p_arr,
-      ptr_add<a> (p_arr, n_before),
-      ptr_add<a> (p_arr, succ n_before),
-      n_before, n - succ n_before)
+    @(pf_before, pf_pivot, pf_after | n_before)
   end
 
 fn {a : vt@ype}
 partition_array_before_pivot
-          {n         : pos}
-          {n_before  : nat | n_before + 1 <= n}
-          {p_arr     : addr}
-          {p_work    : addr}
-          {p_pivot   : addr}
-          (pf_before : array_v (a, p_arr, n_before),
+          {n          : pos}
+          {n_before   : nat | n_before + 1 <= n}
+          {p_arr      : addr}
+          {p_work     : addr}
+          {p_pivot    : addr}
+          (pf_before  : array_v (a, p_arr, n_before),
            pf_work   : array_v (a?, p_work, n),
            pf_pivot  : !(a @ p_pivot) |
            p_arr     : ptr p_arr,
            p_work    : ptr p_work,
            p_pivot   : ptr p_pivot,
            n_before  : size_t n_before)
-    :<!wrt> [n_lt, n_ge : nat | n_lt + n_ge == n_before]
-            @(array_v (a, p_arr, n_lt),
-              array_v (a?!, p_arr + (n_lt * sizeof a),
-                       n_before - n_lt),
+    :<!wrt> [n_le, n_ge : nat | n_le + n_ge == n_before]
+            @(array_v (a, p_arr, n_le),
+              array_v (a?!, p_arr + (n_le * sizeof a),
+                       n_before - n_le),
               array_v (a, p_work, n_ge),
               array_v (a?, p_work + (n_ge * sizeof a), n - n_ge) |
-              size_t n_lt,
+              size_t n_le,
               size_t n_ge) =
   let
     fun
     loop {i : nat | i <= n_before}
-         {n0_lt, n0_ge : nat | n0_lt + n0_ge == i}
+         {n0_le, n0_ge : nat | n0_le + n0_ge == i}
          .<n_before - i>.
-         (pf_lt      : array_v (a, p_arr, n0_lt),
-          pf_between : array_v (a?!, p_arr + (n0_lt * sizeof a),
-                                i - n0_lt),
+         (pf_le      : array_v (a, p_arr, n0_le),
+          pf_between : array_v (a?!, p_arr + (n0_le * sizeof a),
+                                i - n0_le),
           pf_before  : array_v (a, p_arr + (i * sizeof a),
                                 n_before - i),
           pf_ge      : array_v (a, p_work, n0_ge),
@@ -599,229 +591,195 @@ partition_array_before_pivot
                                 n - n0_ge),
           pf_pivot   : !(a @ p_pivot) |
           i          : size_t i,
-          n0_lt      : size_t n0_lt,
+          n0_le      : size_t n0_le,
           n0_ge      : size_t n0_ge)
-        :<!wrt> [n_lt, n_ge : nat | n_lt + n_ge == n_before]
-                @(array_v (a, p_arr, n_lt),
-                  array_v (a?!, p_arr + (n_lt * sizeof a),
-                           n_before - n_lt),
+        :<!wrt> [n_le, n_ge : nat | n_le + n_ge == n_before]
+                @(array_v (a, p_arr, n_le),
+                  array_v (a?!, p_arr + (n_le * sizeof a),
+                           n_before - n_le),
                   array_v (a, p_work, n_ge),
                   array_v (a?, p_work + (n_ge * sizeof a),
                            n - n_ge) |
-                  size_t n_lt,
+                  size_t n_le,
                   size_t n_ge) =
       if i = n_before then
         let
           prval () = array_v_unnil pf_before
         in
-          @(pf_lt, pf_between, pf_ge, pf_work | n0_lt, n0_ge)
+          @(pf_le, pf_between, pf_ge, pf_work | n0_le, n0_ge)
         end
       else
         let
           prval @(pf_src, pf_before) = array_v_uncons pf_before
           val p_src = ptr_add<a> (p_arr, i)
         in
-          if array_stable_quicksort$lt<a> (!p_src, !p_pivot) then
-            let         (* Move the element to the workspace array. *)
-              prval @(pf_dst, pf_work) =
-                array_v_uncons pf_work
-              val p_dst = ptr_add<a> (p_work, n0_ge)
+          (* Move anything <= the pivot to the beginning of the array,
+             and anything else to the workspace array. *)
+          if ~array_stable_quicksort$lt<a> (!p_pivot, !p_src) then
+            let          (* The element is > the pivot. Move it to the
+                            workspace array. *)
+              prval @(pf_dst, pf_work) = array_v_uncons pf_work
               val () =
-                ptr_set<a>
-                  (pf_dst | p_dst, ptr_get<a> (pf_src | p_src))
+                ptr_set<a> (pf_dst | ptr_add<a> (p_work, n0_ge),
+                                     ptr_get<a> (pf_src | p_src))
               prval pf_ge = array_v_extend (pf_ge, pf_dst)
               prval pf_between = array_v_extend (pf_between, pf_src)
             in
-              loop (pf_lt, pf_between, pf_before,
+              loop (pf_le, pf_between, pf_before,
                     pf_ge, pf_work, pf_pivot |
-                    succ i, n0_lt, succ n0_ge)
+                    succ i, n0_le, succ n0_ge)
             end
-          else if i = n0_lt then
-            let     (* The element is already in the correct place. *)
+          else if i = n0_le then
+            let   (* The element is <= to the pivot and already in the
+                     correct place. *)
               prval () = lemma_mul_isfun {i, sizeof a}
-                                         {n0_lt, sizeof a} ()
+                                         {n0_le, sizeof a} ()
               prval pf_between = array_v_unnil_nil{a?!, a} pf_between
               prval pf_between = array_v_extend (pf_between, pf_src)
               prval @(pf_dst, pf_between) = array_v_uncons pf_between
-              prval pf_lt = array_v_extend (pf_lt, pf_dst)
+              prval pf_le = array_v_extend (pf_le, pf_dst)
               prval pf_between = array_v_unnil_nil{a, a?!} pf_between
             in
-              loop (pf_lt, pf_between, pf_before,
+              loop (pf_le, pf_between, pf_before,
                     pf_ge, pf_work, pf_pivot |
-                    succ i, succ n0_lt, n0_ge)
+                    succ i, succ n0_le, n0_ge)
             end
           else
-            let      (* Move the element earlier in the same array. *)
+            let     (* The element is <= but not in the correct place.
+                       Move it earlier in the same array. *)
               prval @(pf_dst, pf_between) = array_v_uncons pf_between
-              val p_dst = ptr_add<a> (p_arr, n0_lt)
+              val p_dst = ptr_add<a> (p_arr, n0_le)
               val () =
                 ptr_set<a>
                   (pf_dst | p_dst, ptr_get<a> (pf_src | p_src))
-              prval pf_lt = array_v_extend (pf_lt, pf_dst)
+              prval pf_le = array_v_extend (pf_le, pf_dst)
               prval pf_between = array_v_extend (pf_between, pf_src)
             in
-              loop (pf_lt, pf_between, pf_before,
+              loop (pf_le, pf_between, pf_before,
                     pf_ge, pf_work, pf_pivot |
-                    succ i, succ n0_lt, n0_ge)
+                    succ i, succ n0_le, n0_ge)
             end
         end
 
-    prval pf_lt = array_v_nil {a} {p_arr} ()
-    prval pf_between = array_v_nil {a?!} {p_arr} ()
+    prval pf_le = array_v_nil {a} {p_arr} ()
     prval pf_ge = array_v_nil {a} {p_work} ()
+    prval pf_between = array_v_nil {a?!} {p_arr} ()
   in
-    loop (pf_lt, pf_between, pf_before,
+    loop (pf_le, pf_between, pf_before,
           pf_ge, pf_work, pf_pivot |
           i2sz 0, i2sz 0, i2sz 0)
   end
 
 fn {a : vt@ype}
-move_pivot {n          : pos}
-           {n_lt       : nat}
-           {i_pivot    : int | n_lt <= i_pivot; i_pivot < n}
-           {n_ge       : nat | n_lt + n_ge + 1 <= n}
-           {p_arr      : addr}
-           {p_work     : addr}
-           (pf_between : array_v (a?!, p_arr + (n_lt * sizeof a),
-                                  i_pivot - n_lt),
-            pf_pivot   : a @ p_arr + (i_pivot * sizeof a),
-            pf_work    : array_v (a?, p_work + (n_ge * sizeof a),
-                                  n - n_ge) |
-            p_arr      : ptr p_arr,
-            p_work     : ptr p_work,
-            n          : size_t n,
-            n_lt       : size_t n_lt,
-            i_pivot    : size_t i_pivot,
-            n_ge       : size_t n_ge)
-    :<!wrt> @(array_v (a?!, p_arr + (n_lt * sizeof a),
-                       i_pivot + 1 - n_lt),
-              array_v (a?, p_work + (n_ge * sizeof a) + sizeof a,
-                       n - n_ge - 1),
-              a @ (p_work + (n_ge * sizeof a)) | ) =
-  let
-    prval @(pf_new_pivot, pf_work) = array_v_uncons pf_work
-    val p_pivot = ptr_add<a> (p_arr, i_pivot)
-    and p_new_pivot = ptr_add<a> (p_work, n_ge)
-    val () =
-      ptr_set<a>
-        (pf_new_pivot | p_new_pivot, ptr_get<a> (pf_pivot | p_pivot))
-    prval pf_between = array_v_extend (pf_between, pf_pivot)
-  in
-    @(pf_between, pf_work, pf_new_pivot | )
-  end
-
-fn {a : vt@ype}
 partition_array_after_pivot
           {n          : pos}
-          {n0_lt      : nat}
-          {i0         : nat | n0_lt < i0; i0 <= n}
-          {n0_ge      : nat | n0_lt + n0_ge + 1 == i0}
+          {n_before   : nat | n_before + 1 <= n}
+          {n0_le      : nat}
+          {n0_ge      : nat | n0_le + n0_ge == n_before}
           {p_arr      : addr}
           {p_work     : addr}
-          (pf_lt      : array_v (a, p_arr, n0_lt),
-           pf_between : array_v (a?!, p_arr + (n0_lt * sizeof a),
-                                 i0 - n0_lt),
-           pf_after   : array_v (a, p_arr + (i0 * sizeof a), n - i0),
+          {p_pivot    : addr}
+          (pf_le      : array_v (a, p_arr, n0_le),
+           pf_between : array_v (a?!, p_arr + (n0_le * sizeof a),
+                                 n_before - n0_le + 1),
+           pf_after   : array_v
+                          (a,
+                           p_arr + (n_before * sizeof a) + sizeof a,
+                           n - n_before - 1),
            pf_ge      : array_v (a, p_work, n0_ge),
-           pf_pivot   : a @ (p_work + (n0_ge * sizeof a)),
-           pf_work    : array_v (a?, p_work + (n0_ge * sizeof a)
-                                     + sizeof a,
-                                 n - n0_ge - 1) |
+           pf_work    : array_v (a?, p_work + (n0_ge * sizeof a),
+                                 n - n0_ge),
+           pf_pivot   : !(a @ p_pivot) |
            p_arr      : ptr p_arr,
            p_work     : ptr p_work,
+           p_pivot    : ptr p_pivot,
            n          : size_t n,
-           n0_lt      : size_t n0_lt,
-           i0         : size_t i0,
+           n0_le      : size_t n0_le,
            n0_ge      : size_t n0_ge)
-    :<!wrt> [n_lt, n_ge : nat | n_lt + n_ge == n]
-            @(array_v (a, p_arr, n_lt),
-              array_v (a?!, p_arr + (n_lt * sizeof a), n_ge),
+    :<!wrt> [n_le, n_ge : nat | n_le + n_ge + 1 == n]
+            @(array_v (a, p_arr, n_le),
+              array_v (a?!, p_arr + (n_le * sizeof a), n - n_le),
               array_v (a, p_work, n_ge),
-              array_v (a?, p_work + (n_ge * sizeof a), n_lt) |
-              size_t n_lt,
+              array_v (a?, p_work + (n_ge * sizeof a), n - n_ge) |
+              size_t n_le,
               size_t n_ge) =
   let
     fun
-    loop {n1_lt      : nat}
-         {n1_ge      : nat | n0_ge + 1 <= n1_ge}
-         {i          : int | i0 <= i; i <= n;
-                             n1_lt + n1_ge == i}
+    loop {n1_le      : nat}
+         {n1_ge      : nat | n0_ge <= n1_ge}
+         {i          : int | n_before + 1 <= i; i <= n;
+                             n1_le + n1_ge + 1 == i}
          .<n - i>.
-         (pf_lt      : array_v (a, p_arr, n1_lt),
-          pf_between : array_v (a?!, p_arr + (n1_lt * sizeof a),
-                                i - n1_lt),
+         (pf_le      : array_v (a, p_arr, n1_le),
+          pf_between : array_v (a?!, p_arr + (n1_le * sizeof a),
+                                i - n1_le),
           pf_after   : array_v (a, p_arr + (i * sizeof a), n - i),
-          pf_ge1     : array_v (a, p_work, n0_ge),
-          pf_pivot   : a @ (p_work + (n0_ge * sizeof a)),
-          pf_ge2     : array_v (a, (p_work + (n0_ge * sizeof a)
-                                      + sizeof a),
-                                n1_ge - n0_ge - 1),
+          pf_ge      : array_v (a, p_work, n1_ge),
           pf_work    : array_v (a?, p_work + (n1_ge * sizeof a),
-                                n - n1_ge) |
+                                n - n1_ge),
+          pf_pivot   : !(a @ p_pivot) |
           i          : size_t i,
-          n1_lt      : size_t n1_lt,
+          n1_le      : size_t n1_le,
           n1_ge      : size_t n1_ge)
-        :<!wrt> [n_lt, n_ge : nat | n_lt + n_ge == n]
-                @(array_v (a, p_arr, n_lt),
-                  array_v (a?!, p_arr + (n_lt * sizeof a), n_ge),
+        :<!wrt> [n_le, n_ge : nat | n_le + n_ge + 1 == n]
+                @(array_v (a, p_arr, n_le),
+                  array_v (a?!, p_arr + (n_le * sizeof a), n - n_le),
                   array_v (a, p_work, n_ge),
-                  array_v (a?, p_work + (n_ge * sizeof a), n_lt) |
-                  size_t n_lt,
+                  array_v (a?, p_work + (n_ge * sizeof a), n - n_ge) |
+                  size_t n_le,
                   size_t n_ge) =
       if i = n then
         let
           prval () = array_v_unnil pf_after
-          prval pf_ge = array_v_extend (pf_ge1, pf_pivot)
-          prval pf_ge = array_v_unsplit (pf_ge, pf_ge2)
-          prval () = lemma_mul_isfun {i - n1_lt, sizeof a}
-                                     {n1_ge, sizeof a} ()
         in
-          @(pf_lt, pf_between, pf_ge, pf_work | n1_lt, n1_ge)
+          @(pf_le, pf_between, pf_ge, pf_work | n1_le, n1_ge)
         end
       else
         let
           prval @(pf_src, pf_after) = array_v_uncons pf_after
           val p_src = ptr_add<a> (p_arr, i)
-          and p_pivot = ptr_add<a> (p_work, n0_ge) 
         in
-          if array_stable_quicksort$lt<a> (!p_src, !p_pivot) then
-            let         (* Move the element to the workspace array. *)
+          (* Move anything < the pivot to the beginning of the array,
+             and anything else to the workspace array. *)
+          if ~array_stable_quicksort$lt<a> (!p_src, !p_pivot) then
+            let         (* The element is >= the pivot. Move it to the
+                           workspace array. *)
               prval @(pf_dst, pf_work) = array_v_uncons pf_work
-              val p_dst = ptr_add<a> (p_work, n1_ge)
               val () =
-                ptr_set<a>
-                  (pf_dst | p_dst, ptr_get<a> (pf_src | p_src))
-              prval pf_ge2 = array_v_extend (pf_ge2, pf_dst)
+                ptr_set<a> (pf_dst | ptr_add<a> (p_work, n1_ge),
+                                     ptr_get<a> (pf_src | p_src))
+              prval pf_ge = array_v_extend (pf_ge, pf_dst)
               prval pf_between = array_v_extend (pf_between, pf_src)
             in
-              loop (pf_lt, pf_between, pf_after,
-                    pf_ge1, pf_pivot, pf_ge2, pf_work |
-                    succ i, n1_lt, succ n1_ge)
+              loop (pf_le, pf_between, pf_after,
+                    pf_ge, pf_work, pf_pivot |
+                    succ i, n1_le, succ n1_ge)
             end
           else
-            let      (* Move the element earlier in the same array. *)
+            let  (* The element is < the pivot. Move it earlier in the
+                    same array. *)
               prval @(pf_dst, pf_between) = array_v_uncons pf_between
-              val p_dst = ptr_add<a> (p_arr, n1_lt)
               val () =
-                ptr_set<a>
-                  (pf_dst | p_dst, ptr_get<a> (pf_src | p_src))
-              prval pf_lt = array_v_extend (pf_lt, pf_dst)
+                ptr_set<a> (pf_dst | ptr_add<a> (p_arr, n1_le),
+                                     ptr_get<a> (pf_src | p_src))
+              prval pf_le = array_v_extend (pf_le, pf_dst)
               prval pf_between = array_v_extend (pf_between, pf_src)
             in
-              loop (pf_lt, pf_between, pf_after,
-                    pf_ge1, pf_pivot, pf_ge2, pf_work |
-                    succ i, succ n1_lt, n1_ge)
+              loop (pf_le, pf_between, pf_after,
+                    pf_ge, pf_work, pf_pivot |
+                    succ i, succ n1_le, n1_ge)
             end
         end
 
-    prval pf_ge1 = pf_ge
-    prval pf_ge2 =
-      array_v_nil {a} {p_work + (n0_ge * sizeof a) + sizeof a} ()
+    prval () = lemma_mul_isfun {n_before + 1, sizeof a}
+                               {n0_le + n0_ge + 1, sizeof a} ()
   in
-    loop (pf_lt, pf_between, pf_after,
-          pf_ge1, pf_pivot, pf_ge2, pf_work |
-          i0, n0_lt, succ n0_ge)
+    loop (pf_le, pf_between, pf_after,
+          pf_ge, pf_work, pf_pivot |
+          succ (n0_le + n0_ge), n0_le, n0_ge)
   end
+
+(*
 
 fn {a : vt@ype}
 partition_array_after_pivot_selection
@@ -874,28 +832,52 @@ select_pivot_and_partition_array
            p_arr     : ptr p_arr,
            p_work    : ptr p_work,
            n         : size_t n)
-    :<!wrt> [n_lt, n_ge : nat | n_lt + n_ge == n]
-            @(array_v (a, p_arr, n),
+    :<!wrt> [n_le, n_ge : nat | n_le + 1 + n_ge == n]
+            @(array_v (a, p_arr, n_le),
+              a @ (p_arr + (n_le * sizeof a)),
+              array_v (a, p_arr + (n_le * sizeof a) + sizeof a,
+                       n - n_le - 1),
               array_v (a?, p_work, n) |
-              size_t n_lt,
-              size_t n_ge) =
+              size_t n_le) =
   let
-    val @(pf_before, pf_pivot, pf_after |
-          _, p_pivot, _, n_before, n_after) =
+    val @(pf_before, pf_pivot_entry, pf_after | n_before) =
       array_select_pivot<a> (pf_arr | p_arr, n)
-    val @(pf_lt, pf_after_lt, pf_ge, pf_after_ge | n_lt, n_ge) =
+
+    var pivot =
+      ptr_get<a> (pf_pivot_entry | ptr_add<a> (p_arr, n_before))
+    val pf_between = array_v_sing {a?!} pf_pivot_entry
+
+    val @(pf_le, pf_after_le, pf_ge, pf_after_ge | n_le) =
       partition_array_after_pivot_selection<a>
-        (pf_before, pf_pivot, pf_after, pf_work |
-         p_arr, p_work, p_pivot, n, n_before, n_after)
-    val p_after_lt = ptr_add<a> (p_arr, n_lt)
-    val () = array_copy<a> (!p_after_lt, !p_work, n_ge)
-    prval pf_arr = array_v_unsplit (pf_lt, pf_after_lt)
+        (pf_before, pf_between, pf_after, pf_work, view@ pivot |
+         p_arr, p_work, addr@ pivot, n, n_before)
+
+    val @(pf_pivot_entry1, pf_ge1) = array_v_uncons pf_after_le
+    val () =
+      ptr_set<a> (pf_pivot_entry1 | ptr_add<a> (p_arr, n_le), pivot)
+    val () = array_copy<a> (!ptr_add<a> (p_arr, succ n_le),
+                            !p_work, n - succ n_le)
+
     prval pf_ge = discard_used_contents {a} pf_ge
     prval pf_work = array_v_unsplit (pf_ge, pf_after_ge)
   in
-    @(pf_arr, pf_work | n_lt, n_ge)
+    @(pf_le, pf_pivot_entry1, pf_ge1 | n_le)
   end
 
+*)
+
+
+
+
+
+
+
+
+
+
+
+
+(*
 fn {a : vt@ype}
 partition_array
           {n         : pos}
@@ -914,6 +896,9 @@ partition_array
   in
     @(n_lt, n_ge)
   end
+*)
+
+
 
 (*
 implement {a}

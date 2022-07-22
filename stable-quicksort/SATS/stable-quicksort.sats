@@ -97,9 +97,7 @@ array_stable_quicksort$lt :
 //
 fn {a : vt@ype}
 array_stable_quicksort$cmp :
-  (&RD(a), &RD(a)) -<>
-    [i : int | ~1 <= i; i <= 1]
-    int i
+  (&RD(a), &RD(a)) -<> int
 
 fn {a : vt@ype}
 array_stable_quicksort$pivot_index :
