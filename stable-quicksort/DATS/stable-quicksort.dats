@@ -870,9 +870,6 @@ select_pivot_and_partition_array
     @(pf_le, pf_pivot_entry1, pf_ge1, pf_work | n_le)
   end
 
-
-
-(*
 implement {a}
 array_stable_quicksort_given_workspace {n} (arr, n, workspace) =
   if n = 0 then
@@ -880,43 +877,46 @@ array_stable_quicksort_given_workspace {n} (arr, n, workspace) =
   else
     let
       fun
-      loop {m  : nat}
-           {n1 : int | m <= n1}
-           .<m>.
-           (subarr    : &array (a, m) >> _,
-            workspace : &array (a?, n1) >> _,
-            m         : size_t m)
+      loop {n1      : nat | n1 <= n}
+           {p_arr1  : addr}
+           {p_work  : addr}
+           .<n1>.
+           (pf_arr1 : !array_v (a, p_arr1, n1) >> _,
+            pf_work : !array_v (a?, p_work, n) >> _ |
+            p_arr1  : ptr p_arr1,
+            p_work  : ptr p_work,
+            n1      : size_t n1)
           :<!wrt> void =
-        if m <= ARRAY_INSERTION_SORT_THRESHOLD then
+        if n1 <= ARRAY_INSERTION_SORT_THRESHOLD then
           () (* FIXME: PUT AN INSERTION SORT HERE. *) // FIXME // FIXME // FIXME // FIXME // FIXME // FIXME
         else
           let
-            prval @(pf_work, pf_not_used) =
-              array_v_split {a?} {..} {n1} {m} (view@ workspace)
-            macdef work = !(addr@ workspace)
+            prval @(pf_work1, pf_not_used) =
+              array_v_split {a?} {..} {n} {n1} pf_work
 
-            val [m_lt : int, m_ge : int]
-                @(m_lt, m_ge) = partition_array<a> (subarr, work, m)
+            val [n1_le : int]
+                @(pf_le, pf_pivot, pf_ge, pf_work1 | n1_le) =
+              select_pivot_and_partition_array<a>
+                (pf_arr1, pf_work1 | p_arr1, p_work, n1)
 
-            prval () = view@ workspace :=
-              array_v_unsplit (pf_work, pf_not_used)
+            prval () = pf_work :=
+              array_v_unsplit (pf_work1, pf_not_used)
 
-            prval @(pf_lt, pf_ge) =
-              array_v_split {a} {..} {m} {m_lt} (view@ subarr)
-            macdef arr_lt = !(addr@ subarr)
-            macdef arr_ge = !(ptr_add<a> (addr@ subarr, m_lt))
+            val p_le = p_arr1
+            and p_ge = ptr_add<a> (p_arr1, succ n1_le)
+            and n1_ge = n1 - succ n1_le
+            val () = loop (pf_le, pf_work | p_le, p_work, n1_le)
+            val () = loop (pf_ge, pf_work | p_ge, p_work, n1_ge)
 
-            val () = loop (arr_lt, workspace, m_lt)
-            val () = loop (arr_ge, workspace, m_ge)
-
-            prval () = view@ subarr := array_v_unsplit (pf_lt, pf_ge)
+            prval () = pf_arr1 := array_v_extend (pf_le, pf_pivot)
+            prval () = pf_arr1 := array_v_unsplit (pf_arr1, pf_ge)
           in
           end
 
       prval () = lemma_array_param arr
     in
-      loop (arr, workspace, n)
+      loop (view@ arr, view@ workspace |
+            addr@ arr, addr@ workspace, n)
     end
-*)
 
 (*------------------------------------------------------------------*)
