@@ -779,47 +779,44 @@ partition_array_after_pivot
           succ (n0_le + n0_ge), n0_le, n0_ge)
   end
 
-(*
-
 fn {a : vt@ype}
-partition_array_after_pivot_selection
-          {n         : pos}
-          {n_before  : nat}
-          {n_after   : nat | n_before + 1 + n_after == n}
-          {p_arr     : addr}
-          {p_work    : addr}
-          (pf_before : array_v (a, p_arr, n_before),
-           pf_pivot  : a @ (p_arr + (n_before * sizeof a)),
-           pf_after  : array_v (a, (p_arr + (n_before * sizeof a)
-                                      + sizeof a),
-                                n_after),
-           pf_work   : array_v (a?, p_work, n) |
+partition_array_after_pivot_removal
+          {n          : pos}
+          {n_before   : nat | n_before + 1 <= n}
+          {p_arr      : addr}
+          {p_work     : addr}
+          {p_pivot    : addr}
+          (pf_before  : array_v (a, p_arr, n_before),
+           pf_emptied : a?! @ (p_arr + (n_before * sizeof a)),
+           pf_after   : array_v
+                          (a,
+                           p_arr + (n_before * sizeof a) + sizeof a,
+                           n - n_before - 1),
+           pf_work   : array_v (a?, p_work, n),
+           pf_pivot  : !(a @ p_pivot) |
            p_arr     : ptr p_arr,
            p_work    : ptr p_work,
-           p_pivot   : ptr (p_arr + (n_before * sizeof a)),
+           p_pivot   : ptr p_pivot,
            n         : size_t n,
-           n_before  : size_t n_before,
-           n_after   : size_t n_after)
-    :<!wrt> [n_lt, n_ge : nat | n_lt + n_ge == n]
-            @(array_v (a, p_arr, n_lt),
-              array_v (a?!, p_arr + (n_lt * sizeof a), n_ge),
+           n_before  : size_t n_before)
+    :<!wrt> [n_le, n_ge : nat | n_le + n_ge + 1 == n]
+            @(array_v (a, p_arr, n_le),
+              array_v (a?!, p_arr + (n_le * sizeof a), n - n_le),
               array_v (a, p_work, n_ge),
-              array_v (a?, p_work + (n_ge * sizeof a), n_lt) |
-              size_t n_lt,
+              array_v (a?, p_work + (n_ge * sizeof a), n - n_ge) |
+              size_t n_le,
               size_t n_ge) =
   let
-    val @(pf_lt, pf_between, pf_ge, pf_work | n_lt, n_ge) =
-      partition_array_before_pivot<a> (pf_before, pf_work, pf_pivot |
-                                       p_arr, p_work, p_pivot,
-                                       n_before)
-    val @(pf_between, pf_work, pf_pivot | ) =
-      move_pivot<a> (pf_between, pf_pivot, pf_work |
-                     p_arr, p_work, n, n_lt, n_before, n_ge)
+    val @(pf_le, pf_between, pf_ge, pf_work | n_le, n_ge) =
+      partition_array_before_pivot<a>
+        (pf_before, pf_work, pf_pivot |
+         p_arr, p_work, p_pivot, n_before)
+    prval pf_between = array_v_extend (pf_between, pf_emptied)
   in
-    partition_array_after_pivot<a> (pf_lt, pf_between, pf_after,
-                                    pf_ge, pf_pivot, pf_work |
-                                    p_arr, p_work, n, n_lt,
-                                    succ n_before, n_ge)
+    partition_array_after_pivot<a>
+      {n} {n_before}
+      (pf_le, pf_between, pf_after, pf_ge, pf_work, pf_pivot |
+       p_arr, p_work, p_pivot, n, n_le, n_ge)
   end
 
 fn {a : vt@ype}
@@ -832,7 +829,7 @@ select_pivot_and_partition_array
            p_arr     : ptr p_arr,
            p_work    : ptr p_work,
            n         : size_t n)
-    :<!wrt> [n_le, n_ge : nat | n_le + 1 + n_ge == n]
+    :<!wrt> [n_le : nat | n_le + 1 <= n]
             @(array_v (a, p_arr, n_le),
               a @ (p_arr + (n_le * sizeof a)),
               array_v (a, p_arr + (n_le * sizeof a) + sizeof a,
@@ -840,63 +837,38 @@ select_pivot_and_partition_array
               array_v (a?, p_work, n) |
               size_t n_le) =
   let
+    (* Split the array at a pivot. *)
     val @(pf_before, pf_pivot_entry, pf_after | n_before) =
       array_select_pivot<a> (pf_arr | p_arr, n)
 
+    (* Remove the pivot from the array. Move it to the stack frame. *)
     var pivot =
       ptr_get<a> (pf_pivot_entry | ptr_add<a> (p_arr, n_before))
-    val pf_between = array_v_sing {a?!} pf_pivot_entry
 
-    val @(pf_le, pf_after_le, pf_ge, pf_after_ge | n_le) =
-      partition_array_after_pivot_selection<a>
-        (pf_before, pf_between, pf_after, pf_work, view@ pivot |
+    (* Partition into stuff <= the pivot in the original array, and
+       stuff >= the pivot in the workspace array. *)
+    val [n_le : int, n_ge : int]
+        @(pf_le, pf_after_le, pf_ge, pf_after_ge | n_le, n_ge) =
+      partition_array_after_pivot_removal<a>
+        (pf_before, pf_pivot_entry, pf_after, pf_work, view@ pivot |
          p_arr, p_work, addr@ pivot, n, n_before)
 
-    val @(pf_pivot_entry1, pf_ge1) = array_v_uncons pf_after_le
-    val () =
-      ptr_set<a> (pf_pivot_entry1 | ptr_add<a> (p_arr, n_le), pivot)
-    val () = array_copy<a> (!ptr_add<a> (p_arr, succ n_le),
-                            !p_work, n - succ n_le)
+    (* Move the pivot, and the stuff that is now in the workspace
+       array, back into the original array. *)
+    prval @(pf_pivot_entry1, pf_ge1) = array_v_uncons pf_after_le
+    val p_pivot_entry1 = ptr_add<a> (p_arr, n_le)
+    val p_ge1 = ptr1_succ<a> p_pivot_entry1
+    val () = ptr_set<a> (pf_pivot_entry1 | p_pivot_entry1, pivot)
+    val () = array_copy<a> (!p_ge1, !p_work, n_ge)
 
+    (* Restore the view of the workspace array. *)
     prval pf_ge = discard_used_contents {a} pf_ge
+    prval () = lemma_mul_isfun {n - n_le - 1, sizeof a}
+                               {n_ge, sizeof a} ()
     prval pf_work = array_v_unsplit (pf_ge, pf_after_ge)
   in
-    @(pf_le, pf_pivot_entry1, pf_ge1 | n_le)
+    @(pf_le, pf_pivot_entry1, pf_ge1, pf_work | n_le)
   end
-
-*)
-
-
-
-
-
-
-
-
-
-
-
-
-(*
-fn {a : vt@ype}
-partition_array
-          {n         : pos}
-          (arr       : &array (a, n) >> _,
-           workspace : &array (a?, n) >> _,
-           n         : size_t n)
-    :<!wrt> [n_lt, n_ge : nat | n_lt + n_ge == n]
-            @(size_t n_lt,
-              size_t n_ge) =
-  let
-    val @(pf_arr, pf_work | n_lt, n_ge) =
-      select_pivot_and_partition_array<a>
-        (view@ arr, view@ workspace | addr@ arr, addr@ workspace, n)
-    prval () = view@ arr := pf_arr
-    prval () = view@ workspace := pf_work
-  in
-    @(n_lt, n_ge)
-  end
-*)
 
 
 
