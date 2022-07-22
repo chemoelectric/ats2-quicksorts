@@ -25,7 +25,8 @@
 staload "stable-quicksort/SATS/stable-quicksort.sats"
 staload UN = "prelude/SATS/unsafe.sats"
 
-#define INSERTION_SORT_THRESHOLD 32
+#define LIST_INSERTION_SORT_THRESHOLD 32
+#define ARRAY_INSERTION_SORT_THRESHOLD 1 (* FIXME *) (* FIXME *) (* FIXME *) (* FIXME *) (* FIXME *) (* FIXME *) (* FIXME *)
 
 #define NIL list_vt_nil ()
 #define ::  list_vt_cons
@@ -502,7 +503,7 @@ list_vt_stable_quicksort lst =
            (lst : list_vt (a, m),
             m   : int m)
         :<!wrt> extensible_list_vt (a, m) =
-      if INSERTION_SORT_THRESHOLD < m then
+      if LIST_INSERTION_SORT_THRESHOLD < m then
         let
           val @(elst_lt, elst_eq, elst_gt) =
             partition_list<a> (lst, m)
@@ -526,7 +527,7 @@ list_vt_stable_quicksort lst =
 
 (*------------------------------------------------------------------*)
 
-implement {a : vt@ype}
+implement {a}
 array_stable_quicksort$lt (x, y) =
   array_stable_quicksort$cmp<a> (x, y) < 0
 
@@ -864,7 +865,7 @@ partition_array_after_pivot_selection
   end
 
 fn {a : vt@ype}
-partition_array
+select_pivot_and_partition_array
           {n         : pos}
           {p_arr     : addr}
           {p_work    : addr}
@@ -894,5 +895,71 @@ partition_array
   in
     @(pf_arr, pf_work | n_lt, n_ge)
   end
+
+fn {a : vt@ype}
+partition_array
+          {n         : pos}
+          (arr       : &array (a, n) >> _,
+           workspace : &array (a?, n) >> _,
+           n         : size_t n)
+    :<!wrt> [n_lt, n_ge : nat | n_lt + n_ge == n]
+            @(size_t n_lt,
+              size_t n_ge) =
+  let
+    val @(pf_arr, pf_work | n_lt, n_ge) =
+      select_pivot_and_partition_array<a>
+        (view@ arr, view@ workspace | addr@ arr, addr@ workspace, n)
+    prval () = view@ arr := pf_arr
+    prval () = view@ workspace := pf_work
+  in
+    @(n_lt, n_ge)
+  end
+
+(*
+implement {a}
+array_stable_quicksort_given_workspace {n} (arr, n, workspace) =
+  if n = 0 then
+    ()
+  else
+    let
+      fun
+      loop {m  : nat}
+           {n1 : int | m <= n1}
+           .<m>.
+           (subarr    : &array (a, m) >> _,
+            workspace : &array (a?, n1) >> _,
+            m         : size_t m)
+          :<!wrt> void =
+        if m <= ARRAY_INSERTION_SORT_THRESHOLD then
+          () (* FIXME: PUT AN INSERTION SORT HERE. *) // FIXME // FIXME // FIXME // FIXME // FIXME // FIXME
+        else
+          let
+            prval @(pf_work, pf_not_used) =
+              array_v_split {a?} {..} {n1} {m} (view@ workspace)
+            macdef work = !(addr@ workspace)
+
+            val [m_lt : int, m_ge : int]
+                @(m_lt, m_ge) = partition_array<a> (subarr, work, m)
+
+            prval () = view@ workspace :=
+              array_v_unsplit (pf_work, pf_not_used)
+
+            prval @(pf_lt, pf_ge) =
+              array_v_split {a} {..} {m} {m_lt} (view@ subarr)
+            macdef arr_lt = !(addr@ subarr)
+            macdef arr_ge = !(ptr_add<a> (addr@ subarr, m_lt))
+
+            val () = loop (arr_lt, workspace, m_lt)
+            val () = loop (arr_ge, workspace, m_ge)
+
+            prval () = view@ subarr := array_v_unsplit (pf_lt, pf_ge)
+          in
+          end
+
+      prval () = lemma_array_param arr
+    in
+      loop (arr, workspace, n)
+    end
+*)
 
 (*------------------------------------------------------------------*)

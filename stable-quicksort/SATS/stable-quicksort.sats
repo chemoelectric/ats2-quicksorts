@@ -74,7 +74,7 @@ array_stable_quicksort_given_workspace :
   {n : int}
   (&array (INV(a), n),
    size_t n,
-   &array (INV(a), n)) -< !wrt >
+   &array (a?, n)) -< !wrt >
     void
 
 fn {a : vt@ype}
@@ -89,6 +89,12 @@ overload array_stable_quicksort with
 overload array_stable_quicksort with
   array_stable_quicksort_not_given_workspace
 
+// Implement either array_stable_quicksort$lt or
+// array_stable_quicksort$cmp
+fn {a : vt@ype}
+array_stable_quicksort$lt :
+  (&RD(a), &RD(a)) -<> bool
+//
 fn {a : vt@ype}
 array_stable_quicksort$cmp :
   (&RD(a), &RD(a)) -<>
