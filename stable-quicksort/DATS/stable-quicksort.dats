@@ -1026,15 +1026,15 @@ array_stable_quicksort_given_workspace {n} (arr, n, workspace) =
   else
     let
       fun
-      loop {n1      : nat | n1 <= n}
-           {p_arr1  : addr}
-           {p_work  : addr}
-           .<n1>.
-           (pf_arr1 : !array_v (a, p_arr1, n1) >> _,
-            pf_work : !array_v (a?, p_work, n) >> _ |
-            p_arr1  : ptr p_arr1,
-            p_work  : ptr p_work,
-            n1      : size_t n1)
+      recurs {n1      : nat | n1 <= n}
+             {p_arr1  : addr}
+             {p_work  : addr}
+             .<n1>.
+             (pf_arr1 : !array_v (a, p_arr1, n1) >> _,
+              pf_work : !array_v (a?, p_work, n) >> _ |
+              p_arr1  : ptr p_arr1,
+              p_work  : ptr p_work,
+              n1      : size_t n1)
           :<!wrt> void =
         if n1 <= ARRAY_INSERTION_SORT_THRESHOLD then
           array_insertion_sort<a> (pf_arr1 | p_arr1, n1)
@@ -1054,18 +1054,32 @@ array_stable_quicksort_given_workspace {n} (arr, n, workspace) =
             val p_le = p_arr1
             and p_ge = ptr_add<a> (p_arr1, succ n1_le)
             and n1_ge = n1 - succ n1_le
-            val () = loop (pf_le, pf_work | p_le, p_work, n1_le)
-            val () = loop (pf_ge, pf_work | p_ge, p_work, n1_ge)
-
-            prval () = pf_arr1 := array_v_extend (pf_le, pf_pivot)
-            prval () = pf_arr1 := array_v_unsplit (pf_arr1, pf_ge)
           in
+            (* Handle the smaller side of the partition first, to
+               reduce stack blowup. The larger side of the partition
+               is handled by a tail recursion. *)
+            if n1_le < n1_ge then
+              let
+                val () = recurs (pf_le, pf_work | p_le, p_work, n1_le)
+                val () = recurs (pf_ge, pf_work | p_ge, p_work, n1_ge)
+                prval () = pf_arr1 := array_v_extend (pf_le, pf_pivot)
+                prval () = pf_arr1 := array_v_unsplit (pf_arr1, pf_ge)
+              in
+              end
+            else
+              let
+                val () = recurs (pf_ge, pf_work | p_ge, p_work, n1_ge)
+                val () = recurs (pf_le, pf_work | p_le, p_work, n1_le)
+                prval () = pf_arr1 := array_v_extend (pf_le, pf_pivot)
+                prval () = pf_arr1 := array_v_unsplit (pf_arr1, pf_ge)
+              in
+              end
           end
 
       prval () = lemma_array_param arr
     in
-      loop (view@ arr, view@ workspace |
-            addr@ arr, addr@ workspace, n)
+      recurs (view@ arr, view@ workspace |
+              addr@ arr, addr@ workspace, n)
     end
 
 implement {a}
