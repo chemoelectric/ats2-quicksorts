@@ -106,7 +106,7 @@ array_stable_quicksort_int
 
     (* implement *)
     (* array_stable_quicksort$pivot_index<int> (arr, n) = *)
-    (*   array_stable_quicksort_pivot_index_random<int> (arr, n) *)
+    (*   array_stable_quicksort_pivot_index_median_of_three<int> (arr, n) *)
   in
     array_stable_quicksort<int> {n} (arr, n)
   end
