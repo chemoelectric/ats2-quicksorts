@@ -27,6 +27,7 @@ staload UN = "prelude/SATS/unsafe.sats"
 
 #define LIST_INSERTION_SORT_THRESHOLD 32
 #define ARRAY_INSERTION_SORT_THRESHOLD 1 (* FIXME *) (* FIXME *) (* FIXME *) (* FIXME *) (* FIXME *) (* FIXME *) (* FIXME *)
+#define ARRAY_STACK_STORAGE_THRESHOLD 256
 
 #define NIL list_vt_nil ()
 #define ::  list_vt_cons
@@ -578,7 +579,7 @@ array_element_lt
     is_lt
   end
 
-implement {a}
+implement {a}      (* FIXME: TEST THAT THIS RETURNS THE MEDIAN OF 3 *) // FIXME // FIXME // FIXME // FIXME // FIXME
 array_stable_quicksort_pivot_index_median_of_three {n} (arr, n) =
   if n <= 2 then
     i2sz 0
@@ -994,5 +995,38 @@ array_stable_quicksort_given_workspace {n} (arr, n, workspace) =
       loop (view@ arr, view@ workspace |
             addr@ arr, addr@ workspace, n)
     end
+
+implement {a}
+array_stable_quicksort_not_given_workspace {n} (arr, n) =
+  let
+    fn
+    quicksort {n         : int}
+              (arr       : &array (a, n),
+               n         : size_t n,
+               workspace : &array (a?, n))
+        :<!wrt> void =
+      array_stable_quicksort_given_workspace<a> (arr, n, workspace)
+
+    prval () = lemma_array_param arr
+  in
+    if n <= ARRAY_STACK_STORAGE_THRESHOLD then
+      let
+        var storage : @[a?][ARRAY_STACK_STORAGE_THRESHOLD]
+
+        prval @(pf_work, pf_rest) =
+          array_v_split {a?} {..} {ARRAY_STACK_STORAGE_THRESHOLD} {n}
+                        (view@ storage)
+        val () = quicksort (arr, n, !(addr@ storage))
+        prval () = view@ storage := array_v_unsplit (pf_work, pf_rest)
+      in
+      end
+    else
+      let
+        val @(pf_work, pfgc_work | p_work) = array_ptr_alloc<a?> n
+        val () = quicksort (arr, n, !p_work)
+        val () = array_ptr_free (pf_work, pfgc_work | p_work)
+      in
+      end
+  end
 
 (*------------------------------------------------------------------*)
