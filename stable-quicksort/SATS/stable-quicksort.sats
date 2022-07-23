@@ -26,11 +26,11 @@
 (*------------------------------------------------------------------*)
 (* List quicksort                                                   *)
 
-typedef list_vt_stable_quicksort_pivot_index_t (a : vt@ype) =
-  {n : pos}
-  (!list_vt (a, n), int n) -< !wrt >
-    [i : int | 0 <= i; i < n]
-    int i
+(* FIXME: WRITE A NEW LIST QUICKSORT THAT USES THE PARTITION STRATEGY
+          ALREADY USED IN THE ARRAY QUICKSORT. This will allow the use
+          of a $lt function as in the array quicksort. It should also
+          be more efficient in the absence of a great many equal
+          keys. *)
 
 fn {a : vt@ype}
 list_vt_stable_quicksort :
@@ -44,30 +44,30 @@ list_vt_stable_quicksort$cmp :
     [i : int | ~1 <= i; i <= 1]
     int i
 
+(* The pivot strategy has a default, but I leave the default
+   unspecified. *)
+typedef list_vt_stable_quicksort_pivot_index_t (a : vt@ype) =
+  {n : pos}
+  (!list_vt (a, n), int n) -< !wrt >
+    [i : int | 0 <= i; i < n]
+    int i
 fn {a : vt@ype}
 list_vt_stable_quicksort$pivot_index :
   list_vt_stable_quicksort_pivot_index_t a
 
+(* Some pivot strategies. *)
 fn {a : vt@ype}
 list_vt_stable_quicksort_pivot_index_random :
   list_vt_stable_quicksort_pivot_index_t a
-
 fn {a : vt@ype}
 list_vt_stable_quicksort_pivot_index_middle :
   list_vt_stable_quicksort_pivot_index_t a
-
 fn {a : vt@ype}
 list_vt_stable_quicksort_pivot_index_first :
   list_vt_stable_quicksort_pivot_index_t a
 
 (*------------------------------------------------------------------*)
 (* Array quicksort                                                  *)
-
-typedef array_stable_quicksort_pivot_index_t (a : vt@ype) =
-  {n : pos}
-  (&array (a, n), size_t n) -< !wrt >
-    [i : int | 0 <= i; i < n]
-    size_t i
 
 fn {a : vt@ype}
 array_stable_quicksort_given_workspace :
@@ -89,28 +89,35 @@ overload array_stable_quicksort with
 overload array_stable_quicksort with
   array_stable_quicksort_not_given_workspace
 
-// Implement either array_stable_quicksort$lt or
-// array_stable_quicksort$cmp
+(* Implement either array_stable_quicksort$lt or
+   array_stable_quicksort$cmp. The former takes
+   precedence. The latter defaults to
+   ‘gcompare_ref_ref<a>’. *)
 fn {a : vt@ype}
 array_stable_quicksort$lt :
   (&RD(a), &RD(a)) -<> bool
-//
 fn {a : vt@ype}
 array_stable_quicksort$cmp :
   (&RD(a), &RD(a)) -<> int
 
+(* The pivot strategy has a default, but I leave the default
+   unspecified. *)
+typedef array_stable_quicksort_pivot_index_t (a : vt@ype) =
+  {n : pos}
+  (&array (a, n), size_t n) -< !wrt >
+    [i : int | 0 <= i; i < n]
+    size_t i
 fn {a : vt@ype}
 array_stable_quicksort$pivot_index :
   array_stable_quicksort_pivot_index_t a
 
+(* Some pivot strategies. *)
 fn {a : vt@ype}
 array_stable_quicksort_pivot_index_random :
   array_stable_quicksort_pivot_index_t a
-
 fn {a : vt@ype}
 array_stable_quicksort_pivot_index_middle :
   array_stable_quicksort_pivot_index_t a
-
 fn {a : vt@ype}
 array_stable_quicksort_pivot_index_median_of_three :
   array_stable_quicksort_pivot_index_t a

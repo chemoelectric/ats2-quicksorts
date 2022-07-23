@@ -115,9 +115,11 @@ host_triplet = @host@
 bin_PROGRAMS =
 EXTRA_PROGRAMS = tests/test-random-lists$(EXEEXT) \
 	tests/test-lists-stability$(EXEEXT) \
+	tests/test-random-arrays$(EXEEXT) \
 	list-ats-dependencies$(EXEEXT)
 TESTS = tests/test-random-lists$(EXEEXT) \
-	tests/test-lists-stability$(EXEEXT)
+	tests/test-lists-stability$(EXEEXT) \
+	tests/test-random-arrays$(EXEEXT)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_ac_append_to_file.m4 \
@@ -193,6 +195,10 @@ list_ats_dependencies_OBJECTS =  \
 am_tests_test_lists_stability_OBJECTS = tests/test_lists_stability-test-lists-stability_tests.$(OBJEXT)
 tests_test_lists_stability_OBJECTS =  \
 	$(am_tests_test_lists_stability_OBJECTS)
+am_tests_test_random_arrays_OBJECTS =  \
+	tests/test_random_arrays-test-random-arrays_tests.$(OBJEXT)
+tests_test_random_arrays_OBJECTS =  \
+	$(am_tests_test_random_arrays_OBJECTS)
 am_tests_test_random_lists_OBJECTS =  \
 	tests/test_random_lists-test-random-lists_tests.$(OBJEXT)
 tests_test_random_lists_OBJECTS =  \
@@ -216,6 +222,7 @@ am__depfiles_remade = ./$(DEPDIR)/list_ats_dependencies-list-ats-dependencies_de
 	stable-quicksort/DATS/$(DEPDIR)/stable-quicksort_dats.Plo \
 	stable-quicksort/SATS/$(DEPDIR)/stable-quicksort_sats.Plo \
 	tests/$(DEPDIR)/test_lists_stability-test-lists-stability_tests.Po \
+	tests/$(DEPDIR)/test_random_arrays-test-random-arrays_tests.Po \
 	tests/$(DEPDIR)/test_random_lists-test-random-lists_tests.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -239,8 +246,10 @@ am__v_CCLD_1 =
 SOURCES = $(nodist_libats2_stable_quicksort_la_SOURCES) \
 	$(nodist_list_ats_dependencies_SOURCES) \
 	$(tests_test_lists_stability_SOURCES) \
+	$(tests_test_random_arrays_SOURCES) \
 	$(tests_test_random_lists_SOURCES)
 DIST_SOURCES = $(tests_test_lists_stability_SOURCES) \
+	$(tests_test_random_arrays_SOURCES) \
 	$(tests_test_random_lists_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
@@ -643,11 +652,12 @@ AUTOMAKE_OPTIONS = foreign subdir-objects -Wno-portability
 @CODE_COVERAGE_ENABLED_TRUE@AM_DISTCHECK_CONFIGURE_FLAGS := $(AM_DISTCHECK_CONFIGURE_FLAGS) --disable-code-coverage
 EXTRA_DIST = $(srcdir)/silent-rules.mk COPYING INSTALL README AUTHORS \
 	tests/test-random-lists.dats tests/test-lists-stability.dats \
-	list-ats-dependencies.dats
+	tests/test-random-arrays.dats list-ats-dependencies.dats
 MOSTLYCLEANFILES = 
 CLEANFILES = $(STABLE_QUICKSORT_SATS_C) $(STABLE_QUICKSORT_DATS_C) \
 	tests/test-random-lists tests/test-random-lists_tests.c \
 	tests/test-lists-stability tests/test-lists-stability_tests.c \
+	tests/test-random-arrays tests/test-random-arrays_tests.c \
 	list-ats-dependencies list-ats-dependencies_depsprog.c
 DISTCLEANFILES = Makefile GNUmakefile
 BUILT_SOURCES = 
@@ -709,6 +719,11 @@ tests_test_lists_stability_DEPENDENCIES =  \
 tests_test_lists_stability_CPPFLAGS = $(AM_CPPFLAGS) \
 	-DATS_MEMALLOC_LIBC
 tests_test_lists_stability_LDADD = libats2-stable-quicksort.la
+tests_test_random_arrays_SOURCES = tests/test-random-arrays_tests.c
+tests_test_random_arrays_DEPENDENCIES = tests/test-random-arrays.dats \
+	libats2-stable-quicksort.la $(STABLE_QUICKSORT_HATS)
+tests_test_random_arrays_CPPFLAGS = $(AM_CPPFLAGS) -DATS_MEMALLOC_LIBC
+tests_test_random_arrays_LDADD = libats2-stable-quicksort.la
 nodist_list_ats_dependencies_SOURCES =  \
 	list-ats-dependencies_depsprog.c
 list_ats_dependencies_CPPFLAGS = $(AM_CPPFLAGS) -DATS_MEMALLOC_LIBC
@@ -877,6 +892,12 @@ tests/test_lists_stability-test-lists-stability_tests.$(OBJEXT):  \
 tests/test-lists-stability$(EXEEXT): $(tests_test_lists_stability_OBJECTS) $(tests_test_lists_stability_DEPENDENCIES) $(EXTRA_tests_test_lists_stability_DEPENDENCIES) tests/$(am__dirstamp)
 	@rm -f tests/test-lists-stability$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(tests_test_lists_stability_OBJECTS) $(tests_test_lists_stability_LDADD) $(LIBS)
+tests/test_random_arrays-test-random-arrays_tests.$(OBJEXT):  \
+	tests/$(am__dirstamp) tests/$(DEPDIR)/$(am__dirstamp)
+
+tests/test-random-arrays$(EXEEXT): $(tests_test_random_arrays_OBJECTS) $(tests_test_random_arrays_DEPENDENCIES) $(EXTRA_tests_test_random_arrays_DEPENDENCIES) tests/$(am__dirstamp)
+	@rm -f tests/test-random-arrays$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(tests_test_random_arrays_OBJECTS) $(tests_test_random_arrays_LDADD) $(LIBS)
 tests/test_random_lists-test-random-lists_tests.$(OBJEXT):  \
 	tests/$(am__dirstamp) tests/$(DEPDIR)/$(am__dirstamp)
 
@@ -899,6 +920,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@stable-quicksort/DATS/$(DEPDIR)/stable-quicksort_dats.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@stable-quicksort/SATS/$(DEPDIR)/stable-quicksort_sats.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_lists_stability-test-lists-stability_tests.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_random_arrays-test-random-arrays_tests.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_random_lists-test-random-lists_tests.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -958,6 +980,20 @@ tests/test_lists_stability-test-lists-stability_tests.obj: tests/test-lists-stab
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/test-lists-stability_tests.c' object='tests/test_lists_stability-test-lists-stability_tests.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_lists_stability_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tests/test_lists_stability-test-lists-stability_tests.obj `if test -f 'tests/test-lists-stability_tests.c'; then $(CYGPATH_W) 'tests/test-lists-stability_tests.c'; else $(CYGPATH_W) '$(srcdir)/tests/test-lists-stability_tests.c'; fi`
+
+tests/test_random_arrays-test-random-arrays_tests.o: tests/test-random-arrays_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_random_arrays_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tests/test_random_arrays-test-random-arrays_tests.o -MD -MP -MF tests/$(DEPDIR)/test_random_arrays-test-random-arrays_tests.Tpo -c -o tests/test_random_arrays-test-random-arrays_tests.o `test -f 'tests/test-random-arrays_tests.c' || echo '$(srcdir)/'`tests/test-random-arrays_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/test_random_arrays-test-random-arrays_tests.Tpo tests/$(DEPDIR)/test_random_arrays-test-random-arrays_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/test-random-arrays_tests.c' object='tests/test_random_arrays-test-random-arrays_tests.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_random_arrays_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tests/test_random_arrays-test-random-arrays_tests.o `test -f 'tests/test-random-arrays_tests.c' || echo '$(srcdir)/'`tests/test-random-arrays_tests.c
+
+tests/test_random_arrays-test-random-arrays_tests.obj: tests/test-random-arrays_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_random_arrays_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tests/test_random_arrays-test-random-arrays_tests.obj -MD -MP -MF tests/$(DEPDIR)/test_random_arrays-test-random-arrays_tests.Tpo -c -o tests/test_random_arrays-test-random-arrays_tests.obj `if test -f 'tests/test-random-arrays_tests.c'; then $(CYGPATH_W) 'tests/test-random-arrays_tests.c'; else $(CYGPATH_W) '$(srcdir)/tests/test-random-arrays_tests.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/test_random_arrays-test-random-arrays_tests.Tpo tests/$(DEPDIR)/test_random_arrays-test-random-arrays_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/test-random-arrays_tests.c' object='tests/test_random_arrays-test-random-arrays_tests.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_random_arrays_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tests/test_random_arrays-test-random-arrays_tests.obj `if test -f 'tests/test-random-arrays_tests.c'; then $(CYGPATH_W) 'tests/test-random-arrays_tests.c'; else $(CYGPATH_W) '$(srcdir)/tests/test-random-arrays_tests.c'; fi`
 
 tests/test_random_lists-test-random-lists_tests.o: tests/test-random-lists_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_random_lists_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tests/test_random_lists-test-random-lists_tests.o -MD -MP -MF tests/$(DEPDIR)/test_random_lists-test-random-lists_tests.Tpo -c -o tests/test_random_lists-test-random-lists_tests.o `test -f 'tests/test-random-lists_tests.c' || echo '$(srcdir)/'`tests/test-random-lists_tests.c
@@ -1268,6 +1304,13 @@ tests/test-lists-stability.log: tests/test-lists-stability$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+tests/test-random-arrays.log: tests/test-random-arrays$(EXEEXT)
+	@p='tests/test-random-arrays$(EXEEXT)'; \
+	b='tests/test-random-arrays'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 .test.log:
 	@p='$<'; \
 	$(am__set_b); \
@@ -1523,6 +1566,7 @@ distclean: distclean-am
 	-rm -f stable-quicksort/DATS/$(DEPDIR)/stable-quicksort_dats.Plo
 	-rm -f stable-quicksort/SATS/$(DEPDIR)/stable-quicksort_sats.Plo
 	-rm -f tests/$(DEPDIR)/test_lists_stability-test-lists-stability_tests.Po
+	-rm -f tests/$(DEPDIR)/test_random_arrays-test-random-arrays_tests.Po
 	-rm -f tests/$(DEPDIR)/test_random_lists-test-random-lists_tests.Po
 	-rm -f GNUmakefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -1577,6 +1621,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f stable-quicksort/DATS/$(DEPDIR)/stable-quicksort_dats.Plo
 	-rm -f stable-quicksort/SATS/$(DEPDIR)/stable-quicksort_sats.Plo
 	-rm -f tests/$(DEPDIR)/test_lists_stability-test-lists-stability_tests.Po
+	-rm -f tests/$(DEPDIR)/test_random_arrays-test-random-arrays_tests.Po
 	-rm -f tests/$(DEPDIR)/test_random_lists-test-random-lists_tests.Po
 	-rm -f GNUmakefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
@@ -1783,6 +1828,7 @@ ats-includes-distclean:
 	$(call v,PATSOPT)$(PATSOPT) -o $(@) $(TOTAL_PATSOPTFLAGS) -d $(<)
 tests/test-random-lists_tests.c: tests/test-random-lists.dats
 tests/test-lists-stability_tests.c: tests/test-lists-stability.dats
+tests/test-random-arrays_tests.c: tests/test-random-arrays.dats
 
 tests-clean:
 	-rm -f tests/*.$(OBJEXT)

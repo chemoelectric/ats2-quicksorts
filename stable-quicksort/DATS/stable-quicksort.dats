@@ -275,6 +275,11 @@ list_vt_insertion_sort
 (*------------------------------------------------------------------*)
 
 implement {a}
+list_vt_stable_quicksort$pivot_index (lst, n) =
+  (* The default is random pivot. *)
+  list_vt_stable_quicksort_pivot_index_random (lst, n)
+
+implement {a}
 list_vt_stable_quicksort_pivot_index_random {n} (lst, n) =
   let
     val u64_n = $UN.cast{uint64 n} n
@@ -292,10 +297,6 @@ list_vt_stable_quicksort_pivot_index_middle (lst, n) =
 implement {a}
 list_vt_stable_quicksort_pivot_index_first (lst, n) =
   0
-
-implement {a}                   (* The default is random pivot. *)
-list_vt_stable_quicksort$pivot_index (lst, n) =
-  list_vt_stable_quicksort_pivot_index_random (lst, n)
 
 fn {a : vt@ype}
 compare_head_with_pivot
@@ -544,6 +545,17 @@ list_vt_stable_quicksort lst =
 implement {a}
 array_stable_quicksort$lt (x, y) =
   array_stable_quicksort$cmp<a> (x, y) < 0
+
+implement {a}
+array_stable_quicksort$cmp (x, y) =
+  (* This default is the same as for array_quicksort$cmp in the
+     prelude. *)
+  gcompare_ref_ref<a> (x, y)
+
+implement {a}
+array_stable_quicksort$pivot_index {n} (arr, n) =
+  (* The default pivot strategy is median of three. *)
+  array_stable_quicksort_pivot_index_median_of_three {n} (arr, n)
 
 implement {a}
 array_stable_quicksort_pivot_index_random {n} (arr, n) =
