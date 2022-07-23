@@ -183,6 +183,7 @@ TESTS =
 TESTS += tests/test-random-lists
 TESTS += tests/test-lists-stability
 TESTS += tests/test-random-arrays
+TESTS += tests/test-arrays-stability
 
 EXTRA_PROGRAMS += tests/test-random-lists
 CLEANFILES += tests/test-random-lists
@@ -234,6 +235,23 @@ tests_test_random_arrays_LDADD =
 tests_test_random_arrays_LDADD += libats2-stable-quicksort.la
 EXTRA_DIST += tests/test-random-arrays.dats
 tests/test-random-arrays_tests.c: tests/test-random-arrays.dats
+
+EXTRA_PROGRAMS += tests/test-arrays-stability
+CLEANFILES += tests/test-arrays-stability
+CLEANFILES += tests/test-arrays-stability_tests.c
+tests_test_arrays_stability_SOURCES =
+tests_test_arrays_stability_SOURCES += tests/test-arrays-stability_tests.c
+tests_test_arrays_stability_DEPENDENCIES =
+tests_test_arrays_stability_DEPENDENCIES += tests/test-arrays-stability.dats
+tests_test_arrays_stability_DEPENDENCIES += libats2-stable-quicksort.la
+tests_test_arrays_stability_DEPENDENCIES += $(STABLE_QUICKSORT_HATS)
+tests_test_arrays_stability_CPPFLAGS =
+tests_test_arrays_stability_CPPFLAGS += $(AM_CPPFLAGS)
+tests_test_arrays_stability_CPPFLAGS += -DATS_MEMALLOC_LIBC
+tests_test_arrays_stability_LDADD =
+tests_test_arrays_stability_LDADD += libats2-stable-quicksort.la
+EXTRA_DIST += tests/test-arrays-stability.dats
+tests/test-arrays-stability_tests.c: tests/test-arrays-stability.dats
 
 tests-clean:
 	-rm -f tests/*.$(OBJEXT)
