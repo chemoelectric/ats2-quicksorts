@@ -26,7 +26,7 @@ staload "stable-quicksort/SATS/stable-quicksort.sats"
 staload UN = "prelude/SATS/unsafe.sats"
 
 #define LIST_INSERTION_SORT_THRESHOLD 32
-#define ARRAY_INSERTION_SORT_THRESHOLD 1 (* FIXME *) (* FIXME *) (* FIXME *) (* FIXME *) (* FIXME *) (* FIXME *) (* FIXME *)
+#define ARRAY_INSERTION_SORT_THRESHOLD 32
 #define ARRAY_STACK_STORAGE_THRESHOLD 256
 
 #define NIL list_vt_nil ()
@@ -542,36 +542,6 @@ list_vt_stable_quicksort lst =
 
 (*------------------------------------------------------------------*)
 
-implement {a}
-array_stable_quicksort$lt (x, y) =
-  array_stable_quicksort$cmp<a> (x, y) < 0
-
-implement {a}
-array_stable_quicksort$cmp (x, y) =
-  (* This default is the same as for array_quicksort$cmp in the
-     prelude. *)
-  gcompare_ref_ref<a> (x, y)
-
-implement {a}
-array_stable_quicksort$pivot_index {n} (arr, n) =
-  (* The default pivot strategy is median of three. *)
-  array_stable_quicksort_pivot_index_median_of_three {n} (arr, n)
-
-implement {a}
-array_stable_quicksort_pivot_index_random {n} (arr, n) =
-  let
-    val u64_n = $UN.cast{uint64 n} n
-    val u64_rand : [i : nat] uint64 i = g1ofg0 (random_uint64 ())
-    val u64_pivot = g1uint_mod (u64_rand, u64_n)
-    val i_pivot = $UN.cast{[i : nat | i < n] size_t i} u64_pivot
-  in
-    i_pivot
-  end
-
-implement {a}
-array_stable_quicksort_pivot_index_middle (arr, n) =
-  half n
-
 fn {a : vt@ype}
 array_element_lt
           {n    : int}
@@ -591,6 +561,36 @@ array_element_lt
     is_lt
   end
 
+implement {a}
+array_stable_quicksort$lt (x, y) =
+  array_stable_quicksort$cmp<a> (x, y) < 0
+
+implement {a}
+array_stable_quicksort$cmp (x, y) =
+  (* This default is the same as for array_quicksort$cmp in the
+     prelude. *)
+  gcompare_ref_ref<a> (x, y)
+
+implement {a}
+array_stable_quicksort$pivot_index {n} (arr, n) =
+  (* The default is random pivot. *)
+  array_stable_quicksort_pivot_index_random {n} (arr, n)
+
+implement {a}
+array_stable_quicksort_pivot_index_random {n} (arr, n) =
+  let
+    val u64_n = $UN.cast{uint64 n} n
+    val u64_rand : [i : nat] uint64 i = g1ofg0 (random_uint64 ())
+    val u64_pivot = g1uint_mod (u64_rand, u64_n)
+    val i_pivot = $UN.cast{[i : nat | i < n] size_t i} u64_pivot
+  in
+    i_pivot
+  end
+
+implement {a}
+array_stable_quicksort_pivot_index_middle (arr, n) =
+  half n
+
 implement {a}      (* FIXME: TEST THAT THIS RETURNS THE MEDIAN OF 3 *) // FIXME // FIXME // FIXME // FIXME // FIXME
 array_stable_quicksort_pivot_index_median_of_three {n} (arr, n) =
   if n <= 2 then
@@ -602,22 +602,82 @@ array_stable_quicksort_pivot_index_median_of_three {n} (arr, n) =
       and i_last = pred n
 
       val middle_lt_first =
-        array_element_lt<a> (arr, i_middle, i_first)
+        array_element_lt<a> {n} (arr, i_middle, i_first)
       and last_lt_first =
-        array_element_lt<a> (arr, i_last, i_first)
+        array_element_lt<a> {n} (arr, i_last, i_first)
     in
       if middle_lt_first <> last_lt_first then
         i_first
       else
         let
           val middle_lt_last =
-            array_element_lt<a> (arr, i_middle, i_last)
+            array_element_lt<a> {n} (arr, i_middle, i_last)
         in
           if middle_lt_first <> middle_lt_last then
             i_middle
           else
             i_last
         end
+    end
+
+fn {a : vt@ype}
+insertion_position
+          {n      : int}
+          {i      : pos | i < n}
+          {p_arr  : addr}
+          (pf_arr : !array_v (a, p_arr, n) >> _ |
+           p_arr  : ptr p_arr,
+           i      : size_t i)
+    :<> [j : nat | j <= i]
+        size_t j =
+  let
+    fun
+    loop {k1 : nat | k1 <= i}
+         .<k1>.
+         (pf_arr : !array_v (a, p_arr, n) >> _ |
+          k1     : size_t k1)
+        :<> [j : nat | j <= i]
+            size_t j =
+      if k1 = i2sz 0 then
+        k1
+      else
+        let
+          val k = pred k1
+        in
+          if array_element_lt<a> {n} (!p_arr, i, k) then
+            loop (pf_arr | k)
+          else
+            k1
+        end
+  in
+    loop (pf_arr | i)
+  end
+
+fn {a : vt@ype}
+array_insertion_sort
+          {n       : nat}
+          {p_arr   : addr}
+          (pf_arr  : !array_v (a, p_arr, n) >> _ |
+           p_arr   : ptr p_arr,
+           n       : size_t n)
+    :<!wrt> void =
+  if n > 1 then
+    let
+      fun
+      loop {i : pos | i <= n}
+           .<n - i>.
+           (pf_arr : !array_v (a, p_arr, n) >> _ |
+            i      : size_t i)
+          :<!wrt> void =
+        if i <> n then
+          let
+            val j = insertion_position<a> {n} (pf_arr | p_arr, i)
+          in
+            array_subcirculate<a> (!p_arr, j, i);
+            loop (pf_arr | succ i)
+          end
+    in
+      loop (pf_arr | i2sz 1)
     end
 
 fn {a : vt@ype}
@@ -977,7 +1037,7 @@ array_stable_quicksort_given_workspace {n} (arr, n, workspace) =
             n1      : size_t n1)
           :<!wrt> void =
         if n1 <= ARRAY_INSERTION_SORT_THRESHOLD then
-          () (* FIXME: PUT AN INSERTION SORT HERE. *) // FIXME // FIXME // FIXME // FIXME // FIXME // FIXME
+          array_insertion_sort<a> (pf_arr1 | p_arr1, n1)
         else
           let
             prval @(pf_work1, pf_not_used) =
