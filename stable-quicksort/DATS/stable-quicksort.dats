@@ -49,6 +49,19 @@ lemma_mul_isfun
   end
 
 extern praxi
+array_v_takeout2 :     (* Get views for two distinct array elements.*)
+  {a     : vt@ype}
+  {p     : addr}
+  {n     : int}
+  {i, j  : nat | i < n; j < n; i != j}
+  array_v (a, p, n) -<prf>
+    @(a @ p + (i * sizeof a),
+      a @ p + (j * sizeof a),
+      (a @ p + (i * sizeof a),
+       a @ p + (j * sizeof a)) -<prf,lin>
+        array_v (a, p, n))
+
+extern praxi
 discard_used_contents :
   {a : vt@ype}
   {p : addr}
@@ -530,6 +543,69 @@ list_vt_stable_quicksort lst =
 implement {a}
 array_stable_quicksort$lt (x, y) =
   array_stable_quicksort$cmp<a> (x, y) < 0
+
+implement {a}
+array_stable_quicksort_pivot_index_random {n} (arr, n) =
+  let
+    val u64_n = $UN.cast{uint64 n} n
+    val u64_rand : [i : nat] uint64 i = g1ofg0 (random_uint64 ())
+    val u64_pivot = g1uint_mod (u64_rand, u64_n)
+    val i_pivot = $UN.cast{[i : nat | i < n] size_t i} u64_pivot
+  in
+    i_pivot
+  end
+
+implement {a}
+array_stable_quicksort_pivot_index_middle (arr, n) =
+  half n
+
+fn {a : vt@ype}
+array_element_lt
+          {n    : int}
+          {i, j : nat | i < n; j < n; i != j}
+          (arr  : &array (a, n),
+           i    : size_t i,
+           j    : size_t j)
+    :<> bool =
+  let
+    prval @(pf_i, pf_j, fpf) =
+      array_v_takeout2 {a} {..} {n} {i, j} (view@ arr)
+    val is_lt =
+      array_stable_quicksort$lt<a> (!(ptr_add<a> (addr@ arr, i)),
+                                    !(ptr_add<a> (addr@ arr, j)))
+    prval () = view@ arr := fpf (pf_i, pf_j)
+  in
+    is_lt
+  end
+
+implement {a}
+array_stable_quicksort_pivot_index_median_of_three {n} (arr, n) =
+  if n <= 2 then
+    i2sz 0
+  else
+    let
+      val i_first = i2sz 0
+      and i_middle = half n
+      and i_last = pred n
+
+      val middle_lt_first =
+        array_element_lt<a> (arr, i_middle, i_first)
+      and last_lt_first =
+        array_element_lt<a> (arr, i_last, i_first)
+    in
+      if middle_lt_first <> last_lt_first then
+        i_first
+      else
+        let
+          val middle_lt_last =
+            array_element_lt<a> (arr, i_middle, i_last)
+        in
+          if middle_lt_first <> middle_lt_last then
+            i_middle
+          else
+            i_last
+        end
+    end
 
 fn {a : vt@ype}
 array_select_pivot
