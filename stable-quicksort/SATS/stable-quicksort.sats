@@ -44,8 +44,6 @@ list_vt_stable_quicksort$cmp :
     [i : int | ~1 <= i; i <= 1]
     int i
 
-(* The pivot strategy has a default, but I leave the default
-   unspecified. *)
 typedef list_vt_stable_quicksort_pivot_index_t (a : vt@ype) =
   {n : pos}
   (!list_vt (a, n), int n) -<>
@@ -56,6 +54,9 @@ list_vt_stable_quicksort$pivot_index :
   list_vt_stable_quicksort_pivot_index_t a
 
 (* Some pivot strategies. *)
+fn {a : vt@ype}   (* Some method, chosen for its supposed goodness. *)
+list_vt_stable_quicksort_pivot_index_default :
+  list_vt_stable_quicksort_pivot_index_t a
 fn {a : vt@ype}
 list_vt_stable_quicksort_pivot_index_random :
   list_vt_stable_quicksort_pivot_index_t a
@@ -112,13 +113,16 @@ array_stable_quicksort$pivot_index :
   array_stable_quicksort_pivot_index_t a
 
 (* Some pivot strategies. *)
-fn {a : vt@ype}
+fn {a : vt@ype}   (* Some method, chosen for its supposed goodness. *)
+array_stable_quicksort_pivot_index_default :
+  array_stable_quicksort_pivot_index_t a
+fn {a : vt@ype}              (* This seems to work well in general. *)
 array_stable_quicksort_pivot_index_random :
   array_stable_quicksort_pivot_index_t a
-fn {a : vt@ype}
+fn {a : vt@ype}     (* Currently this works poorly on large arrays. *)
 array_stable_quicksort_pivot_index_middle :
   array_stable_quicksort_pivot_index_t a
-fn {a : vt@ype}
+fn {a : vt@ype}     (* Currently this works poorly on large arrays. *)
 array_stable_quicksort_pivot_index_median_of_three :
   array_stable_quicksort_pivot_index_t a
 

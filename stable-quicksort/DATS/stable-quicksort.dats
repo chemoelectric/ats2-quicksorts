@@ -276,8 +276,12 @@ list_vt_insertion_sort
 
 implement {a}
 list_vt_stable_quicksort$pivot_index (lst, n) =
+  list_vt_stable_quicksort_pivot_index_default<a> (lst, n)
+
+implement {a}
+list_vt_stable_quicksort_pivot_index_default (lst, n) =
   (* The default is random pivot. *)
-  list_vt_stable_quicksort_pivot_index_random (lst, n)
+  list_vt_stable_quicksort_pivot_index_random<a> (lst, n)
 
 implement {a}
 list_vt_stable_quicksort_pivot_index_random {n} (lst, n) =
@@ -574,8 +578,12 @@ array_stable_quicksort$cmp (x, y) =
 
 implement {a}
 array_stable_quicksort$pivot_index {n} (arr, n) =
-  (* The default is random pivot. *)
-  array_stable_quicksort_pivot_index_random {n} (arr, n)
+  array_stable_quicksort_pivot_index_default<a> {n} (arr, n)
+
+implement {a}
+array_stable_quicksort_pivot_index_default {n} (arr, n) =
+  (* The default is random pivot, which I _highly_ recommend. *)
+  array_stable_quicksort_pivot_index_random<a> {n} (arr, n)
 
 implement {a}
 array_stable_quicksort_pivot_index_random {n} (arr, n) =
@@ -593,7 +601,7 @@ implement {a}
 array_stable_quicksort_pivot_index_middle (arr, n) =
   half n
 
-implement {a}      (* FIXME: TEST THAT THIS RETURNS THE MEDIAN OF 3 *) // FIXME // FIXME // FIXME // FIXME // FIXME
+implement {a}
 array_stable_quicksort_pivot_index_median_of_three {n} (arr, n) =
   if n <= 2 then
     i2sz 0
