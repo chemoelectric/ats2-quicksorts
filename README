@@ -12,6 +12,9 @@ linear congruential generator.
 
   Array quicksort
 
+This is a *stable* quicksort, and so (unlike most quicksorts) uses
+O(n) workspace (in addition to the usual space for a stack or queue).
+
 The current default is to use a random pivot, via the built-in linear
 congruential generator. With this pivot choice, the sort seems to
 compete favorably with my system qsort (GNU), and may be noticeably
