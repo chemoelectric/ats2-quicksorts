@@ -111,8 +111,8 @@ array_stable_quicksort_int
     array_stable_quicksort<int> {n} (arr, n)
   end
 
-fn
-test_random_arrays_with_int_keys () : void =
+fn {}
+test_arrays_with_int_keys () : void =
   let
     var sz : Size_t
   in
@@ -120,10 +120,6 @@ test_random_arrays_with_int_keys () : void =
          sz <= i2sz MAX_SZ;
          sz := max (i2sz 1, i2sz 10 * sz))
       let
-        implement
-        array_initize$init<int> (i, x) =
-          x := random_int (~1000, 1000)
-
         val @(pf1, pfgc1 | p1) = array_ptr_alloc<int> sz
         val () = array_initize<int> (!p1, sz)
 
@@ -145,7 +141,7 @@ test_random_arrays_with_int_keys () : void =
         val lst3 = list_vt2t (array2list (!p3, sz))
       in
         assertloc (lst2 = lst3);
-        print! "qsort:";
+        print! "  qsort:";
         print! t1;
         print! "  quick:";
         print! t2;
@@ -158,12 +154,47 @@ test_random_arrays_with_int_keys () : void =
       end
   end
 
+fn
+test_random_arrays_with_int_keys () : void =
+  let
+    implement
+    array_initize$init<int> (i, x) =
+      x := random_int (~1000, 1000)
+  in
+    println! "Random arrays:";
+    test_arrays_with_int_keys<> ()
+  end
+
+fn
+test_presorted_arrays_with_int_keys () : void =
+  let
+    implement
+    array_initize$init<int> (i, x) =
+      x := sz2i i
+  in
+    println! "Pre-sorted arrays:";
+    test_arrays_with_int_keys<> ()
+  end
+
+fn
+test_reverse_presorted_arrays_with_int_keys () : void =
+  let
+    implement
+    array_initize$init<int> (i, x) =
+      x := ~(sz2i i)
+  in
+    println! "Reverse pre-sorted arrays:";
+    test_arrays_with_int_keys<> ()
+  end
+
 (*------------------------------------------------------------------*)
 
 implement
 main0 () =
   begin
-    test_random_arrays_with_int_keys ()
+    test_random_arrays_with_int_keys ();
+    test_presorted_arrays_with_int_keys ();
+    test_reverse_presorted_arrays_with_int_keys ()
   end
 
 (*------------------------------------------------------------------*)

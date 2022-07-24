@@ -182,7 +182,7 @@ libats2_stable_quicksort_la_DEPENDENCIES += $(STABLE_QUICKSORT_CATS)
 TESTS =
 TESTS += tests/test-random-lists
 TESTS += tests/test-lists-stability
-TESTS += tests/test-random-arrays
+TESTS += tests/test-arrays-patterns
 TESTS += tests/test-arrays-stability
 
 EXTRA_PROGRAMS += tests/test-random-lists
@@ -219,22 +219,22 @@ tests_test_lists_stability_LDADD += libats2-stable-quicksort.la
 EXTRA_DIST += tests/test-lists-stability.dats
 tests/test-lists-stability_tests.c: tests/test-lists-stability.dats
 
-EXTRA_PROGRAMS += tests/test-random-arrays
-CLEANFILES += tests/test-random-arrays
-CLEANFILES += tests/test-random-arrays_tests.c
-tests_test_random_arrays_SOURCES =
-tests_test_random_arrays_SOURCES += tests/test-random-arrays_tests.c
-tests_test_random_arrays_DEPENDENCIES =
-tests_test_random_arrays_DEPENDENCIES += tests/test-random-arrays.dats
-tests_test_random_arrays_DEPENDENCIES += libats2-stable-quicksort.la
-tests_test_random_arrays_DEPENDENCIES += $(STABLE_QUICKSORT_HATS)
-tests_test_random_arrays_CPPFLAGS =
-tests_test_random_arrays_CPPFLAGS += $(AM_CPPFLAGS)
-tests_test_random_arrays_CPPFLAGS += -DATS_MEMALLOC_LIBC
-tests_test_random_arrays_LDADD =
-tests_test_random_arrays_LDADD += libats2-stable-quicksort.la
-EXTRA_DIST += tests/test-random-arrays.dats
-tests/test-random-arrays_tests.c: tests/test-random-arrays.dats
+EXTRA_PROGRAMS += tests/test-arrays-patterns
+CLEANFILES += tests/test-arrays-patterns
+CLEANFILES += tests/test-arrays-patterns_tests.c
+tests_test_arrays_patterns_SOURCES =
+tests_test_arrays_patterns_SOURCES += tests/test-arrays-patterns_tests.c
+tests_test_arrays_patterns_DEPENDENCIES =
+tests_test_arrays_patterns_DEPENDENCIES += tests/test-arrays-patterns.dats
+tests_test_arrays_patterns_DEPENDENCIES += libats2-stable-quicksort.la
+tests_test_arrays_patterns_DEPENDENCIES += $(STABLE_QUICKSORT_HATS)
+tests_test_arrays_patterns_CPPFLAGS =
+tests_test_arrays_patterns_CPPFLAGS += $(AM_CPPFLAGS)
+tests_test_arrays_patterns_CPPFLAGS += -DATS_MEMALLOC_LIBC
+tests_test_arrays_patterns_LDADD =
+tests_test_arrays_patterns_LDADD += libats2-stable-quicksort.la
+EXTRA_DIST += tests/test-arrays-patterns.dats
+tests/test-arrays-patterns_tests.c: tests/test-arrays-patterns.dats
 
 EXTRA_PROGRAMS += tests/test-arrays-stability
 CLEANFILES += tests/test-arrays-stability
