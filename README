@@ -12,4 +12,16 @@ linear congruential generator.
 
   Array quicksort
 
-THIS IS A WORK IN PROGRESS
+The current default is to use a random pivot, via the built-in linear
+congruential generator. With this pivot choice, the sort seems to
+compete favorably with my system qsort (GNU), and may be noticeably
+faster when the data is randomized.
+
+I have also implemented other pivot choices, but currently these do
+not work well at all with large arrays. Random pivot works fine,
+however. Perhaps random pivot results in smaller subarrays that can be
+handled more efficiently.
+
+If so, then when the arrays are smaller to start with, breaking
+subarrays up as evenly as possible (such as by estimating the median)
+is likely to be faster. Nevertheless random pivot does rather well.
