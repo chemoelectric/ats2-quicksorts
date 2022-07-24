@@ -48,7 +48,7 @@ list_vt_stable_quicksort$cmp :
    unspecified. *)
 typedef list_vt_stable_quicksort_pivot_index_t (a : vt@ype) =
   {n : pos}
-  (!list_vt (a, n), int n) -< !wrt >
+  (!list_vt (a, n), int n) -<>
     [i : int | 0 <= i; i < n]
     int i
 fn {a : vt@ype}
@@ -104,7 +104,7 @@ array_stable_quicksort$cmp :
    unspecified. *)
 typedef array_stable_quicksort_pivot_index_t (a : vt@ype) =
   {n : pos}
-  (&array (a, n), size_t n) -< !wrt >
+  (&array (a, n), size_t n) -<>
     [i : int | 0 <= i; i < n]
     size_t i
 fn {a : vt@ype}

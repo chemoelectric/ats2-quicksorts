@@ -283,7 +283,8 @@ implement {a}
 list_vt_stable_quicksort_pivot_index_random {n} (lst, n) =
   let
     val u64_n = $UN.cast{uint64 n} n
-    val u64_rand : [i : nat] uint64 i = g1ofg0 (random_uint64 ())
+    val u64_rand : [i : nat] uint64 i =
+      g1ofg0 ($effmask_wrt random_uint64 ())
     val u64_pivot = g1uint_mod (u64_rand, u64_n)
     val i_pivot = $UN.cast{[i : nat | i < n] int i} u64_pivot
   in
@@ -580,7 +581,8 @@ implement {a}
 array_stable_quicksort_pivot_index_random {n} (arr, n) =
   let
     val u64_n = $UN.cast{uint64 n} n
-    val u64_rand : [i : nat] uint64 i = g1ofg0 (random_uint64 ())
+    val u64_rand : [i : nat] uint64 i =
+      g1ofg0 ($effmask_wrt random_uint64 ())
     val u64_pivot = g1uint_mod (u64_rand, u64_n)
     val i_pivot = $UN.cast{[i : nat | i < n] size_t i} u64_pivot
   in
@@ -591,7 +593,6 @@ implement {a}
 array_stable_quicksort_pivot_index_middle (arr, n) =
   half n
 
-(*
 implement {a}      (* FIXME: TEST THAT THIS RETURNS THE MEDIAN OF 3 *) // FIXME // FIXME // FIXME // FIXME // FIXME
 array_stable_quicksort_pivot_index_median_of_three {n} (arr, n) =
   if n <= 2 then
@@ -619,33 +620,6 @@ array_stable_quicksort_pivot_index_median_of_three {n} (arr, n) =
           else
             i_last
         end
-    end
-*)
-
-implement {a}
-array_stable_quicksort_pivot_index_median_of_three {n} (arr, n) =
-  if n <= 2 then
-    i2sz 0
-  else
-    (* Pre-sort the three entries, putting the median of the three in
-       the middle. *)
-    let
-      val i_first = i2sz 0
-      and i_middle = half n
-      and i_last = pred n
-
-      macdef lt = array_element_lt<a>
-      macdef swap = array_interchange<a>
-    in
-      if lt (arr, i_middle, i_first) then
-         swap (arr, i_middle, i_first);
-      if lt (arr, i_last, i_middle) then
-          begin
-            swap (arr, i_last, i_middle);
-            if lt (arr, i_middle, i_first) then
-              swap (arr, i_middle, i_first)
-          end;
-      i_middle
     end
 
 fn {a : vt@ype}
