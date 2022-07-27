@@ -197,7 +197,7 @@ list_vt_insert_reverse
      p_xs points to the node's CDR. *)
   case+ dst of
   | @ (y :: ys) =>
-    if list_vt_stable_quicksort$cmp<a> (!p_x, y) < 0 then
+    if list_vt_stable_quicksort$lt<a> (!p_x, y) then
       let                     (* Move to the next destination node. *)
         val () =
           list_vt_insert_reverse (pf_x, pf_xs | ys, xnode, p_x, p_xs)
@@ -493,14 +493,14 @@ partition_list
     var lst_pivot = lst_pivot
     val+ @ (pivot :: _) = lst_pivot
 
-    implement {a}
-    compare_with_pivot$le (x, pivot) =
+    implement
+    compare_with_pivot$le<a> (x, pivot) =
       ~list_vt_stable_quicksort$lt<a> (pivot, x)
     val @(elst1_le, elst1_ge) =
       partition_pivot_free_list<a> (lst_before, n_before, pivot)
 
-    implement {a}
-    compare_with_pivot$le (x, pivot) =
+    implement
+    compare_with_pivot$le<a> (x, pivot) =
       list_vt_stable_quicksort$lt<a> (x, pivot)
     val @(elst2_le, elst2_ge) =
       partition_pivot_free_list<a> (lst_after, n_after, pivot)
@@ -548,6 +548,28 @@ list_vt_stable_quicksort lst =
     val @(lst_sorted, _) = finalize (recurs (lst, length lst))
   in
     lst_sorted
+  end
+
+(*------------------------------------------------------------------*)
+(* An implementation for non-linear lists, in terms of the
+   implementation for linear lists. *)
+
+implement {a}
+list_stable_quicksort$lt (x, y) =
+  list_stable_quicksort$cmp<a> (x, y) < 0
+
+implement {a}
+list_stable_quicksort$cmp (x, y) =
+  gcompare_val_val<a> (x, y)
+
+implement {a}
+list_stable_quicksort lst =
+  let
+    implement
+    list_vt_stable_quicksort$lt<a> (x, y) =
+      list_stable_quicksort$lt<a> (x, y)
+  in
+    list_vt_stable_quicksort<a> (list_copy<a> lst)
   end
 
 (*------------------------------------------------------------------*)

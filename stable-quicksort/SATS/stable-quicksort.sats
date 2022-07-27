@@ -24,13 +24,7 @@
 %}
 
 (*------------------------------------------------------------------*)
-(* List quicksort                                                   *)
-
-(* FIXME: WRITE A NEW LIST QUICKSORT THAT USES THE PARTITION STRATEGY
-          ALREADY USED IN THE ARRAY QUICKSORT. This will allow the use
-          of a $lt function as in the array quicksort. It should also
-          be more efficient in the absence of a great many equal
-          keys. *)
+(* list_vt quicksort                                                *)
 
 fn {a : vt@ype}
 list_vt_stable_quicksort :
@@ -40,8 +34,7 @@ list_vt_stable_quicksort :
 
 (* Implement either list_vt_stable_quicksort$lt or
    list_vt_stable_quicksort$cmp. The former takes
-   precedence. The latter defaults to
-   ‘gcompare_ref_ref<a>’. *)
+   precedence. The latter defaults to ‘gcompare_ref_ref<a>’. *)
 fn {a : vt@ype}
 list_vt_stable_quicksort$lt :
   (&RD(a), &RD(a)) -<> bool
@@ -73,7 +66,26 @@ list_vt_stable_quicksort_pivot_index_first :
   list_vt_stable_quicksort_pivot_index_t a
 
 (*------------------------------------------------------------------*)
-(* Array quicksort                                                  *)
+(* list quicksort (a wrapper around the list_vt quicksort)          *)
+
+fn {a : t@ype}
+list_stable_quicksort :
+  {n : int}
+  list (INV(a), n) -< !wrt >
+    list_vt (a, n)
+
+(* Implement either list_stable_quicksort$lt or
+   list_stable_quicksort$cmp. The former takes
+   precedence. The latter defaults to ‘gcompare_val_val<a>’. *)
+fn {a : t@ype}
+list_stable_quicksort$lt :
+  (a, a) -<> bool
+fn {a : t@ype}
+list_stable_quicksort$cmp :
+  (a, a) -<> int
+
+(*------------------------------------------------------------------*)
+(* array quicksort                                                  *)
 
 fn {a : vt@ype}
 array_stable_quicksort_given_workspace :
@@ -97,8 +109,7 @@ overload array_stable_quicksort with
 
 (* Implement either array_stable_quicksort$lt or
    array_stable_quicksort$cmp. The former takes
-   precedence. The latter defaults to
-   ‘gcompare_ref_ref<a>’. *)
+   precedence. The latter defaults to ‘gcompare_ref_ref<a>’. *)
 fn {a : vt@ype}
 array_stable_quicksort$lt :
   (&RD(a), &RD(a)) -<> bool
