@@ -32,9 +32,6 @@ staload UN = "prelude/SATS/unsafe.sats"
 #define NIL list_vt_nil ()
 #define ::  list_vt_cons
 
-typedef sign_t (i : int) = [~1 <= i && i <= 1] int i
-typedef sign_t = [i : int] sign_t i
-
 prfn
 lemma_mul_isfun
           {m1, n1 : int}
@@ -275,46 +272,61 @@ list_vt_insertion_sort
 (*------------------------------------------------------------------*)
 
 implement {a}
-list_vt_stable_quicksort$pivot_index (lst, n) =
-  list_vt_stable_quicksort_pivot_index_default<a> (lst, n)
+list_vt_stable_quicksort$lt (x, y) =
+  list_vt_stable_quicksort$cmp<a> (x, y) < 0
 
+implement {a}
+list_vt_stable_quicksort$cmp (x, y) =
+  (* This default is the same as for list_vt_mergesort$cmp in the
+     prelude. *)
+  gcompare_ref_ref<a> (x, y)
+
+implement {a}
+list_vt_stable_quicksort$pivot_index (lst, m) =
+  list_vt_stable_quicksort_pivot_index_default<a> (lst, m)
+ 
 implement {a}
 list_vt_stable_quicksort_pivot_index_default (lst, n) =
-  (* The default is random pivot. *)
   list_vt_stable_quicksort_pivot_index_random<a> (lst, n)
-
+ 
 implement {a}
-list_vt_stable_quicksort_pivot_index_random {n} (lst, n) =
+list_vt_stable_quicksort_pivot_index_random {m, n} (lst, m) =
   let
-    val u64_n = $UN.cast{uint64 n} n
+    val u64_m = $UN.cast{uint64 n} m
     val u64_rand : [i : nat] uint64 i =
       g1ofg0 ($effmask_wrt random_uint64 ())
-    val u64_pivot = g1uint_mod (u64_rand, u64_n)
-    val i_pivot = $UN.cast{[i : nat | i < n] int i} u64_pivot
+    val u64_pivot = g1uint_mod (u64_rand, u64_m)
+    val i_pivot = $UN.cast{[i : nat | i < m] int i} u64_pivot
   in
     i_pivot
   end
-
+ 
 implement {a}
-list_vt_stable_quicksort_pivot_index_middle (lst, n) =
-  half n
-
+list_vt_stable_quicksort_pivot_index_middle (lst, m) =
+  half m
+ 
 implement {a}
-list_vt_stable_quicksort_pivot_index_first (lst, n) =
+list_vt_stable_quicksort_pivot_index_first (lst, m) =
   0
+
+extern fn {a : vt@ype}
+compare_with_pivot$le
+          (x     : &a,
+           pivot : &a)
+    :<> bool
 
 fn {a : vt@ype}
 compare_head_with_pivot
           {n     : pos}
           (lst   : &list_vt (a, n),
            pivot : &a)
-    :<> sign_t =
+    :<> Bool =
   let
     val+ @ (head :: _) = lst
-    val sign = list_vt_stable_quicksort$cmp<a> (head, pivot)
+    val is_le = compare_with_pivot$le<a> (head, pivot)
     prval () = fold@ lst
   in
-    sign
+    g1ofg0 is_le
   end
 
 fn {a : vt@ype}
@@ -342,12 +354,12 @@ split_after_run
           (lst   : list_vt (a, n),
            n     : int n,
            pivot : &a,
-           sign  : sign_t)
+           sense : Bool)
     :<!wrt> [n1, n2 : int | 1 <= n1; 0 <= n2; n1 + n2 == n]
             @(extensible_list_vt (a, n1),
               list_vt (a, n2),
               int n2,
-              sign_t) =
+              Bool) =
   let
     fun
     loop {m : pos}
@@ -357,7 +369,7 @@ split_after_run
           pivot : &a,
           m     : int m)
         :<!wrt> #[m1, m2 : int | 1 <= m1; 0 <= m2; m1 + m2 == m]
-                @(int m2, Ptr, sign_t) =
+                @(int m2, Ptr, Bool) =
       let
         val+ @ (head :: tail) = lst1
       in
@@ -367,14 +379,15 @@ split_after_run
             val () = lst2 := NIL
             prval () = fold@ lst1
             val p_last = $UN.castvwtp1{Ptr} lst1
+            val arbitrary_sense = false
           in
-            @(0, p_last, 0)
+            @(0, p_last, arbitrary_sense)
           end
         | _ :: _ =>
           let
-            val new_sign = compare_head_with_pivot<a> (tail, pivot)
+            val new_sense = compare_head_with_pivot<a> (tail, pivot)
           in
-            if new_sign = sign then
+            if new_sense = sense then
               let
                 val retval = loop (tail, lst2, pivot, pred m)
                 prval () = fold@ lst1
@@ -388,17 +401,17 @@ split_after_run
                 prval () = fold@ lst1
                 val p_last = $UN.castvwtp1{Ptr} lst1
               in
-                @(pred m, p_last, new_sign)
+                @(pred m, p_last, new_sense)
               end
           end
       end
 
     var lst1 = lst
     var lst2 : List_vt a
-    val @(n2, p_last, new_sign) = loop (lst1, lst2, pivot, n)
+    val @(n2, p_last, new_sense) = loop (lst1, lst2, pivot, n)
     val elst1 = unsafe_list_vt2extensible (lst1, p_last, n - n2)
   in
-    @(elst1, lst2, n2, new_sign)
+    @(elst1, lst2, n2, new_sense)
   end
 
 fn {a : vt@ype}
@@ -407,69 +420,56 @@ partition_pivot_free_list
           (lst   : list_vt (a, n),
            n     : int n,
            pivot : &a)
-    :<!wrt> [n_lt, n_eq, n_gt : nat | n_lt + n_eq + n_gt == n]
-            @(extensible_list_vt (a, n_lt),
-              extensible_list_vt (a, n_eq),
-              extensible_list_vt (a, n_gt)) =
+    :<!wrt> [n_le, n_ge : nat | n_le + n_ge == n]
+            @(extensible_list_vt (a, n_le),
+              extensible_list_vt (a, n_ge)) =
   let
     fun
     loop {m1 : nat | m1 <= n}
-         {n1, n2, n3 : nat | m1 + n1 + n2 + n3 == n}
+         {n1, n2 : nat | m1 + n1 + n2 == n}
          .<m1>.
          (lst1    : list_vt (a, m1),
           m1      : int m1,
           pivot   : &a,
-          sign    : sign_t,
-          elst_lt : extensible_list_vt (a, n1),
-          elst_eq : extensible_list_vt (a, n2),
-          elst_gt : extensible_list_vt (a, n3))
-        :<!wrt> [n_lt, n_eq, n_gt : nat | n_lt + n_eq + n_gt == n]
-                @(extensible_list_vt (a, n_lt),
-                  extensible_list_vt (a, n_eq),
-                  extensible_list_vt (a, n_gt)) =
+          sense   : Bool,
+          elst_le : extensible_list_vt (a, n1),
+          elst_ge : extensible_list_vt (a, n2))
+        :<!wrt> [n_le, n_ge : nat | n_le + n_ge == n]
+                @(extensible_list_vt (a, n_le),
+                  extensible_list_vt (a, n_ge)) =
       case+ lst1 of
-      | ~ NIL => @(elst_lt, elst_eq, elst_gt)
+      | ~ NIL => @(elst_le, elst_ge)
       | _ :: _ =>
         let
           macdef appd = extensible_list_vt_append<a>
-          val @(elst, lst2, m2, new_sign) =
-            split_after_run<a> (lst1, m1, pivot, sign)
+          val @(elst, lst2, m2, new_sense) =
+            split_after_run<a> (lst1, m1, pivot, sense)
         in
-          if sign = ~1 then
+          case+ sense of
+          | true =>
             let
-              val elst_lt = (elst_lt \appd elst)
+              val elst_le = (elst_le \appd elst)
             in
-              loop (lst2, m2, pivot, new_sign,
-                    elst_lt, elst_eq, elst_gt)
+              loop (lst2, m2, pivot, new_sense, elst_le, elst_ge)
             end
-          else if sign = 0 then
+          | false =>
             let
-              val elst_eq = (elst_eq \appd elst)
+              val elst_ge = (elst_ge \appd elst)
             in
-              loop (lst2, m2, pivot, new_sign,
-                    elst_lt, elst_eq, elst_gt)
-            end
-          else
-            let
-              val elst_gt = (elst_gt \appd elst)
-            in
-              loop (lst2, m2, pivot, new_sign,
-                    elst_lt, elst_eq, elst_gt)
+              loop (lst2, m2, pivot, new_sense, elst_le, elst_ge)
             end
         end
   in
     case+ lst of
     | ~ NIL =>
       @(extensible_list_vt_nil<a> (),
-        extensible_list_vt_nil<a> (),
         extensible_list_vt_nil<a> ())
     | _ :: _ =>
       let
         var lst = lst
-        val sign = compare_head_with_pivot<a> (lst, pivot)
+        val sense = compare_head_with_pivot<a> (lst, pivot)
       in
-        loop (lst, n, pivot, sign,
-              extensible_list_vt_nil<a> (),
+        loop (lst, n, pivot, sense,
               extensible_list_vt_nil<a> (),
               extensible_list_vt_nil<a> ())
       end
@@ -480,11 +480,10 @@ partition_list
           {n     : pos}
           (lst   : list_vt (a, n),
            n     : int n)
-    :<!wrt> [n_lt, n_eq, n_gt : int | 0 <= n_lt; 1 <= n_eq; 0 <= n_gt;
-                                      n_lt + n_eq + n_gt == n]
-            @(extensible_list_vt (a, n_lt),
-              extensible_list_vt (a, n_eq),
-              extensible_list_vt (a, n_gt)) =
+    :<!wrt> [n_le, n_ge : nat | n_le + 1 + n_ge == n]
+            @(extensible_list_vt (a, n_le),
+              extensible_list_vt (a, 1), (* The pivot. *)
+              extensible_list_vt (a, n_ge)) =
   let
     macdef appd = extensible_list_vt_append<a>
 
@@ -494,21 +493,27 @@ partition_list
     var lst_pivot = lst_pivot
     val+ @ (pivot :: _) = lst_pivot
 
-    val @(elst1_lt, elst1_eq, elst1_gt) =
+    implement {a}
+    compare_with_pivot$le (x, pivot) =
+      ~list_vt_stable_quicksort$lt<a> (pivot, x)
+    val @(elst1_le, elst1_ge) =
       partition_pivot_free_list<a> (lst_before, n_before, pivot)
-    val @(elst2_lt, elst2_eq, elst2_gt) =
+
+    implement {a}
+    compare_with_pivot$le (x, pivot) =
+      list_vt_stable_quicksort$lt<a> (x, pivot)
+    val @(elst2_le, elst2_ge) =
       partition_pivot_free_list<a> (lst_after, n_after, pivot)
 
     prval () = fold@ lst_pivot
 
-    val elst_lt = (elst1_lt \appd elst2_lt)
     val p_pivot = $UN.castvwtp1{Ptr} lst_pivot
     val elst_pivot =
       unsafe_list_vt2extensible<a> (lst_pivot, p_pivot, 1)
-    val elst_eq = ((elst1_eq \appd elst_pivot) \appd elst2_eq)
-    val elst_gt = (elst1_gt \appd elst2_gt)
+    and elst_le = (elst1_le \appd elst2_le)
+    and elst_ge = (elst1_ge \appd elst2_ge)
   in
-    @(elst_lt, elst_eq, elst_gt)
+    @(elst_le, elst_pivot, elst_ge)
   end
 
 implement {a}
@@ -525,10 +530,10 @@ list_vt_stable_quicksort lst =
         :<!wrt> extensible_list_vt (a, m) =
       if LIST_INSERTION_SORT_THRESHOLD < m then
         let
-          val @(elst_lt, elst_eq, elst_gt) =
+          val @(elst_le, elst_eq, elst_ge) =
             partition_list<a> (lst, m)
-          val @(lst1, m1) = finalize elst_lt
-          and @(lst2, m2) = finalize elst_gt
+          val @(lst1, m1) = finalize elst_le
+          and @(lst2, m2) = finalize elst_ge
           val elst1 = recurs (lst1, m1)
           and elst2 = recurs (lst2, m2)
         in
