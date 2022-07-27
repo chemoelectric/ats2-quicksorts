@@ -1,6 +1,16 @@
 Stable quicksorts for ATS2/Postiats
 -----------------------------------
 
+There are a sort for lists and a sort for arrays.
+
+The sort for lists (as currently implemented) seems inferior to the
+prelude’s list_vt_mergesort.
+
+The sort for arrays, however, seems overall superior to both my
+system’s qsort (GNU) and the prelude’s array_quicksort (which handles
+large arrays very poorly). Unlike the latter two, it is a stable sort.
+
+
   List quicksort
 
 Currently this sort has sometimes tested as faster than the prelude's
@@ -8,7 +18,9 @@ list_vt_mergesort, if the list is of notable size, the input list is
 randomized, and the first element is used as pivot.
 
 The current default is to randomly select a pivot, using a built-in
-linear congruential generator.
+linear congruential generator. In that case, on randomized lists the
+sort is slower than list_vt_mergesort.
+
 
   Array quicksort
 
