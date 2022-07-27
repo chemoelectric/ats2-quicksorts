@@ -38,16 +38,21 @@ list_vt_stable_quicksort :
   list_vt (INV(a), n) -< !wrt >
     list_vt (a, n)
 
+(* Implement either list_vt_stable_quicksort$lt or
+   list_vt_stable_quicksort$cmp. The former takes
+   precedence. The latter defaults to
+   ‘gcompare_ref_ref<a>’. *)
+fn {a : vt@ype}
+list_vt_stable_quicksort$lt :
+  (&RD(a), &RD(a)) -<> bool
 fn {a : vt@ype}
 list_vt_stable_quicksort$cmp :
-  (&RD(a), &RD(a)) -<>
-    [i : int | ~1 <= i; i <= 1]
-    int i
-
+  (&RD(a), &RD(a)) -<> int
+ 
 typedef list_vt_stable_quicksort_pivot_index_t (a : vt@ype) =
-  {n : pos}
-  (!list_vt (a, n), int n) -<>
-    [i : int | 0 <= i; i < n]
+  {m, n : pos | m <= n}
+  (!list_vt (a, n), int m) -<>
+    [i : int | 0 <= i; i < m]
     int i
 fn {a : vt@ype}
 list_vt_stable_quicksort$pivot_index :
@@ -101,8 +106,6 @@ fn {a : vt@ype}
 array_stable_quicksort$cmp :
   (&RD(a), &RD(a)) -<> int
 
-(* The pivot strategy has a default, but I leave the default
-   unspecified. *)
 typedef array_stable_quicksort_pivot_index_t (a : vt@ype) =
   {n : pos}
   (&array (a, n), size_t n) -<>
