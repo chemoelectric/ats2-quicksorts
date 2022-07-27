@@ -41,6 +41,11 @@ list_vt_stable_quicksort$lt :
 fn {a : vt@ype}
 list_vt_stable_quicksort$cmp :
   (&RD(a), &RD(a)) -<> int
+
+(* When should we switch over to insertion sort? *)
+fn {a : vt@ype}
+list_vt_stable_quicksort$small :
+  () -<> [n : pos] int n
  
 typedef list_vt_stable_quicksort_pivot_index_t (a : vt@ype) =
   {m, n : pos | m <= n}
@@ -116,6 +121,11 @@ array_stable_quicksort$lt :
 fn {a : vt@ype}
 array_stable_quicksort$cmp :
   (&RD(a), &RD(a)) -<> int
+
+(* When should we switch over to insertion sort? *)
+fn {a : vt@ype}
+array_stable_quicksort$small :
+  () -<> [n : pos] size_t n
 
 typedef array_stable_quicksort_pivot_index_t (a : vt@ype) =
   {n : pos}

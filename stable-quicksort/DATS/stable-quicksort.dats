@@ -25,8 +25,8 @@
 staload "stable-quicksort/SATS/stable-quicksort.sats"
 staload UN = "prelude/SATS/unsafe.sats"
 
-#define LIST_INSERTION_SORT_THRESHOLD 32
-#define ARRAY_INSERTION_SORT_THRESHOLD 32
+#define DEFAULT_LIST_INSERTION_SORT_THRESHOLD 32
+#define DEFAULT_ARRAY_INSERTION_SORT_THRESHOLD 32
 #define ARRAY_STACK_STORAGE_THRESHOLD 256
 
 #define NIL list_vt_nil ()
@@ -282,6 +282,10 @@ list_vt_stable_quicksort$cmp (x, y) =
   gcompare_ref_ref<a> (x, y)
 
 implement {a}
+list_vt_stable_quicksort$small () =
+  DEFAULT_LIST_INSERTION_SORT_THRESHOLD
+
+implement {a}
 list_vt_stable_quicksort$pivot_index (lst, m) =
   list_vt_stable_quicksort_pivot_index_default<a> (lst, m)
  
@@ -528,7 +532,7 @@ list_vt_stable_quicksort lst =
            (lst : list_vt (a, m),
             m   : int m)
         :<!wrt> extensible_list_vt (a, m) =
-      if LIST_INSERTION_SORT_THRESHOLD < m then
+      if list_vt_stable_quicksort$small () < m then
         let
           val @(elst_le, elst_eq, elst_ge) =
             partition_list<a> (lst, m)
@@ -602,6 +606,10 @@ array_stable_quicksort$cmp (x, y) =
   (* This default is the same as for array_quicksort$cmp in the
      prelude. *)
   gcompare_ref_ref<a> (x, y)
+
+implement {a}
+array_stable_quicksort$small () =
+  i2sz DEFAULT_ARRAY_INSERTION_SORT_THRESHOLD
 
 implement {a}
 array_stable_quicksort$pivot_index {n} (arr, n) =
@@ -1073,7 +1081,7 @@ array_stable_quicksort_given_workspace {n} (arr, n, workspace) =
               p_work  : ptr p_work,
               n1      : size_t n1)
           :<!wrt> void =
-        if n1 <= ARRAY_INSERTION_SORT_THRESHOLD then
+        if n1 <= array_stable_quicksort$small<a> () then
           array_insertion_sort<a> (pf_arr1 | p_arr1, n1)
         else
           let
