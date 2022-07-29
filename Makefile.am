@@ -243,7 +243,7 @@ list_ats_dependencies_LDADD += -latslib
 
 #--------------------------------------------------------------------------
 
-#nodist_pkgconfig_DATA += ats2-stable-quicksort.pc
+nodist_pkgconfig_DATA += ats2-stable-quicksort.pc
 
 #--------------------------------------------------------------------------
 # local variables:
