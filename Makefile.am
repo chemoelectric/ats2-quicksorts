@@ -180,44 +180,8 @@ libats2_stable_quicksort_la_DEPENDENCIES += $(STABLE_QUICKSORT_CATS)
 #--------------------------------------------------------------------------
 
 TESTS =
-TESTS += tests/test-random-lists
-TESTS += tests/test-lists-stability
 TESTS += tests/test-arrays-patterns
 TESTS += tests/test-arrays-stability
-
-EXTRA_PROGRAMS += tests/test-random-lists
-CLEANFILES += tests/test-random-lists
-CLEANFILES += tests/test-random-lists_tests.c
-tests_test_random_lists_SOURCES =
-tests_test_random_lists_SOURCES += tests/test-random-lists_tests.c
-tests_test_random_lists_DEPENDENCIES =
-tests_test_random_lists_DEPENDENCIES += tests/test-random-lists.dats
-tests_test_random_lists_DEPENDENCIES += libats2-stable-quicksort.la
-tests_test_random_lists_DEPENDENCIES += $(STABLE_QUICKSORT_HATS)
-tests_test_random_lists_CPPFLAGS =
-tests_test_random_lists_CPPFLAGS += $(AM_CPPFLAGS)
-tests_test_random_lists_CPPFLAGS += -DATS_MEMALLOC_LIBC
-tests_test_random_lists_LDADD =
-tests_test_random_lists_LDADD += libats2-stable-quicksort.la
-EXTRA_DIST += tests/test-random-lists.dats
-tests/test-random-lists_tests.c: tests/test-random-lists.dats
-
-EXTRA_PROGRAMS += tests/test-lists-stability
-CLEANFILES += tests/test-lists-stability
-CLEANFILES += tests/test-lists-stability_tests.c
-tests_test_lists_stability_SOURCES =
-tests_test_lists_stability_SOURCES += tests/test-lists-stability_tests.c
-tests_test_lists_stability_DEPENDENCIES =
-tests_test_lists_stability_DEPENDENCIES += tests/test-lists-stability.dats
-tests_test_lists_stability_DEPENDENCIES += libats2-stable-quicksort.la
-tests_test_lists_stability_DEPENDENCIES += $(STABLE_QUICKSORT_HATS)
-tests_test_lists_stability_CPPFLAGS =
-tests_test_lists_stability_CPPFLAGS += $(AM_CPPFLAGS)
-tests_test_lists_stability_CPPFLAGS += -DATS_MEMALLOC_LIBC
-tests_test_lists_stability_LDADD =
-tests_test_lists_stability_LDADD += libats2-stable-quicksort.la
-EXTRA_DIST += tests/test-lists-stability.dats
-tests/test-lists-stability_tests.c: tests/test-lists-stability.dats
 
 EXTRA_PROGRAMS += tests/test-arrays-patterns
 CLEANFILES += tests/test-arrays-patterns

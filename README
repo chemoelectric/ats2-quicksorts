@@ -1,42 +1,18 @@
-Stable quicksorts for ATS2/Postiats
------------------------------------
-
-There are a sort for lists and a sort for arrays.
-
-The sort for lists (as currently implemented) seems inferior to the
-prelude’s list_vt_mergesort.
-
-The sort for arrays, however, seems overall superior to both my
-system’s qsort (GNU) and the prelude’s array_quicksort (which handles
-large arrays very poorly). Unlike the latter two, it is a stable sort.
-
-
-  List quicksort
-
-Currently this sort has sometimes tested as faster than the prelude's
-list_vt_mergesort, if the list is of notable size, the input list is
-randomized, and the first element is used as pivot.
-
-The current default is to randomly select a pivot, using a built-in
-linear congruential generator. In that case, on randomized lists the
-sort is slower than list_vt_mergesort.
-
-
-  Array quicksort
+Stable quicksort for arrays, in ATS2/Postiats
+---------------------------------------------
 
 This is a *stable* quicksort, and so (unlike most quicksorts) uses
 O(n) workspace (in addition to the usual space for a stack or queue).
 
-The current default is to use a random pivot, via the built-in linear
+The current default is to use a random pivot, via a built-in linear
 congruential generator. With this pivot choice, the sort seems to
 compete favorably with my system qsort (GNU), and may be noticeably
 faster when the data is randomized.
 
 I have also implemented other pivot choices, but currently these do
-not work well at all with large arrays. Random pivot works fine,
-however. Perhaps random pivot results in smaller subarrays that can be
-handled more efficiently.
+not work well at all with large arrays. Random pivot seems to work
+well, however.
 
-If so, then when the arrays are smaller to start with, breaking
-subarrays up as evenly as possible (such as by estimating the median)
-is likely to be faster. Nevertheless random pivot does rather well.
+Perhaps random pivot results in smaller subarrays that can be handled
+more efficiently. If so, then, for arrays already small, a method such
+as estimating the median may be faster.
