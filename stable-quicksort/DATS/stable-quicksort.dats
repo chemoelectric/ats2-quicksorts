@@ -62,6 +62,12 @@ discard_used_contents :
   {n : int}
   array_v (a?!, p, n) -<prf> array_v (a?, p, n)
 
+extern praxi
+g1uint_get_static :
+  {tk : tkind}
+  {i  : int}
+  g1uint (tk, i) -<prf> [j : int | j == i] void
+
 extern fn
 g1uint_mod_uint64 :
   {x, y : int}
@@ -87,34 +93,12 @@ random_uint64 () :<!wrt> uint64 = "mac#%"
 
 #define STK_MAX 64     (* Enough for arrays of up to 2**64 entries. *)
 
-absprop SIZE_SUM (n : int)
-
-extern praxi
-make_size_sum :
-  {n : int}
-  () -<prf> SIZE_SUM n
-
-extern praxi
-get_size_sum :
-  {n : int}
-  SIZE_SUM n -<prf> [n : int] void
-
-extern praxi
-add_to_size_sum :
-  {size : int}
-  {n    : int}
-  (SIZE_SUM n | size_t size) -<prf> SIZE_SUM (n + size)
-
-extern praxi
-subtract_from_size_sum :
-  {size : int}
-  {n    : int}
-  (SIZE_SUM n | size_t size) -<prf> SIZE_SUM (n - size)
-
 vtypedef stk_entry_vt (a : vt@ype, p : addr, n : int) =
   @(array_v (a, p, n) | ptr p, size_t n)
+vtypedef stk_entry_vt (a : vt@ype, n : int) =
+  [p : addr] stk_entry_vt (a, p, n)
 vtypedef stk_entry_vt (a : vt@ype) =
-  [p : addr] [n : pos] stk_entry_vt (a, p, n)
+  [n : pos] stk_entry_vt (a, n)
 
 vtypedef stk_vt (a        : vt@ype,
                  p        : addr,
@@ -124,10 +108,10 @@ vtypedef stk_vt (a        : vt@ype,
     pf_used   = array_v (stk_entry_vt a, p, depth),
     pf_unused = array_v ((stk_entry_vt a)?,
                          p + (depth * sizeof(stk_entry_vt a)),
-                         STK_MAX - depth),
-    size_sum  = SIZE_SUM size_sum |
+                         STK_MAX - depth) |
     p         = ptr p,
-    depth     = size_t depth
+    depth     = int depth,
+    size_sum  = size_t size_sum
   }
 
 fn {a : vt@ype}
@@ -154,22 +138,21 @@ stk_vt_push
     val () = stk.depth := succ (stk.depth)
     prval () = stk.pf_used :=
       array_v_extend (stk.pf_used, pf_new_entry)
-    prval () = stk.size_sum :=
-      add_to_size_sum (stk.size_sum | size)
+    val () = stk.size_sum := stk.size_sum + size
   in
   end
 
 fn {a : vt@ype}
 stk_vt_pop
           {p_stk    : addr}
-          {depth    : pos | depth <= STK_MAX}
-          {size_sum : nat}
+          {depth    : pos}
+          {size_sum : pos}
           {p_entry  : addr}
-          {size     : pos}
           (stk      : &stk_vt (a, p_stk, depth, size_sum)
                       >> stk_vt (a, p_stk, depth - 1,
                                  size_sum - size))
-    :<!wrt> #[size : pos] [p_entry : addr]
+    :<!wrt> #[size : pos | size <= size_sum]
+            [p_entry : addr]
             @(array_v (a, p_entry, size) |
               ptr p_entry,
               size_t size) =
@@ -183,8 +166,10 @@ stk_vt_pop
         (pf_popped_entry | ptr_add<stk_entry_vt a> (stk.p, new_depth))
     prval () = stk.pf_unused :=
       array_v_cons (pf_popped_entry, stk.pf_unused)
-    prval () = stk.size_sum :=
-      subtract_from_size_sum (stk.size_sum | popped_entry.2)
+    val size_sum = stk.size_sum
+    and size = popped_entry.2
+    val () = $effmask_exn assertloc (size <= size_sum)
+    val () = stk.size_sum := size_sum - size
   in
     popped_entry
   end
@@ -683,6 +668,112 @@ array_stable_quicksort_given_workspace {n} (arr, n, workspace) =
     ()
   else
     let
+      fun
+      loop {p_stk    : addr}
+           {depth    : nat}
+           {size_sum : nat | (size_sum == 0) == (depth == 0)}
+           {p_work   : addr}
+           .<size_sum>.
+           (pf_work : !array_v (a?, p_work, n) >> _ |
+            p_work  : ptr p_work,
+            stk     : &stk_vt (a, p_stk, depth, size_sum)
+                      >> stk_vt (a, p_stk, depth1, size_sum1))
+          :<!wrt> #[depth1, size_sum1 : nat]
+                  void =
+        if (stk.size_sum) = i2sz 0 then
+          ()
+        else
+          let
+            val @(pf_arr1 | p_arr1, n1) = stk_vt_pop<a> stk
+            val [n1 : int] () = g1uint_get_static n1
+          in
+            if n1 <= array_stable_quicksort$small<a> () then
+              let
+                val () =
+                  array_insertion_sort<a> (pf_arr1 | p_arr1, n1)
+
+                (* It should be safe now to destroy the view. *)
+                prval () = $UN.castview0{void} pf_arr1
+              in
+              end
+            else
+              let
+                (* It would be tedious to safely avoid the following
+                   assertion. *)
+                val () = $effmask_exn assertloc (n1 <= n)
+
+                prval @(pf_work1, pf_not_used) =
+                  array_v_split {a?} {..} {n} {n1} pf_work
+                val [n1_le : int]
+                    @(pf_le, pf_pivot, pf_ge, pf_work1 | n1_le) =
+                  select_pivot_and_partition_array<a>
+                    (pf_arr1, pf_work1 | p_arr1, p_work, n1)
+                prval () = pf_work :=
+                  array_v_unsplit {a?} {..} {n1, n - n1}
+                                  (pf_work1, pf_not_used)
+
+                val p_le = p_arr1
+                and p_ge = ptr_add<a> (p_arr1, succ n1_le)
+                and n1_ge = n1 - succ n1_le
+
+              in
+                (* Push the larger part of the partition first.
+                   Otherwise the stack may overflow. *)
+                if n1_le = i2sz 0 then
+                  let
+                    val () = $effmask_exn
+                      assertloc ((stk.depth) <= STK_MAX - 1)
+                    prval () = array_v_unnil pf_le
+                    val () = stk_vt_push<a> (pf_ge | p_ge, n1_ge, stk)
+
+                    (* It should be safe now to destroy the pivot
+                       view. *)
+                    prval () = $UN.castview0{void} pf_pivot
+                  in
+                    loop (pf_work | p_work, stk)
+                  end
+                else if n1_le < n1_ge then
+                  let
+                    val () = $effmask_exn
+                      assertloc ((stk.depth) <= STK_MAX - 2)
+                    val () = stk_vt_push<a> (pf_ge | p_ge, n1_ge, stk)
+                    val () = stk_vt_push<a> (pf_le | p_le, n1_le, stk)
+
+                    (* It should be safe now to destroy the pivot
+                       view. *)
+                    prval () = $UN.castview0{void} pf_pivot
+                  in
+                    loop (pf_work | p_work, stk)
+                  end
+                else if n1_ge = i2sz 0 then
+                  let
+                    val () = $effmask_exn
+                      assertloc ((stk.depth) <= STK_MAX - 1)
+                    prval () = array_v_unnil pf_ge
+                    val () = stk_vt_push<a> (pf_le | p_le, n1_le, stk)
+
+                    (* It should be safe now to destroy the pivot
+                       view. *)
+                    prval () = $UN.castview0{void} pf_pivot
+                  in
+                    loop (pf_work | p_work, stk)
+                  end
+                else
+                  let
+                    val () = $effmask_exn
+                      assertloc ((stk.depth) <= STK_MAX - 2)
+                    val () = stk_vt_push<a> (pf_le | p_le, n1_le, stk)
+                    val () = stk_vt_push<a> (pf_ge | p_ge, n1_ge, stk)
+
+                    (* It should be safe now to destroy the pivot
+                       view. *)
+                    prval () = $UN.castview0{void} pf_pivot
+                  in
+                    loop (pf_work | p_work, stk)
+                  end
+              end
+          end
+
       fun
       recurs {n1      : nat | n1 <= n}
              {p_arr1  : addr}
