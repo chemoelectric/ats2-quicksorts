@@ -278,7 +278,7 @@ partition_array_before_pivot
               size_t n_ge) =
   let
     fun
-    loop {i            : nat | i <= n_before}
+    loop {i : nat | i <= n_before}
          {n0_le, n0_ge : nat | n0_le + n0_ge == i}
          .<n_before - i>.
          (pf_le      : array_v (a, p_arr, n0_le),
@@ -290,9 +290,6 @@ partition_array_before_pivot
           pf_work    : array_v (a?, p_work + (n0_ge * sizeof a),
                                 n - n0_ge),
           pf_pivot   : !(a @ p_pivot) |
-          p_src      : ptr (p_arr + (i * sizeof a)),
-          p_dst_le   : ptr (p_arr + (n0_le * sizeof a)),
-          p_dst_ge   : ptr (p_work + (n0_ge * sizeof a)),
           i          : size_t i,
           n0_le      : size_t n0_le,
           n0_ge      : size_t n0_ge)
@@ -314,6 +311,7 @@ partition_array_before_pivot
       else
         let
           prval @(pf_src, pf_before) = array_v_uncons pf_before
+          val p_src = ptr_add<a> (p_arr, i)
         in
           (* Move anything <= the pivot to the beginning of the array,
              and anything else to the workspace array. *)
@@ -322,16 +320,13 @@ partition_array_before_pivot
                             workspace array. *)
               prval @(pf_dst, pf_work) = array_v_uncons pf_work
               val () =
-                ptr_set<a>
-                  (pf_dst | p_dst_ge, ptr_get<a> (pf_src | p_src))
+                ptr_set<a> (pf_dst | ptr_add<a> (p_work, n0_ge),
+                                     ptr_get<a> (pf_src | p_src))
               prval pf_ge = array_v_extend (pf_ge, pf_dst)
               prval pf_between = array_v_extend (pf_between, pf_src)
             in
               loop (pf_le, pf_between, pf_before,
                     pf_ge, pf_work, pf_pivot |
-                    ptr1_succ<a> p_src,
-                    p_dst_le,
-                    ptr1_succ<a> p_dst_ge,
                     succ i, n0_le, succ n0_ge)
             end
           else if i = n0_le then
@@ -347,26 +342,21 @@ partition_array_before_pivot
             in
               loop (pf_le, pf_between, pf_before,
                     pf_ge, pf_work, pf_pivot |
-                    ptr1_succ<a> p_src,
-                    ptr1_succ<a> p_dst_le,
-                    p_dst_ge,
                     succ i, succ n0_le, n0_ge)
             end
           else
             let     (* The element is <= but not in the correct place.
                        Move it earlier in the same array. *)
               prval @(pf_dst, pf_between) = array_v_uncons pf_between
+              val p_dst = ptr_add<a> (p_arr, n0_le)
               val () =
                 ptr_set<a>
-                  (pf_dst | p_dst_le, ptr_get<a> (pf_src | p_src))
+                  (pf_dst | p_dst, ptr_get<a> (pf_src | p_src))
               prval pf_le = array_v_extend (pf_le, pf_dst)
               prval pf_between = array_v_extend (pf_between, pf_src)
             in
               loop (pf_le, pf_between, pf_before,
                     pf_ge, pf_work, pf_pivot |
-                    ptr1_succ<a> p_src,
-                    ptr1_succ<a> p_dst_le,
-                    p_dst_ge,
                     succ i, succ n0_le, n0_ge)
             end
         end
@@ -377,7 +367,7 @@ partition_array_before_pivot
   in
     loop (pf_le, pf_between, pf_before,
           pf_ge, pf_work, pf_pivot |
-          p_arr, p_arr, p_work, i2sz 0, i2sz 0, i2sz 0)
+          i2sz 0, i2sz 0, i2sz 0)
   end
 
 fn {a : vt@ype}
@@ -428,9 +418,6 @@ partition_array_after_pivot
           pf_work    : array_v (a?, p_work + (n1_ge * sizeof a),
                                 n - n1_ge),
           pf_pivot   : !(a @ p_pivot) |
-          p_src      : ptr (p_arr + (i * sizeof a)),
-          p_dst_le   : ptr (p_arr + (n1_le * sizeof a)),
-          p_dst_ge   : ptr (p_work + (n1_ge * sizeof a)),
           i          : size_t i,
           n1_le      : size_t n1_le,
           n1_ge      : size_t n1_ge)
@@ -450,6 +437,7 @@ partition_array_after_pivot
       else
         let
           prval @(pf_src, pf_after) = array_v_uncons pf_after
+          val p_src = ptr_add<a> (p_arr, i)
         in
           (* Move anything < the pivot to the beginning of the array,
              and anything else to the workspace array. *)
@@ -458,16 +446,13 @@ partition_array_after_pivot
                            workspace array. *)
               prval @(pf_dst, pf_work) = array_v_uncons pf_work
               val () =
-                ptr_set<a>
-                  (pf_dst | p_dst_ge, ptr_get<a> (pf_src | p_src))
+                ptr_set<a> (pf_dst | ptr_add<a> (p_work, n1_ge),
+                                     ptr_get<a> (pf_src | p_src))
               prval pf_ge = array_v_extend (pf_ge, pf_dst)
               prval pf_between = array_v_extend (pf_between, pf_src)
             in
               loop (pf_le, pf_between, pf_after,
                     pf_ge, pf_work, pf_pivot |
-                    ptr1_succ<a> p_src,
-                    p_dst_le,
-                    ptr1_succ<a> p_dst_ge,
                     succ i, n1_le, succ n1_ge)
             end
           else
@@ -475,16 +460,13 @@ partition_array_after_pivot
                     same array. *)
               prval @(pf_dst, pf_between) = array_v_uncons pf_between
               val () =
-                ptr_set<a>
-                  (pf_dst | p_dst_le, ptr_get<a> (pf_src | p_src))
+                ptr_set<a> (pf_dst | ptr_add<a> (p_arr, n1_le),
+                                     ptr_get<a> (pf_src | p_src))
               prval pf_le = array_v_extend (pf_le, pf_dst)
               prval pf_between = array_v_extend (pf_between, pf_src)
             in
               loop (pf_le, pf_between, pf_after,
                     pf_ge, pf_work, pf_pivot |
-                    ptr1_succ<a> p_src,
-                    ptr1_succ<a> p_dst_le,
-                    p_dst_ge,
                     succ i, succ n1_le, n1_ge)
             end
         end
@@ -494,9 +476,6 @@ partition_array_after_pivot
   in
     loop (pf_le, pf_between, pf_after,
           pf_ge, pf_work, pf_pivot |
-          ptr_add<a> (p_arr, succ (n0_le + n0_ge)),
-          ptr_add<a> (p_arr, n0_le),
-          ptr_add<a> (p_work, n0_ge),
           succ (n0_le + n0_ge), n0_le, n0_ge)
   end
 
