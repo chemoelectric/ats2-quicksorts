@@ -5,14 +5,10 @@ This is a *stable* quicksort, and so (unlike most quicksorts) uses
 O(n) workspace (in addition to the usual space for a stack or queue).
 
 The current default is to use a random pivot, via a built-in linear
-congruential generator. With this pivot choice, the sort seems to
-compete favorably with my system qsort (GNU), and may be noticeably
-faster when the data is randomized.
+congruential generator. With this pivot choice, and with the order
+predicate inlined, the sort seems to compete favorably with my system
+qsort (GNU). When the data is randomized, my system qsort can be
+considerably slower.
 
 I have also implemented other pivot choices, but currently these do
-not work well at all with large arrays. Random pivot seems to work
-well, however.
-
-Perhaps random pivot results in smaller subarrays that can be handled
-more efficiently. If so, then, for arrays already small, a method such
-as estimating the median may be faster.
+not work well at all with large arrays. I do not yet know why.
