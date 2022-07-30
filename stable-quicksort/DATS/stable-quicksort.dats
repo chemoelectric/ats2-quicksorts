@@ -83,6 +83,113 @@ extern fn
 random_uint64 () :<!wrt> uint64 = "mac#%"
 
 (*------------------------------------------------------------------*)
+(* A stack for non-recursive implementation of quicksort.           *)
+
+#define STK_MAX 64     (* Enough for arrays of up to 2**64 entries. *)
+
+absprop SIZE_SUM (n : int)
+
+extern praxi
+make_size_sum :
+  {n : int}
+  () -<prf> SIZE_SUM n
+
+extern praxi
+get_size_sum :
+  {n : int}
+  SIZE_SUM n -<prf> [n : int] void
+
+extern praxi
+add_to_size_sum :
+  {size : int}
+  {n    : int}
+  (SIZE_SUM n | size_t size) -<prf> SIZE_SUM (n + size)
+
+extern praxi
+subtract_from_size_sum :
+  {size : int}
+  {n    : int}
+  (SIZE_SUM n | size_t size) -<prf> SIZE_SUM (n - size)
+
+vtypedef stk_entry_vt (a : vt@ype, p : addr, n : int) =
+  @(array_v (a, p, n) | ptr p, size_t n)
+vtypedef stk_entry_vt (a : vt@ype) =
+  [p : addr] [n : pos] stk_entry_vt (a, p, n)
+
+vtypedef stk_vt (a        : vt@ype,
+                 p        : addr,
+                 depth    : int,
+                 size_sum : int) =
+  @{
+    pf_used   = array_v (stk_entry_vt a, p, depth),
+    pf_unused = array_v ((stk_entry_vt a)?,
+                         p + (depth * sizeof(stk_entry_vt a)),
+                         STK_MAX - depth),
+    size_sum  = SIZE_SUM size_sum |
+    p         = ptr p,
+    depth     = size_t depth
+  }
+
+fn {a : vt@ype}
+stk_vt_push
+          {p_stk    : addr}
+          {depth    : nat | depth < STK_MAX}
+          {size_sum : nat}
+          {p_entry  : addr}
+          {size     : pos}
+          (pf_entry : array_v (a, p_entry, size) |
+           p_entry  : ptr p_entry,
+           size     : size_t size,
+           stk      : &stk_vt (a, p_stk, depth, size_sum)
+                      >> stk_vt (a, p_stk, depth + 1,
+                                 size_sum + size))
+    :<!wrt> void =
+  let
+    prval @(pf_new_entry, pf_unused) = array_v_uncons (stk.pf_unused)
+    prval () = stk.pf_unused := pf_unused
+    val () =
+      ptr_set<stk_entry_vt a>
+        (pf_new_entry | ptr_add<stk_entry_vt a> (stk.p, stk.depth),
+                        @(pf_entry | p_entry, size))
+    val () = stk.depth := succ (stk.depth)
+    prval () = stk.pf_used :=
+      array_v_extend (stk.pf_used, pf_new_entry)
+    prval () = stk.size_sum :=
+      add_to_size_sum (stk.size_sum | size)
+  in
+  end
+
+fn {a : vt@ype}
+stk_vt_pop
+          {p_stk    : addr}
+          {depth    : pos | depth <= STK_MAX}
+          {size_sum : nat}
+          {p_entry  : addr}
+          {size     : pos}
+          (stk      : &stk_vt (a, p_stk, depth, size_sum)
+                      >> stk_vt (a, p_stk, depth - 1,
+                                 size_sum - size))
+    :<!wrt> #[size : pos] [p_entry : addr]
+            @(array_v (a, p_entry, size) |
+              ptr p_entry,
+              size_t size) =
+  let
+    prval @(pf_used, pf_popped_entry) = array_v_unextend (stk.pf_used)
+    prval () = stk.pf_used := pf_used
+    val new_depth = pred (stk.depth)
+    val () = stk.depth := new_depth
+    val popped_entry =
+      ptr_get<stk_entry_vt a>
+        (pf_popped_entry | ptr_add<stk_entry_vt a> (stk.p, new_depth))
+    prval () = stk.pf_unused :=
+      array_v_cons (pf_popped_entry, stk.pf_unused)
+    prval () = stk.size_sum :=
+      subtract_from_size_sum (stk.size_sum | popped_entry.2)
+  in
+    popped_entry
+  end
+
+(*------------------------------------------------------------------*)
 
 fn {a : vt@ype}
 array_element_lt
