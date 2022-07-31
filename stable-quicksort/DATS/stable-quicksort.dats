@@ -332,7 +332,7 @@ make_an_ordered_prefix
       end
   end
 
-fn {a : vt@ype}
+fn {a  : vt@ype}
 insertion_position
           {n      : int}
           {i      : pos | i < n}
@@ -342,27 +342,45 @@ insertion_position
            i      : size_t i)
     :<> [j : nat | j <= i]
         size_t j =
+  (*
+    A binary search.
+
+    References:
+
+      * H. Bottenbruch, "Structure and use of ALGOL 60", Journal of
+        the ACM, Volume 9, Issue 2, April 1962, pp.161-221.
+        https://doi.org/10.1145/321119.321120
+
+        The general algorithm is described on pages 214 and 215.
+
+      * https://en.wikipedia.org/w/index.php?title=Binary_search_algorithm&oldid=1062988272#Alternative_procedure
+  *)
   let
     fun
-    loop {k1 : nat | k1 <= i}
-         .<k1>.
-         (pf_arr : !array_v (a, p_arr, n) >> _ |
-          k1     : size_t k1)
-        :<> [j : nat | j <= i]
-            size_t j =
-      if k1 = i2sz 0 then
-        k1
-      else
+    loop {j, k : int | 0 <= j; j <= k; k < i}
+         .<k - j>.
+         (arr : &array (a, n),
+          j   : size_t j,
+          k   : size_t k)
+        :<> [j1 : nat | j1 <= i]
+            size_t j1 =
+      if j <> k then
         let
-          val k = pred k1
-        in
-          if array_element_lt<a> {n} (!p_arr, i, k) then
-            loop (pf_arr | k)
+          val h = k - half (k - j) (* (j + k) ceildiv 2 *)
+         in
+          if array_element_lt<a> {n} (arr, i, h) then
+            loop (arr, j, pred h)
           else
-            k1
+            loop (arr, h, k)
         end
+      else if j <> i2sz 0 then
+        succ j
+      else if array_element_lt<a> {n} (arr, i, i2sz 0) then
+        i2sz 0
+      else
+        i2sz 1
   in
-    loop (pf_arr | i)
+    loop (!p_arr, i2sz 0, pred i)
   end
 
 fn {a : vt@ype}
