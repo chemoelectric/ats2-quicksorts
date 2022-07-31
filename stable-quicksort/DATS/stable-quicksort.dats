@@ -266,6 +266,68 @@ array_stable_quicksort_pivot_index_median_of_three {n} (arr, n) =
     end
 
 fn {a : vt@ype}
+make_an_ordered_prefix
+          {n      : int | 2 <= n}
+          {p_arr  : addr}
+          (pf_arr : !array_v (a, p_arr, n) >> _ |
+           p_arr  : ptr p_arr,
+           n      : size_t n)
+    :<!wrt> [prefix_length : int | 2 <= prefix_length;
+                                   prefix_length <= n]
+            size_t prefix_length =
+  let
+    macdef arr = !p_arr
+  in
+    if ~array_element_lt<a> (arr, i2sz 1, i2sz 0) then
+      let                       (* Non-decreasing order. *)
+        fun
+        loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
+             .<n - pfx_len>.
+             (arr     : &array (a, n) >> _,
+              pfx_len : size_t pfx_len)
+            :<> [prefix_length : int | 2 <= prefix_length;
+                                       prefix_length <= n]
+                size_t prefix_length =
+          if pfx_len = n then
+            pfx_len
+          else if array_element_lt<a>
+                    {n} {pfx_len, pfx_len - 1}
+                    (arr, pfx_len, pred pfx_len) then
+            pfx_len
+          else
+            loop (arr, succ pfx_len)
+
+        val prefix_length = loop (arr, i2sz 2)
+      in
+        prefix_length
+      end
+    else
+      let                       (* Monotonically decreasing order. *)
+        fun
+        loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
+             .<n - pfx_len>.
+             (arr     : &array (a, n) >> _,
+              pfx_len : size_t pfx_len)
+            :<> [prefix_length : int | 2 <= prefix_length;
+                                       prefix_length <= n]
+                size_t prefix_length =
+          if pfx_len = n then
+            pfx_len
+          else if ~array_element_lt<a>
+                     {n} {pfx_len, pfx_len - 1}
+                     (arr, pfx_len, pred pfx_len) then
+            pfx_len
+          else
+            loop (arr, succ pfx_len)
+
+        val prefix_length = loop (arr, i2sz 2)
+      in
+        array_subreverse<a> (arr, i2sz 0, prefix_length);
+        prefix_length
+      end
+  end
+
+fn {a : vt@ype}
 insertion_position
           {n      : int}
           {i      : pos | i < n}
@@ -321,8 +383,11 @@ array_insertion_sort
             array_subcirculate<a> (!p_arr, j, i);
             loop (pf_arr | succ i)
           end
+
+      val prefix_length =
+        make_an_ordered_prefix<a> (pf_arr | p_arr, n)
     in
-      loop (pf_arr | i2sz 1)
+      loop (pf_arr | prefix_length)
     end
 
 fn {a : vt@ype}
