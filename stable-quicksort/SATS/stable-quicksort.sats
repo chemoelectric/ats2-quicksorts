@@ -31,7 +31,7 @@ array_stable_quicksort_given_workspace :
   {n : int}
   (&array (INV(a), n),
    size_t n,
-   &array (a?, n)) -< !wrt >
+   &array (a?, n - 1)) -< !wrt >
     void
 
 fn {a : vt@ype}
