@@ -6,9 +6,11 @@ O(n) workspace (in addition to the usual space for a stack or queue).
 
 The current default is to use a random pivot, via a built-in linear
 congruential generator. With this pivot choice, and with the order
-predicate inlined, the sort seems to compete favorably with my system
-qsort (GNU). When the data is randomized, my system qsort can be
-considerably slower.
+predicate inlined, the sort seems to compete favorably against my
+system qsort (GNU).
 
-I have also implemented other pivot choices, but currently these do
-not work well at all with large arrays. I do not yet know why.
+I have also implemented other pivot choices, but these currently do
+not work well at all with large arrays. I do not know why. There seems
+to be similar degradation with array size in the prelude’s quicksort,
+which uses median-of-three for the pivot. My processor type is AMD
+Opteron 6344.
