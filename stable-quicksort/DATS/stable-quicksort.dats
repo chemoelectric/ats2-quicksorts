@@ -615,14 +615,17 @@ partition_array_after_pivot_removal
 
 fn {a : vt@ype}
 select_pivot_and_partition_array
-          {n         : pos}
-          {p_arr     : addr}
-          {p_work    : addr}
-          (pf_arr    : array_v (a, p_arr, n),
-           pf_work   : array_v (a?, p_work, n) |
-           p_arr     : ptr p_arr,
-           p_work    : ptr p_work,
-           n         : size_t n)
+          {n             : pos}
+          {p_arr         : addr}
+          {p_work        : addr}
+          {p_pivot_temp  : addr}
+          (pf_arr        : array_v (a, p_arr, n),
+           pf_work       : array_v (a?, p_work, n),
+           pf_pivot_temp : !(a? @ p_pivot_temp) >> _ |
+           p_arr         : ptr p_arr,
+           p_work        : ptr p_work,
+           p_pivot_temp  : ptr p_pivot_temp,
+           n             : size_t n)
     :<!wrt> [n_le : nat | n_le + 1 <= n]
             @(array_v (a, p_arr, n_le),
               a @ (p_arr + (n_le * sizeof a)),
@@ -636,7 +639,7 @@ select_pivot_and_partition_array
       array_select_pivot<a> (pf_arr | p_arr, n)
 
     (* Remove the pivot from the array. Move it to the stack frame. *)
-    var pivot =
+    val () = !p_pivot_temp :=
       ptr_get<a> (pf_pivot_entry | ptr_add<a> (p_arr, n_before))
 
     (* Partition into stuff <= the pivot in the original array, and
@@ -644,15 +647,16 @@ select_pivot_and_partition_array
     val [n_le : int, n_ge : int]
         @(pf_le, pf_after_le, pf_ge, pf_after_ge | n_le, n_ge) =
       partition_array_after_pivot_removal<a>
-        (pf_before, pf_pivot_entry, pf_after, pf_work, view@ pivot |
-         p_arr, p_work, addr@ pivot, n, n_before)
+        (pf_before, pf_pivot_entry, pf_after, pf_work, pf_pivot_temp |
+         p_arr, p_work, p_pivot_temp, n, n_before)
 
     (* Move the pivot, and the stuff that is now in the workspace
        array, back into the original array. *)
     prval @(pf_pivot_entry1, pf_ge1) = array_v_uncons pf_after_le
     val p_pivot_entry1 = ptr_add<a> (p_arr, n_le)
     val p_ge1 = ptr1_succ<a> p_pivot_entry1
-    val () = ptr_set<a> (pf_pivot_entry1 | p_pivot_entry1, pivot)
+    val () =
+      ptr_set<a> (pf_pivot_entry1 | p_pivot_entry1, !p_pivot_temp)
     val () = array_copy<a> (!p_ge1, !p_work, n_ge)
 
     (* Restore the view of the workspace array. *)
@@ -671,15 +675,18 @@ array_stable_quicksort_given_workspace {n} (arr, n, workspace) =
   else
     let
       fun
-      loop {p_stk    : addr}
-           {depth    : nat}
-           {size_sum : nat}
-           {p_work   : addr}
+      loop {p_stk         : addr}
+           {depth         : nat}
+           {size_sum      : nat}
+           {p_work        : addr}
+           {p_pivot_temp  : addr}
            .<size_sum>.
-           (pf_work : !array_v (a?, p_work, n) >> _ |
-            p_work  : ptr p_work,
-            stk     : &stk_vt (p_stk, depth, size_sum)
-                      >> stk_vt (p_stk, 0, 0))
+           (pf_work       : !array_v (a?, p_work, n) >> _,
+            pf_pivot_temp : !(a? @ p_pivot_temp) >> _ |
+            p_work        : ptr p_work,
+            p_pivot_temp  : ptr p_pivot_temp,
+            stk           : &stk_vt (p_stk, depth, size_sum)
+                            >> stk_vt (p_stk, 0, 0))
           :<!wrt> void =
         if (stk.depth) = 0 then
           $effmask_exn assertloc (stk.size_sum = i2sz 0)
@@ -698,7 +705,8 @@ array_stable_quicksort_given_workspace {n} (arr, n, workspace) =
                   array_insertion_sort<a> (pf_arr1 | p_arr1, n1)
                 prval () = fpf_arr1 pf_arr1
               in
-                loop (pf_work | p_work, stk)     
+                loop (pf_work, pf_pivot_temp |
+                      p_work, p_pivot_temp, stk)
               end
             else
               let
@@ -711,7 +719,8 @@ array_stable_quicksort_given_workspace {n} (arr, n, workspace) =
                 val [n1_le : int]
                     @(pf_le, pf_pivot, pf_ge, pf_work1 | n1_le) =
                   select_pivot_and_partition_array<a>
-                    (pf_arr1, pf_work1 | p_arr1, p_work, n1)
+                    (pf_arr1, pf_work1, pf_pivot_temp |
+                     p_arr1, p_work, p_pivot_temp, n1)
                 prval () = pf_work :=
                   array_v_unsplit {a?} {..} {n1, n - n1}
                                   (pf_work1, pf_not_used)
@@ -727,7 +736,8 @@ array_stable_quicksort_given_workspace {n} (arr, n, workspace) =
                     val () = $effmask_exn
                       assertloc ((stk.depth) <= STK_MAX - 1)
                     val () = stk_vt_push<a> (pf_ge | p_ge, n1_ge, stk)
-                    val () = loop (pf_work | p_work, stk)
+                    val () = loop (pf_work, pf_pivot_temp |
+                                   p_work, p_pivot_temp, stk)
                     prval () = pf_arr1 :=
                       array_v_extend (pf_le, pf_pivot)
                     prval () = pf_arr1 :=
@@ -741,7 +751,8 @@ array_stable_quicksort_given_workspace {n} (arr, n, workspace) =
                       assertloc ((stk.depth) <= STK_MAX - 2)
                     val () = stk_vt_push<a> (pf_ge | p_ge, n1_ge, stk)
                     val () = stk_vt_push<a> (pf_le | p_le, n1_le, stk)
-                    val () = loop (pf_work | p_work, stk)
+                    val () = loop (pf_work, pf_pivot_temp |
+                                   p_work, p_pivot_temp, stk)
                     prval () = pf_arr1 :=
                       array_v_extend (pf_le, pf_pivot)
                     prval () = pf_arr1 :=
@@ -754,7 +765,8 @@ array_stable_quicksort_given_workspace {n} (arr, n, workspace) =
                     val () = $effmask_exn
                       assertloc ((stk.depth) <= STK_MAX - 1)
                     val () = stk_vt_push<a> (pf_le | p_le, n1_le, stk)
-                    val () = loop (pf_work | p_work, stk)
+                    val () = loop (pf_work, pf_pivot_temp |
+                                   p_work, p_pivot_temp, stk)
                     prval () = pf_arr1 :=
                       array_v_extend (pf_le, pf_pivot)
                     prval () = pf_arr1 :=
@@ -768,7 +780,8 @@ array_stable_quicksort_given_workspace {n} (arr, n, workspace) =
                       assertloc ((stk.depth) <= STK_MAX - 2)
                     val () = stk_vt_push<a> (pf_le | p_le, n1_le, stk)
                     val () = stk_vt_push<a> (pf_ge | p_ge, n1_ge, stk)
-                    val () = loop (pf_work | p_work, stk)
+                    val () = loop (pf_work, pf_pivot_temp |
+                                   p_work, p_pivot_temp, stk)
                     prval () = pf_arr1 :=
                       array_v_extend (pf_le, pf_pivot)
                     prval () = pf_arr1 :=
@@ -785,8 +798,12 @@ array_stable_quicksort_given_workspace {n} (arr, n, workspace) =
         @[stk_entry_vt][STK_MAX] (@(the_null_ptr, i2sz 1))
       var stk = stk_vt_make (view@ stk_storage | addr@ stk_storage)
 
+      (* Put the pivot physically near the stack. *)
+      var pivot_temp : a?
+
       val () = stk_vt_push<a> (view@ arr | addr@ arr, n, stk)
-      val () = loop (view@ workspace | addr@ workspace, stk)
+      val () = loop (view@ workspace, view@ pivot_temp |
+                     addr@ workspace, addr@ pivot_temp, stk)
 
       prval () = view@ stk_storage := stk.pf
     in
