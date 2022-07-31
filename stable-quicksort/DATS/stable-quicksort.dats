@@ -25,7 +25,7 @@
 staload "stable-quicksort/SATS/stable-quicksort.sats"
 staload UN = "prelude/SATS/unsafe.sats"
 
-#define DEFAULT_ARRAY_INSERTION_SORT_THRESHOLD 64
+#define DEFAULT_ARRAY_INSERTION_SORT_THRESHOLD 80
 #define ARRAY_STACK_STORAGE_THRESHOLD 256
 
 #ifdef STABLE_QUICKSORT_STK_MAX #then
