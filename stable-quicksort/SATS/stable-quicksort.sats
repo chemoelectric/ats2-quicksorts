@@ -28,16 +28,19 @@
 
 fn {a : vt@ype}
 array_stable_quicksort_given_workspace :
-  {n : int}
-  (&array (INV(a), n),
+  {n  : int}
+  {m1 : int | n <= m1}
+  {m2 : int | n - 1 <= m2}
+  (&array (a, m1),
    size_t n,
-   &array (a?, n - 1)) -< !wrt >
+   &array (a?, m2)) -< !wrt >
     void
 
 fn {a : vt@ype}
 array_stable_quicksort_not_given_workspace :
-  {n : int}
-  (&array (INV(a), n),
+  {n  : int}
+  {m1 : int | n <= m1}
+  (&array (a, m1),
    size_t n) -< !wrt >
     void
 

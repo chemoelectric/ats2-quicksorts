@@ -671,8 +671,13 @@ select_pivot_and_partition_array
     @(pf_le, pf_pivot_entry1, pf_ge1, pf_work | n_le)
   end
 
-implement {a}
-array_stable_quicksort_given_workspace {n} (arr, n, workspace) =
+fn {a : vt@ype}
+array_sort
+          {n         : int}
+          (arr       : &array (a, n),
+           n         : size_t n,
+           workspace : &array (a?, n - 1))
+    :<!wrt> void =
   if n = 0 then
     ()
   else
@@ -813,13 +818,39 @@ array_stable_quicksort_given_workspace {n} (arr, n, workspace) =
     end
 
 implement {a}
+array_stable_quicksort_given_workspace {n} {m1} {m2}
+                                       (arr, n, workspace) =
+  if n = i2sz 0 then
+    ()
+  else
+    let
+      prval () = lemma_array_param arr
+      prval () = lemma_g1uint_param n
+
+      prval @(pf_arr1, pf_arr2) =
+        array_v_split {a} {..} {m1} {n} (view@ arr)
+      prval @(pf_work1, pf_work2) =
+        array_v_split {a?} {..} {m2} {n - 1} (view@ workspace)
+      val () = array_sort<a> {n} (!(addr@ arr), n, !(addr@ workspace))
+      prval () = view@ arr :=
+        array_v_unsplit (pf_arr1, pf_arr2)
+      prval () = view@ workspace :=
+        array_v_unsplit (pf_work1, pf_work2)
+    in
+    end
+
+implement {a}
 array_stable_quicksort_not_given_workspace {n} (arr, n) =
   let
+    prval () = lemma_g1uint_param n
+
     fn
     quicksort {n         : int}
-              (arr       : &array (a, n),
+              {m1        : int | n <= m1}
+              {m2        : int | n - 1 <= m2}
+              (arr       : &array (a, m1),
                n         : size_t n,
-               workspace : &array (a?, n - 1))
+               workspace : &array (a?, m2))
         :<!wrt> void =
       array_stable_quicksort_given_workspace<a> (arr, n, workspace)
 
@@ -830,13 +861,7 @@ array_stable_quicksort_not_given_workspace {n} (arr, n) =
     else if pred n <= ARRAY_STACK_STORAGE_THRESHOLD then
       let
         var storage : @[a?][ARRAY_STACK_STORAGE_THRESHOLD]
-
-        prval @(pf_work, pf_rest) =
-          array_v_split
-            {a?} {..} {ARRAY_STACK_STORAGE_THRESHOLD} {n - 1}
-            (view@ storage)
-        val () = quicksort (arr, n, !(addr@ storage))
-        prval () = view@ storage := array_v_unsplit (pf_work, pf_rest)
+        val () = quicksort (arr, n, storage)
       in
       end
     else
