@@ -27,7 +27,12 @@ staload UN = "prelude/SATS/unsafe.sats"
 
 #define DEFAULT_ARRAY_INSERTION_SORT_THRESHOLD 64
 #define ARRAY_STACK_STORAGE_THRESHOLD 256
+
+#ifdef STABLE_QUICKSORT_STK_MAX #then
+#define STK_MAX STABLE_QUICKSORT_STK_MAX
+#else
 #define STK_MAX 64     (* Enough for arrays of up to 2**64 entries. *)
+#endif
 
 prfn
 lemma_mul_isfun
