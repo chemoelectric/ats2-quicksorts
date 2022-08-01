@@ -33,7 +33,7 @@
 #
 
 # aminclude_static.am generated automatically by Autoconf
-# from AX_AM_MACROS_STATIC on Fri Jul 29 12:43:55 CDT 2022
+# from AX_AM_MACROS_STATIC on Mon Aug  1 13:01:19 CDT 2022
 
 
 
@@ -113,10 +113,10 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS =
-EXTRA_PROGRAMS = tests/test-arrays-patterns$(EXEEXT) \
+EXTRA_PROGRAMS = tests/test-arrays-patterns-stable$(EXEEXT) \
 	tests/test-arrays-stability$(EXEEXT) \
 	list-ats-dependencies$(EXEEXT)
-TESTS = tests/test-arrays-patterns$(EXEEXT) \
+TESTS = tests/test-arrays-patterns-stable$(EXEEXT) \
 	tests/test-arrays-stability$(EXEEXT)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -141,8 +141,7 @@ DIST_COMMON = $(srcdir)/Makefile.am $(top_srcdir)/configure \
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
-CONFIG_CLEAN_FILES = ats2-stable-quicksort.pc \
-	list-ats-dependencies.dats
+CONFIG_CLEAN_FILES = ats2-quicksorts.pc list-ats-dependencies.dats
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libdir)" \
 	"$(DESTDIR)$(pkgconfigdir)" "$(DESTDIR)$(pkgincludedir)" \
@@ -176,14 +175,14 @@ am__uninstall_files_from_dir = { \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
 LTLIBRARIES = $(lib_LTLIBRARIES)
-libats2_stable_quicksort_la_LIBADD =
+libats2_quicksorts_la_LIBADD =
 am__dirstamp = $(am__leading_dot)dirstamp
-am__objects_1 = stable-quicksort/SATS/stable-quicksort_sats.lo
-am__objects_2 = stable-quicksort/DATS/stable-quicksort_dats.lo
-nodist_libats2_stable_quicksort_la_OBJECTS = $(am__objects_1) \
+am__objects_1 = quicksorts/SATS/stable-quicksort_sats.lo
+am__objects_2 = quicksorts/DATS/stable-quicksort_dats.lo
+nodist_libats2_quicksorts_la_OBJECTS = $(am__objects_1) \
 	$(am__objects_2)
-libats2_stable_quicksort_la_OBJECTS =  \
-	$(nodist_libats2_stable_quicksort_la_OBJECTS)
+libats2_quicksorts_la_OBJECTS =  \
+	$(nodist_libats2_quicksorts_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -191,9 +190,9 @@ am__v_lt_1 =
 nodist_list_ats_dependencies_OBJECTS = list_ats_dependencies-list-ats-dependencies_depsprog.$(OBJEXT)
 list_ats_dependencies_OBJECTS =  \
 	$(nodist_list_ats_dependencies_OBJECTS)
-am_tests_test_arrays_patterns_OBJECTS = tests/test_arrays_patterns-test-arrays-patterns_tests.$(OBJEXT)
-tests_test_arrays_patterns_OBJECTS =  \
-	$(am_tests_test_arrays_patterns_OBJECTS)
+am_tests_test_arrays_patterns_stable_OBJECTS = tests/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.$(OBJEXT)
+tests_test_arrays_patterns_stable_OBJECTS =  \
+	$(am_tests_test_arrays_patterns_stable_OBJECTS)
 am_tests_test_arrays_stability_OBJECTS = tests/test_arrays_stability-test-arrays-stability_tests.$(OBJEXT)
 tests_test_arrays_stability_OBJECTS =  \
 	$(am_tests_test_arrays_stability_OBJECTS)
@@ -213,9 +212,9 @@ DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/list_ats_dependencies-list-ats-dependencies_depsprog.Po \
-	stable-quicksort/DATS/$(DEPDIR)/stable-quicksort_dats.Plo \
-	stable-quicksort/SATS/$(DEPDIR)/stable-quicksort_sats.Plo \
-	tests/$(DEPDIR)/test_arrays_patterns-test-arrays-patterns_tests.Po \
+	quicksorts/DATS/$(DEPDIR)/stable-quicksort_dats.Plo \
+	quicksorts/SATS/$(DEPDIR)/stable-quicksort_sats.Plo \
+	tests/$(DEPDIR)/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.Po \
 	tests/$(DEPDIR)/test_arrays_stability-test-arrays-stability_tests.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -236,11 +235,11 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(nodist_libats2_stable_quicksort_la_SOURCES) \
+SOURCES = $(nodist_libats2_quicksorts_la_SOURCES) \
 	$(nodist_list_ats_dependencies_SOURCES) \
-	$(tests_test_arrays_patterns_SOURCES) \
+	$(tests_test_arrays_patterns_stable_SOURCES) \
 	$(tests_test_arrays_stability_SOURCES)
-DIST_SOURCES = $(tests_test_arrays_patterns_SOURCES) \
+DIST_SOURCES = $(tests_test_arrays_patterns_stable_SOURCES) \
 	$(tests_test_arrays_stability_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
@@ -446,7 +445,7 @@ TEST_LOG_DRIVER = $(SHELL) $(top_srcdir)/build-aux/test-driver
 TEST_LOG_COMPILE = $(TEST_LOG_COMPILER) $(AM_TEST_LOG_FLAGS) \
 	$(TEST_LOG_FLAGS)
 am__DIST_COMMON = $(srcdir)/Makefile.in \
-	$(srcdir)/ats2-stable-quicksort.pc.in \
+	$(srcdir)/ats2-quicksorts.pc.in \
 	$(srcdir)/list-ats-dependencies.dats.in \
 	$(top_srcdir)/aminclude_static.am \
 	$(top_srcdir)/build-aux/compile \
@@ -643,11 +642,12 @@ AUTOMAKE_OPTIONS = foreign subdir-objects -Wno-portability
 @CODE_COVERAGE_ENABLED_TRUE@code_coverage_sanitize = $(subst -,_,$(subst .,_,$(1)))
 @CODE_COVERAGE_ENABLED_TRUE@AM_DISTCHECK_CONFIGURE_FLAGS := $(AM_DISTCHECK_CONFIGURE_FLAGS) --disable-code-coverage
 EXTRA_DIST = $(srcdir)/silent-rules.mk COPYING INSTALL README AUTHORS \
-	tests/test-arrays-patterns.dats \
+	tests/test-arrays-patterns-stable.dats \
 	tests/test-arrays-stability.dats list-ats-dependencies.dats
 MOSTLYCLEANFILES = 
 CLEANFILES = $(STABLE_QUICKSORT_SATS_C) $(STABLE_QUICKSORT_DATS_C) \
-	tests/test-arrays-patterns tests/test-arrays-patterns_tests.c \
+	tests/test-arrays-patterns-stable \
+	tests/test-arrays-patterns-stable_tests.c \
 	tests/test-arrays-stability \
 	tests/test-arrays-stability_tests.c list-ats-dependencies \
 	list-ats-dependencies_depsprog.c
@@ -663,11 +663,11 @@ LDADD = $(CODE_COVERAGE_LIBS)
 #
 # The ATS2 library.
 #
-lib_LTLIBRARIES = libats2-stable-quicksort.la
+lib_LTLIBRARIES = libats2-quicksorts.la
 nobase_nodist_pkginclude_HEADERS = 
 
 #--------------------------------------------------------------------------
-nodist_pkgconfig_DATA = ats2-stable-quicksort.pc
+nodist_pkgconfig_DATA = ats2-quicksorts.pc
 CODE_COVERAGE_IGNORE_PATTERN = /usr/include/* /usr/include/*/* \
 	$(PATSHOME)/ccomp/runtime/* $(PATSHOME)/prelude/CATS/*
 
@@ -688,34 +688,34 @@ AM_PATSOPTFLAGS = -IATS $(builddir) -IATS $(srcdir)
 TOTAL_PATSOPTFLAGS = $(AM_PATSOPTFLAGS) $(PATSOPTFLAGS) \
 	$(XPATSOPTFLAGS)
 TESTS_PATSOPTFLAGS = -IATS $(builddir)/tests -IATS $(srcdir)/tests
-STABLE_QUICKSORT_SATS = stable-quicksort/SATS/stable-quicksort.sats
-STABLE_QUICKSORT_SATS_C = stable-quicksort/SATS/stable-quicksort_sats.c
-STABLE_QUICKSORT_DATS = stable-quicksort/DATS/stable-quicksort.dats
-STABLE_QUICKSORT_DATS_C = stable-quicksort/DATS/stable-quicksort_dats.c
-STABLE_QUICKSORT_CATS = stable-quicksort/CATS/stable-quicksort.cats
-STABLE_QUICKSORT_HATS = stable-quicksort/HATS/stable-quicksort.hats
+STABLE_QUICKSORT_SATS = quicksorts/SATS/stable-quicksort.sats
+STABLE_QUICKSORT_SATS_C = quicksorts/SATS/stable-quicksort_sats.c
+STABLE_QUICKSORT_DATS = quicksorts/DATS/stable-quicksort.dats
+STABLE_QUICKSORT_DATS_C = quicksorts/DATS/stable-quicksort_dats.c
+STABLE_QUICKSORT_HATS = quicksorts/HATS/stable-quicksort.hats
+QUICKSORTS_CATS = quicksorts/CATS/quicksorts.cats
 nobase_dist_pkginclude_HEADERS = $(STABLE_QUICKSORT_SATS) \
-	$(STABLE_QUICKSORT_DATS) $(STABLE_QUICKSORT_CATS) \
+	$(STABLE_QUICKSORT_DATS) $(STABLE_QUICKSORT_HATS) \
+	$(QUICKSORTS_CATS)
+nodist_libats2_quicksorts_la_SOURCES = $(STABLE_QUICKSORT_SATS_C) \
+	$(STABLE_QUICKSORT_DATS_C)
+libats2_quicksorts_la_DEPENDENCIES = $(QUICKSORTS_CATS)
+tests_test_arrays_patterns_stable_SOURCES =  \
+	tests/test-arrays-patterns-stable_tests.c
+tests_test_arrays_patterns_stable_DEPENDENCIES =  \
+	tests/test-arrays-patterns-stable.dats libats2-quicksorts.la \
 	$(STABLE_QUICKSORT_HATS)
-nodist_libats2_stable_quicksort_la_SOURCES =  \
-	$(STABLE_QUICKSORT_SATS_C) $(STABLE_QUICKSORT_DATS_C)
-libats2_stable_quicksort_la_DEPENDENCIES = $(STABLE_QUICKSORT_CATS)
-tests_test_arrays_patterns_SOURCES =  \
-	tests/test-arrays-patterns_tests.c
-tests_test_arrays_patterns_DEPENDENCIES =  \
-	tests/test-arrays-patterns.dats libats2-stable-quicksort.la \
-	$(STABLE_QUICKSORT_HATS)
-tests_test_arrays_patterns_CPPFLAGS = $(AM_CPPFLAGS) \
+tests_test_arrays_patterns_stable_CPPFLAGS = $(AM_CPPFLAGS) \
 	-DATS_MEMALLOC_LIBC
-tests_test_arrays_patterns_LDADD = libats2-stable-quicksort.la
+tests_test_arrays_patterns_stable_LDADD = libats2-quicksorts.la
 tests_test_arrays_stability_SOURCES =  \
 	tests/test-arrays-stability_tests.c
 tests_test_arrays_stability_DEPENDENCIES =  \
-	tests/test-arrays-stability.dats libats2-stable-quicksort.la \
+	tests/test-arrays-stability.dats libats2-quicksorts.la \
 	$(STABLE_QUICKSORT_HATS)
 tests_test_arrays_stability_CPPFLAGS = $(AM_CPPFLAGS) \
 	-DATS_MEMALLOC_LIBC
-tests_test_arrays_stability_LDADD = libats2-stable-quicksort.la
+tests_test_arrays_stability_LDADD = libats2-quicksorts.la
 nodist_list_ats_dependencies_SOURCES =  \
 	list-ats-dependencies_depsprog.c
 list_ats_dependencies_CPPFLAGS = $(AM_CPPFLAGS) -DATS_MEMALLOC_LIBC
@@ -761,7 +761,7 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	$(am__cd) $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 $(am__aclocal_m4_deps):
-ats2-stable-quicksort.pc: $(top_builddir)/config.status $(srcdir)/ats2-stable-quicksort.pc.in
+ats2-quicksorts.pc: $(top_builddir)/config.status $(srcdir)/ats2-quicksorts.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 list-ats-dependencies.dats: $(top_builddir)/config.status $(srcdir)/list-ats-dependencies.dats.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
@@ -849,27 +849,27 @@ clean-libLTLIBRARIES:
 	  echo rm -f $${locs}; \
 	  rm -f $${locs}; \
 	}
-stable-quicksort/SATS/$(am__dirstamp):
-	@$(MKDIR_P) stable-quicksort/SATS
-	@: > stable-quicksort/SATS/$(am__dirstamp)
-stable-quicksort/SATS/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) stable-quicksort/SATS/$(DEPDIR)
-	@: > stable-quicksort/SATS/$(DEPDIR)/$(am__dirstamp)
-stable-quicksort/SATS/stable-quicksort_sats.lo:  \
-	stable-quicksort/SATS/$(am__dirstamp) \
-	stable-quicksort/SATS/$(DEPDIR)/$(am__dirstamp)
-stable-quicksort/DATS/$(am__dirstamp):
-	@$(MKDIR_P) stable-quicksort/DATS
-	@: > stable-quicksort/DATS/$(am__dirstamp)
-stable-quicksort/DATS/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) stable-quicksort/DATS/$(DEPDIR)
-	@: > stable-quicksort/DATS/$(DEPDIR)/$(am__dirstamp)
-stable-quicksort/DATS/stable-quicksort_dats.lo:  \
-	stable-quicksort/DATS/$(am__dirstamp) \
-	stable-quicksort/DATS/$(DEPDIR)/$(am__dirstamp)
+quicksorts/SATS/$(am__dirstamp):
+	@$(MKDIR_P) quicksorts/SATS
+	@: > quicksorts/SATS/$(am__dirstamp)
+quicksorts/SATS/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quicksorts/SATS/$(DEPDIR)
+	@: > quicksorts/SATS/$(DEPDIR)/$(am__dirstamp)
+quicksorts/SATS/stable-quicksort_sats.lo:  \
+	quicksorts/SATS/$(am__dirstamp) \
+	quicksorts/SATS/$(DEPDIR)/$(am__dirstamp)
+quicksorts/DATS/$(am__dirstamp):
+	@$(MKDIR_P) quicksorts/DATS
+	@: > quicksorts/DATS/$(am__dirstamp)
+quicksorts/DATS/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quicksorts/DATS/$(DEPDIR)
+	@: > quicksorts/DATS/$(DEPDIR)/$(am__dirstamp)
+quicksorts/DATS/stable-quicksort_dats.lo:  \
+	quicksorts/DATS/$(am__dirstamp) \
+	quicksorts/DATS/$(DEPDIR)/$(am__dirstamp)
 
-libats2-stable-quicksort.la: $(libats2_stable_quicksort_la_OBJECTS) $(libats2_stable_quicksort_la_DEPENDENCIES) $(EXTRA_libats2_stable_quicksort_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(LINK) -rpath $(libdir) $(libats2_stable_quicksort_la_OBJECTS) $(libats2_stable_quicksort_la_LIBADD) $(LIBS)
+libats2-quicksorts.la: $(libats2_quicksorts_la_OBJECTS) $(libats2_quicksorts_la_DEPENDENCIES) $(EXTRA_libats2_quicksorts_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(LINK) -rpath $(libdir) $(libats2_quicksorts_la_OBJECTS) $(libats2_quicksorts_la_LIBADD) $(LIBS)
 
 list-ats-dependencies$(EXEEXT): $(list_ats_dependencies_OBJECTS) $(list_ats_dependencies_DEPENDENCIES) $(EXTRA_list_ats_dependencies_DEPENDENCIES) 
 	@rm -f list-ats-dependencies$(EXEEXT)
@@ -880,12 +880,12 @@ tests/$(am__dirstamp):
 tests/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) tests/$(DEPDIR)
 	@: > tests/$(DEPDIR)/$(am__dirstamp)
-tests/test_arrays_patterns-test-arrays-patterns_tests.$(OBJEXT):  \
+tests/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.$(OBJEXT):  \
 	tests/$(am__dirstamp) tests/$(DEPDIR)/$(am__dirstamp)
 
-tests/test-arrays-patterns$(EXEEXT): $(tests_test_arrays_patterns_OBJECTS) $(tests_test_arrays_patterns_DEPENDENCIES) $(EXTRA_tests_test_arrays_patterns_DEPENDENCIES) tests/$(am__dirstamp)
-	@rm -f tests/test-arrays-patterns$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(tests_test_arrays_patterns_OBJECTS) $(tests_test_arrays_patterns_LDADD) $(LIBS)
+tests/test-arrays-patterns-stable$(EXEEXT): $(tests_test_arrays_patterns_stable_OBJECTS) $(tests_test_arrays_patterns_stable_DEPENDENCIES) $(EXTRA_tests_test_arrays_patterns_stable_DEPENDENCIES) tests/$(am__dirstamp)
+	@rm -f tests/test-arrays-patterns-stable$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(tests_test_arrays_patterns_stable_OBJECTS) $(tests_test_arrays_patterns_stable_LDADD) $(LIBS)
 tests/test_arrays_stability-test-arrays-stability_tests.$(OBJEXT):  \
 	tests/$(am__dirstamp) tests/$(DEPDIR)/$(am__dirstamp)
 
@@ -895,19 +895,19 @@ tests/test-arrays-stability$(EXEEXT): $(tests_test_arrays_stability_OBJECTS) $(t
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
-	-rm -f stable-quicksort/DATS/*.$(OBJEXT)
-	-rm -f stable-quicksort/DATS/*.lo
-	-rm -f stable-quicksort/SATS/*.$(OBJEXT)
-	-rm -f stable-quicksort/SATS/*.lo
+	-rm -f quicksorts/DATS/*.$(OBJEXT)
+	-rm -f quicksorts/DATS/*.lo
+	-rm -f quicksorts/SATS/*.$(OBJEXT)
+	-rm -f quicksorts/SATS/*.lo
 	-rm -f tests/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/list_ats_dependencies-list-ats-dependencies_depsprog.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@stable-quicksort/DATS/$(DEPDIR)/stable-quicksort_dats.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@stable-quicksort/SATS/$(DEPDIR)/stable-quicksort_sats.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_arrays_patterns-test-arrays-patterns_tests.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quicksorts/DATS/$(DEPDIR)/stable-quicksort_dats.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quicksorts/SATS/$(DEPDIR)/stable-quicksort_sats.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_arrays_stability-test-arrays-stability_tests.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -954,19 +954,19 @@ list_ats_dependencies-list-ats-dependencies_depsprog.obj: list-ats-dependencies_
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(list_ats_dependencies_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o list_ats_dependencies-list-ats-dependencies_depsprog.obj `if test -f 'list-ats-dependencies_depsprog.c'; then $(CYGPATH_W) 'list-ats-dependencies_depsprog.c'; else $(CYGPATH_W) '$(srcdir)/list-ats-dependencies_depsprog.c'; fi`
 
-tests/test_arrays_patterns-test-arrays-patterns_tests.o: tests/test-arrays-patterns_tests.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_arrays_patterns_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tests/test_arrays_patterns-test-arrays-patterns_tests.o -MD -MP -MF tests/$(DEPDIR)/test_arrays_patterns-test-arrays-patterns_tests.Tpo -c -o tests/test_arrays_patterns-test-arrays-patterns_tests.o `test -f 'tests/test-arrays-patterns_tests.c' || echo '$(srcdir)/'`tests/test-arrays-patterns_tests.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/test_arrays_patterns-test-arrays-patterns_tests.Tpo tests/$(DEPDIR)/test_arrays_patterns-test-arrays-patterns_tests.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/test-arrays-patterns_tests.c' object='tests/test_arrays_patterns-test-arrays-patterns_tests.o' libtool=no @AMDEPBACKSLASH@
+tests/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.o: tests/test-arrays-patterns-stable_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_arrays_patterns_stable_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tests/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.o -MD -MP -MF tests/$(DEPDIR)/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.Tpo -c -o tests/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.o `test -f 'tests/test-arrays-patterns-stable_tests.c' || echo '$(srcdir)/'`tests/test-arrays-patterns-stable_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.Tpo tests/$(DEPDIR)/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/test-arrays-patterns-stable_tests.c' object='tests/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_arrays_patterns_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tests/test_arrays_patterns-test-arrays-patterns_tests.o `test -f 'tests/test-arrays-patterns_tests.c' || echo '$(srcdir)/'`tests/test-arrays-patterns_tests.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_arrays_patterns_stable_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tests/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.o `test -f 'tests/test-arrays-patterns-stable_tests.c' || echo '$(srcdir)/'`tests/test-arrays-patterns-stable_tests.c
 
-tests/test_arrays_patterns-test-arrays-patterns_tests.obj: tests/test-arrays-patterns_tests.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_arrays_patterns_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tests/test_arrays_patterns-test-arrays-patterns_tests.obj -MD -MP -MF tests/$(DEPDIR)/test_arrays_patterns-test-arrays-patterns_tests.Tpo -c -o tests/test_arrays_patterns-test-arrays-patterns_tests.obj `if test -f 'tests/test-arrays-patterns_tests.c'; then $(CYGPATH_W) 'tests/test-arrays-patterns_tests.c'; else $(CYGPATH_W) '$(srcdir)/tests/test-arrays-patterns_tests.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/test_arrays_patterns-test-arrays-patterns_tests.Tpo tests/$(DEPDIR)/test_arrays_patterns-test-arrays-patterns_tests.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/test-arrays-patterns_tests.c' object='tests/test_arrays_patterns-test-arrays-patterns_tests.obj' libtool=no @AMDEPBACKSLASH@
+tests/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.obj: tests/test-arrays-patterns-stable_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_arrays_patterns_stable_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tests/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.obj -MD -MP -MF tests/$(DEPDIR)/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.Tpo -c -o tests/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.obj `if test -f 'tests/test-arrays-patterns-stable_tests.c'; then $(CYGPATH_W) 'tests/test-arrays-patterns-stable_tests.c'; else $(CYGPATH_W) '$(srcdir)/tests/test-arrays-patterns-stable_tests.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.Tpo tests/$(DEPDIR)/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/test-arrays-patterns-stable_tests.c' object='tests/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_arrays_patterns_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tests/test_arrays_patterns-test-arrays-patterns_tests.obj `if test -f 'tests/test-arrays-patterns_tests.c'; then $(CYGPATH_W) 'tests/test-arrays-patterns_tests.c'; else $(CYGPATH_W) '$(srcdir)/tests/test-arrays-patterns_tests.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_arrays_patterns_stable_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tests/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.obj `if test -f 'tests/test-arrays-patterns-stable_tests.c'; then $(CYGPATH_W) 'tests/test-arrays-patterns-stable_tests.c'; else $(CYGPATH_W) '$(srcdir)/tests/test-arrays-patterns-stable_tests.c'; fi`
 
 tests/test_arrays_stability-test-arrays-stability_tests.o: tests/test-arrays-stability_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_arrays_stability_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tests/test_arrays_stability-test-arrays-stability_tests.o -MD -MP -MF tests/$(DEPDIR)/test_arrays_stability-test-arrays-stability_tests.Tpo -c -o tests/test_arrays_stability-test-arrays-stability_tests.o `test -f 'tests/test-arrays-stability_tests.c' || echo '$(srcdir)/'`tests/test-arrays-stability_tests.c
@@ -987,8 +987,8 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
-	-rm -rf stable-quicksort/DATS/.libs stable-quicksort/DATS/_libs
-	-rm -rf stable-quicksort/SATS/.libs stable-quicksort/SATS/_libs
+	-rm -rf quicksorts/DATS/.libs quicksorts/DATS/_libs
+	-rm -rf quicksorts/SATS/.libs quicksorts/SATS/_libs
 	-rm -rf tests/.libs tests/_libs
 
 distclean-libtool:
@@ -1263,9 +1263,9 @@ recheck: all
 	        am__force_recheck=am--force-recheck \
 	        TEST_LOGS="$$log_list"; \
 	exit $$?
-tests/test-arrays-patterns.log: tests/test-arrays-patterns$(EXEEXT)
-	@p='tests/test-arrays-patterns$(EXEEXT)'; \
-	b='tests/test-arrays-patterns'; \
+tests/test-arrays-patterns-stable.log: tests/test-arrays-patterns-stable$(EXEEXT)
+	@p='tests/test-arrays-patterns-stable$(EXEEXT)'; \
+	b='tests/test-arrays-patterns-stable'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1509,10 +1509,10 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
-	-rm -f stable-quicksort/DATS/$(DEPDIR)/$(am__dirstamp)
-	-rm -f stable-quicksort/DATS/$(am__dirstamp)
-	-rm -f stable-quicksort/SATS/$(DEPDIR)/$(am__dirstamp)
-	-rm -f stable-quicksort/SATS/$(am__dirstamp)
+	-rm -f quicksorts/DATS/$(DEPDIR)/$(am__dirstamp)
+	-rm -f quicksorts/DATS/$(am__dirstamp)
+	-rm -f quicksorts/SATS/$(DEPDIR)/$(am__dirstamp)
+	-rm -f quicksorts/SATS/$(am__dirstamp)
 	-rm -f tests/$(DEPDIR)/$(am__dirstamp)
 	-rm -f tests/$(am__dirstamp)
 	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
@@ -1529,9 +1529,9 @@ clean-am: clean-binPROGRAMS clean-generic clean-libLTLIBRARIES \
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 		-rm -f ./$(DEPDIR)/list_ats_dependencies-list-ats-dependencies_depsprog.Po
-	-rm -f stable-quicksort/DATS/$(DEPDIR)/stable-quicksort_dats.Plo
-	-rm -f stable-quicksort/SATS/$(DEPDIR)/stable-quicksort_sats.Plo
-	-rm -f tests/$(DEPDIR)/test_arrays_patterns-test-arrays-patterns_tests.Po
+	-rm -f quicksorts/DATS/$(DEPDIR)/stable-quicksort_dats.Plo
+	-rm -f quicksorts/SATS/$(DEPDIR)/stable-quicksort_sats.Plo
+	-rm -f tests/$(DEPDIR)/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.Po
 	-rm -f tests/$(DEPDIR)/test_arrays_stability-test-arrays-stability_tests.Po
 	-rm -f GNUmakefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -1583,9 +1583,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
 		-rm -f ./$(DEPDIR)/list_ats_dependencies-list-ats-dependencies_depsprog.Po
-	-rm -f stable-quicksort/DATS/$(DEPDIR)/stable-quicksort_dats.Plo
-	-rm -f stable-quicksort/SATS/$(DEPDIR)/stable-quicksort_sats.Plo
-	-rm -f tests/$(DEPDIR)/test_arrays_patterns-test-arrays-patterns_tests.Po
+	-rm -f quicksorts/DATS/$(DEPDIR)/stable-quicksort_dats.Plo
+	-rm -f quicksorts/SATS/$(DEPDIR)/stable-quicksort_sats.Plo
+	-rm -f tests/$(DEPDIR)/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.Po
 	-rm -f tests/$(DEPDIR)/test_arrays_stability-test-arrays-stability_tests.Po
 	-rm -f GNUmakefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
@@ -1790,7 +1790,7 @@ ats-includes-distclean:
 %_depsprog.c: %.dats $(PATSOPT_DEPS)
 	@$(MKDIR_P) $(@D)
 	$(call v,PATSOPT)$(PATSOPT) -o $(@) $(TOTAL_PATSOPTFLAGS) -d $(<)
-tests/test-arrays-patterns_tests.c: tests/test-arrays-patterns.dats
+tests/test-arrays-patterns-stable_tests.c: tests/test-arrays-patterns-stable.dats
 tests/test-arrays-stability_tests.c: tests/test-arrays-stability.dats
 
 tests-clean:

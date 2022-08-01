@@ -20,7 +20,7 @@ PATSOPTFLAGS="-IATS ${pkgincludedir}"
 PATSCCFLAGS="-IIATS ${pkgincludedir}"
 
 Name: ${package}
-Description: Stable quicksort for ATS2
+Description: Quicksorts for ATS2
 Version: ${version}
-Libs: -L${libdir} -lats2-stable-quicksort
+Libs: -L${libdir} -lats2-quicksorts
 Cflags: ${CPPFLAGS}

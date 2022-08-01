@@ -1,5 +1,10 @@
-Stable quicksort for arrays, in ATS2/Postiats
----------------------------------------------
+Quicksorts in ATS2/Postiats
+---------------------------
+
+
+----
+
+#include "quicksorts/HATS/stable-quicksort.hats"
 
 This is a *stable* quicksort, and so (unlike most quicksorts) uses
 O(n) workspace (in addition to the usual space for a stack or queue).
@@ -14,3 +19,5 @@ not work well at all with large arrays. I do not know why. There seems
 to be similar degradation with array size in the prelude’s quicksort,
 which uses median-of-three for the pivot. My processor type is AMD
 Opteron 6344.
+
+----

@@ -16,18 +16,20 @@
   <https://www.gnu.org/licenses/>.
 */
 
-#ifndef STABLE_QUICKSORT__CATS__STABLE_QUICKSORT_CATS__HEADER_GUARD__
-#define STABLE_QUICKSORT__CATS__STABLE_QUICKSORT_CATS__HEADER_GUARD__
+#ifndef QUICKSORTS__CATS__QUICKSORTS_CATS__HEADER_GUARD__
+#define QUICKSORTS__CATS__QUICKSORTS_CATS__HEADER_GUARD__
 
 #include <inttypes.h>
 #include <stdatomic.h>
 #include <stdbool.h>
 #include <string.h>
 
+#define ats2_quicksorts_inline ATSinline ()
+
 #if defined __GNUC__
-#define ats2_stable_quicksort_bswap64 __builtin_bswap64
+#define ats2_quicksorts_bswap64 __builtin_bswap64
 #else
-#define ats2_stable_quicksort_bswap64(x)            \
+#define ats2_quicksorts_bswap64(x)                  \
   ((((x) & UINT64_C (0x00000000000000FF)) << 56) |  \
    (((x) & UINT64_C (0x000000000000FF00)) << 40) |  \
    (((x) & UINT64_C (0x0000000000FF0000)) << 24) |  \
@@ -39,33 +41,33 @@
 #endif
 
 #if defined __GNUC__
-#define ats2_stable_quicksort_memcpy __builtin_memcpy
-#define ats2_stable_quicksort_memmove __builtin_memmove
+#define ats2_quicksorts_memcpy __builtin_memcpy
+#define ats2_quicksorts_memmove __builtin_memmove
 #else
-#define ats2_stable_quicksort_memcpy memcpy
-#define ats2_stable_quicksort_memmove memmove
+#define ats2_quicksorts_memcpy memcpy
+#define ats2_quicksorts_memmove memmove
 #endif
 
-ATSinline() void
-ats2_stable_quicksort_copy_bytes (atstype_ptr p_dst,
-                                  atstype_ptr p_src,
-                                  atstype_size n)
+ats2_quicksorts_inline void
+ats2_quicksorts_copy_bytes (atstype_ptr p_dst,
+                            atstype_ptr p_src,
+                            atstype_size n)
 {
-  (void) ats2_stable_quicksort_memcpy (p_dst, p_src, n);
+  (void) ats2_quicksorts_memcpy (p_dst, p_src, n);
 }
 
-ATSinline() void
-ats2_stable_quicksort_move_bytes_right (atstype_ptr p,
-                                        atstype_size n, 
-                                        atstype_size k)
+ats2_quicksorts_inline void
+ats2_quicksorts_move_bytes_right (atstype_ptr p,
+                                  atstype_size n, 
+                                  atstype_size k)
 {
-  (void) ats2_stable_quicksort_memmove (((atstype_byte *) p) + k,
-                                        p, n);
+  (void) ats2_quicksorts_memmove (((atstype_byte *) p) + k,
+                                  p, n);
 }
 
-ATSinline() atstype_uint64
-ats2_stable_quicksort_g1uint_mod_uint64 (atstype_uint64 x,
-                                         atstype_uint64 y)
+ats2_quicksorts_inline atstype_uint64
+ats2_quicksorts_g1uint_mod_uint64 (atstype_uint64 x,
+                                   atstype_uint64 y)
 {
   return (x % y);
 }
@@ -79,11 +81,11 @@ typedef struct
      overflow. */
   atomic_size_t active;
   atomic_size_t available;
-} ats2_stable_quicksort_spinlock_t;
+} ats2_quicksorts_spinlock_t;
 
-ATSinline() void
-ats2_stable_quicksort_obtain_spinlock
-  (ats2_stable_quicksort_spinlock_t *lock)
+ats2_quicksorts_inline void
+ats2_quicksorts_obtain_spinlock
+  (ats2_quicksorts_spinlock_t *lock)
 {
   size_t my_ticket =
     atomic_fetch_add_explicit (&lock->available, 1,
@@ -100,9 +102,9 @@ ats2_stable_quicksort_obtain_spinlock
   atomic_thread_fence (memory_order_seq_cst);
 }
 
-ATSinline() void
-ats2_stable_quicksort_release_spinlock
-  (ats2_stable_quicksort_spinlock_t *lock)
+ats2_quicksorts_inline void
+ats2_quicksorts_release_spinlock
+  (ats2_quicksorts_spinlock_t *lock)
 {
   atomic_thread_fence (memory_order_seq_cst);
   (void) atomic_fetch_add_explicit (&lock->active, 1,
@@ -116,35 +118,35 @@ ats2_stable_quicksort_release_spinlock
    September 2021). "Computationally easy, spectrally good multipliers
    for congruential pseudorandom number generators".
    arXiv:2001.05304v3 [cs.DS] */
-#define ats2_stable_quicksort_LCG_A (UINT64_C (0xf1357aea2e62a9c5))
+#define ats2_quicksorts_LCG_A (UINT64_C (0xf1357aea2e62a9c5))
 
 /* LCG_C must be odd. (The value 1 may get optimized to an increment
    instruction.) */
-#define ats2_stable_quicksort_LCG_C (UINT64_C (1))
+#define ats2_quicksorts_LCG_C (UINT64_C (1))
 
-extern ats2_stable_quicksort_spinlock_t ats2_stable_quicksort_seed_lock;
-extern uint64_t ats2_stable_quicksort_seed;
+extern ats2_quicksorts_spinlock_t ats2_quicksorts_seed_lock;
+extern uint64_t ats2_quicksorts_seed;
 
-ATSinline() atstype_uint64
-ats2_stable_quicksort_random_uint64 (void)
+ats2_quicksorts_inline atstype_uint64
+ats2_quicksorts_random_uint64 (void)
 {
-  ats2_stable_quicksort_obtain_spinlock (&ats2_stable_quicksort_seed_lock);
+  ats2_quicksorts_obtain_spinlock (&ats2_quicksorts_seed_lock);
 
-  uint64_t old_seed = ats2_stable_quicksort_seed;
+  uint64_t old_seed = ats2_quicksorts_seed;
 
   /* The following operation is modulo 2**64, by virtue of standard C
      behavior for uint64_t. */
-  ats2_stable_quicksort_seed =
-    (ats2_stable_quicksort_LCG_A * old_seed) + ats2_stable_quicksort_LCG_C;
+  ats2_quicksorts_seed =
+    (ats2_quicksorts_LCG_A * old_seed) + ats2_quicksorts_LCG_C;
 
-  ats2_stable_quicksort_release_spinlock (&ats2_stable_quicksort_seed_lock);
+  ats2_quicksorts_release_spinlock (&ats2_quicksorts_seed_lock);
 
   /* Reverse the bytes, because least significant bits of LCG output
      tend to be bad. Indeed, the very least significant bit literally
      switches back and forth between 0 and 1. */
-  return ats2_stable_quicksort_bswap64 (old_seed);
+  return ats2_quicksorts_bswap64 (old_seed);
 }
 
 /*------------------------------------------------------------------*/
 
-#endif /* STABLE_QUICKSORT__CATS__STABLE_QUICKSORT_CATS__HEADER_GUARD__ */
+#endif /* QUICKSORTS__CATS__QUICKSORTS_CATS__HEADER_GUARD__ */

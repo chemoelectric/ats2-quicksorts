@@ -19,7 +19,7 @@
 #include "share/atspre_staload.hats"
 
 staload UN = "prelude/SATS/unsafe.sats"
-#include "stable-quicksort/HATS/stable-quicksort.hats"
+#include "quicksorts/HATS/stable-quicksort.hats"
 
 (*------------------------------------------------------------------*)
 (* A simple linear congruential generator.                          *)

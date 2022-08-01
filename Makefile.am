@@ -151,54 +151,55 @@ endif !DEPENDENCY_TRACKING
 # The ATS2 library.
 #
 
-lib_LTLIBRARIES += libats2-stable-quicksort.la
+lib_LTLIBRARIES += libats2-quicksorts.la
 
-STABLE_QUICKSORT_SATS = stable-quicksort/SATS/stable-quicksort.sats
-STABLE_QUICKSORT_SATS_C = stable-quicksort/SATS/stable-quicksort_sats.c
+STABLE_QUICKSORT_SATS = quicksorts/SATS/stable-quicksort.sats
+STABLE_QUICKSORT_SATS_C = quicksorts/SATS/stable-quicksort_sats.c
 CLEANFILES += $(STABLE_QUICKSORT_SATS_C)
 
-STABLE_QUICKSORT_DATS = stable-quicksort/DATS/stable-quicksort.dats
-STABLE_QUICKSORT_DATS_C = stable-quicksort/DATS/stable-quicksort_dats.c
+STABLE_QUICKSORT_DATS = quicksorts/DATS/stable-quicksort.dats
+STABLE_QUICKSORT_DATS_C = quicksorts/DATS/stable-quicksort_dats.c
 CLEANFILES += $(STABLE_QUICKSORT_DATS_C)
 
-STABLE_QUICKSORT_CATS = stable-quicksort/CATS/stable-quicksort.cats
-STABLE_QUICKSORT_HATS = stable-quicksort/HATS/stable-quicksort.hats
+STABLE_QUICKSORT_HATS = quicksorts/HATS/stable-quicksort.hats
+
+QUICKSORTS_CATS = quicksorts/CATS/quicksorts.cats
 
 nobase_dist_pkginclude_HEADERS =
 nobase_dist_pkginclude_HEADERS += $(STABLE_QUICKSORT_SATS)
 nobase_dist_pkginclude_HEADERS += $(STABLE_QUICKSORT_DATS)
-nobase_dist_pkginclude_HEADERS += $(STABLE_QUICKSORT_CATS)
 nobase_dist_pkginclude_HEADERS += $(STABLE_QUICKSORT_HATS)
+nobase_dist_pkginclude_HEADERS += $(QUICKSORTS_CATS)
 
-nodist_libats2_stable_quicksort_la_SOURCES =
-nodist_libats2_stable_quicksort_la_SOURCES += $(STABLE_QUICKSORT_SATS_C)
-nodist_libats2_stable_quicksort_la_SOURCES += $(STABLE_QUICKSORT_DATS_C)
-libats2_stable_quicksort_la_DEPENDENCIES =
-libats2_stable_quicksort_la_DEPENDENCIES += $(STABLE_QUICKSORT_CATS)
+nodist_libats2_quicksorts_la_SOURCES =
+nodist_libats2_quicksorts_la_SOURCES += $(STABLE_QUICKSORT_SATS_C)
+nodist_libats2_quicksorts_la_SOURCES += $(STABLE_QUICKSORT_DATS_C)
+libats2_quicksorts_la_DEPENDENCIES =
+libats2_quicksorts_la_DEPENDENCIES += $(QUICKSORTS_CATS)
 
 
 #--------------------------------------------------------------------------
 
 TESTS =
-TESTS += tests/test-arrays-patterns
+TESTS += tests/test-arrays-patterns-stable
 TESTS += tests/test-arrays-stability
 
-EXTRA_PROGRAMS += tests/test-arrays-patterns
-CLEANFILES += tests/test-arrays-patterns
-CLEANFILES += tests/test-arrays-patterns_tests.c
-tests_test_arrays_patterns_SOURCES =
-tests_test_arrays_patterns_SOURCES += tests/test-arrays-patterns_tests.c
-tests_test_arrays_patterns_DEPENDENCIES =
-tests_test_arrays_patterns_DEPENDENCIES += tests/test-arrays-patterns.dats
-tests_test_arrays_patterns_DEPENDENCIES += libats2-stable-quicksort.la
-tests_test_arrays_patterns_DEPENDENCIES += $(STABLE_QUICKSORT_HATS)
-tests_test_arrays_patterns_CPPFLAGS =
-tests_test_arrays_patterns_CPPFLAGS += $(AM_CPPFLAGS)
-tests_test_arrays_patterns_CPPFLAGS += -DATS_MEMALLOC_LIBC
-tests_test_arrays_patterns_LDADD =
-tests_test_arrays_patterns_LDADD += libats2-stable-quicksort.la
-EXTRA_DIST += tests/test-arrays-patterns.dats
-tests/test-arrays-patterns_tests.c: tests/test-arrays-patterns.dats
+EXTRA_PROGRAMS += tests/test-arrays-patterns-stable
+CLEANFILES += tests/test-arrays-patterns-stable
+CLEANFILES += tests/test-arrays-patterns-stable_tests.c
+tests_test_arrays_patterns_stable_SOURCES =
+tests_test_arrays_patterns_stable_SOURCES += tests/test-arrays-patterns-stable_tests.c
+tests_test_arrays_patterns_stable_DEPENDENCIES =
+tests_test_arrays_patterns_stable_DEPENDENCIES += tests/test-arrays-patterns-stable.dats
+tests_test_arrays_patterns_stable_DEPENDENCIES += libats2-quicksorts.la
+tests_test_arrays_patterns_stable_DEPENDENCIES += $(STABLE_QUICKSORT_HATS)
+tests_test_arrays_patterns_stable_CPPFLAGS =
+tests_test_arrays_patterns_stable_CPPFLAGS += $(AM_CPPFLAGS)
+tests_test_arrays_patterns_stable_CPPFLAGS += -DATS_MEMALLOC_LIBC
+tests_test_arrays_patterns_stable_LDADD =
+tests_test_arrays_patterns_stable_LDADD += libats2-quicksorts.la
+EXTRA_DIST += tests/test-arrays-patterns-stable.dats
+tests/test-arrays-patterns-stable_tests.c: tests/test-arrays-patterns-stable.dats
 
 EXTRA_PROGRAMS += tests/test-arrays-stability
 CLEANFILES += tests/test-arrays-stability
@@ -207,13 +208,13 @@ tests_test_arrays_stability_SOURCES =
 tests_test_arrays_stability_SOURCES += tests/test-arrays-stability_tests.c
 tests_test_arrays_stability_DEPENDENCIES =
 tests_test_arrays_stability_DEPENDENCIES += tests/test-arrays-stability.dats
-tests_test_arrays_stability_DEPENDENCIES += libats2-stable-quicksort.la
+tests_test_arrays_stability_DEPENDENCIES += libats2-quicksorts.la
 tests_test_arrays_stability_DEPENDENCIES += $(STABLE_QUICKSORT_HATS)
 tests_test_arrays_stability_CPPFLAGS =
 tests_test_arrays_stability_CPPFLAGS += $(AM_CPPFLAGS)
 tests_test_arrays_stability_CPPFLAGS += -DATS_MEMALLOC_LIBC
 tests_test_arrays_stability_LDADD =
-tests_test_arrays_stability_LDADD += libats2-stable-quicksort.la
+tests_test_arrays_stability_LDADD += libats2-quicksorts.la
 EXTRA_DIST += tests/test-arrays-stability.dats
 tests/test-arrays-stability_tests.c: tests/test-arrays-stability.dats
 
@@ -243,7 +244,7 @@ list_ats_dependencies_LDADD += -latslib
 
 #--------------------------------------------------------------------------
 
-nodist_pkgconfig_DATA += ats2-stable-quicksort.pc
+nodist_pkgconfig_DATA += ats2-quicksorts.pc
 
 #--------------------------------------------------------------------------
 # local variables:

@@ -19,9 +19,9 @@
 #--------------------------------------------------------------------------
 
 AC_PREREQ([2.71])
-AC_INIT([ats2-stable-quicksort],[1.0.0],[],[ats2-stable-quicksort],[])
+AC_INIT([ats2-quicksorts],[1.0.0],[],[ats2-quicksorts],[])
 
-AC_CONFIG_SRCDIR([stable-quicksort/SATS/stable-quicksort.sats])
+AC_CONFIG_SRCDIR([quicksorts/SATS/stable-quicksort.sats])
 
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
@@ -102,7 +102,7 @@ AC_SUBST([GNU],[])
 StM_REQUIRE_GNU_MAKE_IN_PATH
 StM_CONFIG_MAKEFILES
 
-AC_CONFIG_FILES([ats2-stable-quicksort.pc])
+AC_CONFIG_FILES([ats2-quicksorts.pc])
 AC_CONFIG_FILES([list-ats-dependencies.dats])
 
 AC_OUTPUT

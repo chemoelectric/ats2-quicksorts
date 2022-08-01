@@ -18,11 +18,11 @@
 
 #define ATS_DYNLOADFLAG 0
 
-#define ATS_PACKNAME "ats2-stable-quicksort"
-#define ATS_EXTERN_PREFIX "ats2_stable_quicksort_"
+#define ATS_PACKNAME "ats2-quicksorts"
+#define ATS_EXTERN_PREFIX "ats2_quicksorts_"
 
 #include "share/atspre_staload.hats"
-staload "stable-quicksort/SATS/stable-quicksort.sats"
+staload "quicksorts/SATS/stable-quicksort.sats"
 staload UN = "prelude/SATS/unsafe.sats"
 
 #define DEFAULT_ARRAY_INSERTION_SORT_THRESHOLD 80
@@ -144,8 +144,8 @@ array_subcirculate_right
 (* A simple linear congruential generator, for pivot selection.     *)
 
 %{
-ats2_stable_quicksort_spinlock_t ats2_stable_quicksort_seed_lock;
-uint64_t ats2_stable_quicksort_seed = UINT64_C (0x1234567891234567);
+ats2_quicksorts_spinlock_t ats2_quicksorts_seed_lock;
+uint64_t ats2_quicksorts_seed = UINT64_C (0x1234567891234567);
 %}
 
 extern fn

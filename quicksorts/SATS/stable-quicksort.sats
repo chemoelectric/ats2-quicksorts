@@ -16,11 +16,11 @@
   <https://www.gnu.org/licenses/>.
 *)
 
-#define ATS_PACKNAME "ats2-stable-quicksort"
-#define ATS_EXTERN_PREFIX "ats2_stable_quicksort_"
+#define ATS_PACKNAME "ats2-quicksorts"
+#define ATS_EXTERN_PREFIX "ats2_quicksorts_"
 
 %{#
-#include <stable-quicksort/CATS/stable-quicksort.cats>
+#include <quicksorts/CATS/quicksorts.cats>
 %}
 
 (*------------------------------------------------------------------*)

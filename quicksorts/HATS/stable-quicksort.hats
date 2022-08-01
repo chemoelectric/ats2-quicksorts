@@ -16,5 +16,5 @@
   <https://www.gnu.org/licenses/>.
 *)
 
-staload "stable-quicksort/SATS/stable-quicksort.sats"
-staload _ = "stable-quicksort/DATS/stable-quicksort.dats"
+staload "quicksorts/SATS/stable-quicksort.sats"
+staload _ = "quicksorts/DATS/stable-quicksort.dats"
