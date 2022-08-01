@@ -412,7 +412,8 @@ hoare_partitioning
           (pf_arr : !array_v (a, p_arr, n) |
            p_arr  : ptr p_arr,
            n      : size_t n)
-    :<!wrt> void =
+    :<!wrt> [k : nat | k <= n - 1]
+            uptr (a, p_arr, n, k) =
   let
     macdef lt = array_unstable_quicksort$lt
 
@@ -510,5 +511,5 @@ hoare_partitioning
           end
       end
   in
+    outer_loop (pf_arr | up_i, up_j)
   end
-
