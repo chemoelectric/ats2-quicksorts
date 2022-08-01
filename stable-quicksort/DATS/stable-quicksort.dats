@@ -890,8 +890,9 @@ array_sort
 
       prval () = lemma_array_param arr
 
-      var stk_storage =
-        @[stk_entry_vt][STK_MAX] (@(the_null_ptr, i2sz 1))
+      var stk_storage : @[stk_entry_vt][STK_MAX]
+      prval () =                (* Fake initialization. *)
+        $UN.castvwtp2void{@[stk_entry_vt][STK_MAX]} stk_storage
       var stk = stk_vt_make (view@ stk_storage | addr@ stk_storage)
 
       (* Put the pivot physically near the stack. *)
