@@ -693,13 +693,15 @@ STABLE_QUICKSORT_SATS_C = quicksorts/SATS/stable-quicksort_sats.c
 STABLE_QUICKSORT_DATS = quicksorts/DATS/stable-quicksort.dats
 STABLE_QUICKSORT_DATS_C = quicksorts/DATS/stable-quicksort_dats.c
 STABLE_QUICKSORT_HATS = quicksorts/HATS/stable-quicksort.hats
+QUICKSORTS_SHARE_DATS = quicksorts/DATS/SHARE/quicksorts.share.dats
 QUICKSORTS_CATS = quicksorts/CATS/quicksorts.cats
 nobase_dist_pkginclude_HEADERS = $(STABLE_QUICKSORT_SATS) \
 	$(STABLE_QUICKSORT_DATS) $(STABLE_QUICKSORT_HATS) \
-	$(QUICKSORTS_CATS)
+	$(QUICKSORTS_CATS) $(QUICKSORTS_SHARE_DATS)
 nodist_libats2_quicksorts_la_SOURCES = $(STABLE_QUICKSORT_SATS_C) \
 	$(STABLE_QUICKSORT_DATS_C)
-libats2_quicksorts_la_DEPENDENCIES = $(QUICKSORTS_CATS)
+libats2_quicksorts_la_DEPENDENCIES = $(QUICKSORTS_SHARE_DATS) \
+	$(QUICKSORTS_CATS)
 tests_test_arrays_patterns_stable_SOURCES =  \
 	tests/test-arrays-patterns-stable_tests.c
 tests_test_arrays_patterns_stable_DEPENDENCIES =  \
