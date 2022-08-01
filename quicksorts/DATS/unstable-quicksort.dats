@@ -35,6 +35,102 @@ staload UN = "prelude/SATS/unsafe.sats"
 
 #include "quicksorts/DATS/SHARE/quicksorts.share.dats"
 
+abstype uptr (a : vt@ype, p : addr, n : int, i : int)
+
+fn {a : vt@ype}
+ptr2uptr {p_arr  : addr}
+         {n      : nat}
+         (pf_arr : !array_v (a, p_arr, n) |
+          p_arr  : ptr p_arr)
+    :<> uptr (a, p_arr, n, 0) =
+  $UN.cast ($UN.cast{uintptr} p_arr)
+
+(* One can convert back to a pointer only if the uptr points to an
+   array element. *)
+fn {a : vt@ype}
+uptr2ptr {p_arr  : addr}
+         {n      : nat}
+         {i      : nat | i < n}
+         (pf_arr : !array_v (a, p_arr, n) |
+          up     : uptr (a, p_arr, n, i))
+    :<> ptr (p_arr + (i * sizeof a)) =
+  $UN.cast ($UN.cast{uintptr} up)
+
+fn {a  : vt@ype}
+   {tk : tkind}
+uptr_g1uint_add
+          {p_arr : addr}
+          {n     : nat}
+          {i     : int}
+          {j     : int}
+          (up    : uptr (a, p_arr, n, i),
+           j     : g1uint (tk, j))
+    :<> uptr (a, p_arr, n, i + j) =
+  $UN.cast ($UN.cast{uintptr} up -
+              $UN.cast{uintptr} (g1u2u j * sizeof<a>))
+
+overload uptr_add with uptr_g1uint_add
+
+fn {a : vt@ype}
+uptr_pred {p_arr : addr}
+          {n     : nat}
+          {i     : int}
+          (up    : uptr (a, p_arr, n, i))
+    :<> uptr (a, p_arr, n, i - 1) =
+  $UN.cast ($UN.cast{uintptr} up - $UN.cast{uintptr} sizeof<a>)
+
+fn {a : vt@ype}
+uptr_succ {p_arr : addr}
+          {n     : nat}
+          {i     : int}
+          (up    : uptr (a, p_arr, n, i))
+    :<> uptr (a, p_arr, n, i + 1) =
+  $UN.cast ($UN.cast{uintptr} up + $UN.cast{uintptr} sizeof<a>)
+
+fn {a : vt@ype}
+uptr_eq {p_arr : addr}
+        {n     : nat}
+        {i, j  : int}
+        (up_i  : uptr (a, p_arr, n, i),
+         up_j  : uptr (a, p_arr, n, j))
+    :<> bool (i == j) =
+  (* I can guaranteed two equivalent uptr are equal *only* if they
+     were created by arithmetic from the same uptr. *)
+  $UN.cast ($UN.cast{uintptr} up_i = $UN.cast{uintptr} up_j)
+
+overload = with uptr_eq
+
+fn {a : vt@ype}
+uptr_lt {p_arr : addr}
+        {n     : nat}
+        {i, j  : int}
+        (up_i  : uptr (a, p_arr, n, i),
+         up_j  : uptr (a, p_arr, n, j))
+    :<> bool (i < j) =
+  (* I can guaranteed two equivalent uptr are equal *only* if they
+     were created by arithmetic from the same uptr. *)
+  $UN.cast ($UN.cast{uintptr} up_i < $UN.cast{uintptr} up_j)
+
+overload < with uptr_lt
+
+fn {a : vt@ype}
+uptr_exch {p_arr  : addr}
+          {n      : nat}
+          {i, j   : nat | i < n; j < n; i != j}
+          (pf_arr : !array_v (a, p_arr, n) |
+           up_i   : uptr (a, p_arr, n, i),
+           up_j   : uptr (a, p_arr, n, j))
+    :<!wrt> void =
+  let
+    val p_i = uptr2ptr<a> (pf_arr | up_i)
+    and p_j = uptr2ptr<a> (pf_arr | up_j)
+    prval @(pf_i, pf_j, fpf) =
+      array_v_takeout2 {a} {..} {n} {i, j} pf_arr
+    val () = ptr_exch<a> (pf_i | p_i, !p_j)
+    prval () = pf_arr := fpf (pf_i, pf_j)
+  in
+  end
+
 fn {a : vt@ype}
 array_element_lt
           {n    : int}
@@ -301,16 +397,14 @@ move_pivot_to_end
            p_arr     : ptr p_arr,
            n         : size_t n,
            n_before  : size_t n_before)
-    :<!wrt> @(array_v (a, p_arr, n - 1),
-              a @ (p_arr + (n * sizeof a) - sizeof a) |
-              ) =
+    :<!wrt> @(array_v (a, p_arr, n) | ) =
   if n_before = pred n then
     let                         (* The pivot already is at the end. *)
       prval () = array_v_unnil pf_after
       prval () = lemma_mul_isfun {n_before, sizeof a}
                                  {n - 1, sizeof a} ()
     in
-      @(pf_before, pf_pivot | )
+      @(array_v_extend (pf_before, pf_pivot) | )
     end
   else
     let                 (* Exchange the pivot with the end element. *)
@@ -321,5 +415,113 @@ move_pivot_to_end
       prval pf_arr =
         array_v_unsplit (pf_before, array_v_cons (pf_pivot, pf_after))
     in
-      @(pf_arr, pf_end | )
+      @(array_v_extend (pf_arr, pf_end) | )
     end
+
+fn {a : vt@ype}
+hoare_partitioning
+          {n      : pos}
+          {p_arr  : addr}
+          (pf_arr : !array_v (a, p_arr, n) |
+           p_arr  : ptr p_arr,
+           n      : size_t n)
+    :<!wrt> void =
+  let
+    macdef lt = array_unstable_quicksort$lt
+
+    val up_arr = ptr2uptr<a> (pf_arr | p_arr)
+    val up_end = uptr_add<a> (up_arr, pred n)
+    and p_pivot = ptr_add<a> (p_arr, pred n)
+
+    val up_i = uptr_pred<a> up_arr
+    and up_j = up_end
+
+    fun
+    outer_loop {i, j : int | (~1 == i && j == n - 1) ||
+                               (0 <= i && i < j && j < n - 1)}
+               .<j - i>.
+               (pf_arr : !array_v (a, p_arr, n) |
+                up_i   : uptr (a, p_arr, n, i),
+                up_j   : uptr (a, p_arr, n, j))
+        :<!wrt> [k : nat | k <= n - 1]
+                uptr (a, p_arr, n, k) =
+      let
+        (* Move up_i so everything to its left is less than or equal
+           to the pivot. *)
+        fun
+        loop {k, j : int | i < k; k <= j; j <= n - 1}
+             .<j - k>.
+             (pf_arr : !array_v (a, p_arr, n) |
+              up_k   : uptr (a, p_arr, n, k),
+              up_j   : uptr (a, p_arr, n, j))
+            :<> [k : nat | i < k; k <= j]
+                uptr (a, p_arr, n, k) =
+          if up_k = up_j then
+            up_k
+          else
+            let
+              val p_k = uptr2ptr<a> (pf_arr | up_k)
+              prval @(pf_k, pf_pivot, fpf) =
+                array_v_takeout2 {a} {..} {n} {k, n - 1} pf_arr
+              val is_lt = (!p_pivot) \lt (!p_k)
+              prval () = pf_arr := fpf (pf_k, pf_pivot)
+            in
+              if is_lt then
+                up_k
+              else
+                loop (pf_arr | uptr_succ<a> up_k, up_j)
+            end
+        val up_i : uptr (a, p_arr, n, i + 1) = uptr_succ<a> up_i
+        val [i1 : int] up_i = loop (pf_arr | up_i, up_j)
+
+        prval () = prop_verify {0 <= i1} ()
+        prval () = prop_verify {i1 <= j} ()
+      in
+        if up_i = up_j then
+          up_i
+        else
+          (* Move up_j so everything to its right is greater than or
+             equal to the pivot. *)
+          let
+            fun
+            loop {i, k : nat | i <= k; k < j}
+                 .<k>.
+                 (pf_arr : !array_v (a, p_arr, n) |
+                  up_i   : uptr (a, p_arr, n, i),
+                  up_k   : uptr (a, p_arr, n, k))
+                :<> [k : int | i <= k; k < j]
+                    uptr (a, p_arr, n, k) =
+              if up_i = up_k then
+                up_k
+              else
+                let
+                  prval () = prop_verify {0 < k} ()
+                  val p_k = uptr2ptr<a> (pf_arr | up_k)
+                  prval @(pf_k, pf_pivot, fpf) =
+                    array_v_takeout2 {a} {..} {n} {k, n - 1} pf_arr
+                  val is_lt = (!p_k) \lt (!p_pivot)
+                  prval () = pf_arr := fpf (pf_k, pf_pivot)
+                in
+                  if is_lt then
+                    up_k
+                  else
+                    loop (pf_arr | up_i, uptr_pred<a> up_k)
+                end
+            val up_j : uptr (a, p_arr, n, j - 1) = uptr_pred<a> up_j
+            val [j1 : int] up_j = loop (pf_arr | up_i, up_j)
+
+            prval () = prop_verify {i1 <= j1} ()
+            prval () = prop_verify {j1 < n - 1} ()
+          in
+            if up_i = up_j then
+              up_i
+            else
+              begin
+                uptr_exch<a> (pf_arr | up_i, up_j);
+                outer_loop (pf_arr | up_i, up_j)
+              end
+          end
+      end
+  in
+  end
+
