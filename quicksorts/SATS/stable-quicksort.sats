@@ -24,7 +24,7 @@
 %}
 
 (*------------------------------------------------------------------*)
-(* array quicksort                                                  *)
+(* A stable array quicksort.                                        *)
 
 fn {a : vt@ype}
 array_stable_quicksort_given_workspace :
@@ -54,16 +54,18 @@ overload array_stable_quicksort with
    precedence. The latter defaults to ‘gcompare_ref_ref<a>’. *)
 fn {a : vt@ype}
 array_stable_quicksort$lt :
-  (&RD(a), &RD(a)) -<> bool
+  (&a, &a) -<> bool
 fn {a : vt@ype}
 array_stable_quicksort$cmp :
-  (&RD(a), &RD(a)) -<> int
+  (&a, &a) -<> int
 
 (* When should we switch over to insertion sort? *)
 fn {a : vt@ype}
 array_stable_quicksort$small :
   () -<> [n : pos] size_t n
 
+(* For a stable quicksort, the pivot selection should not try to
+   rearrange elements. Thus the !wrt effect is not allowed. *)
 typedef array_stable_quicksort_pivot_index_t (a : vt@ype) =
   {n : pos}
   (&array (a, n), size_t n) -<>

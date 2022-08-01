@@ -124,11 +124,6 @@ array_subcirculate_right
 (*------------------------------------------------------------------*)
 (* A simple linear congruential generator, for pivot selection.     *)
 
-%{
-ats2_quicksorts_spinlock_t ats2_quicksorts_seed_lock;
-uint64_t ats2_quicksorts_seed = UINT64_C (0x1234567891234567);
-%}
-
 extern fn
 random_uint64 () :<!wrt> uint64 = "mac#%"
 

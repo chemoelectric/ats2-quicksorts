@@ -1,6 +1,11 @@
 Quicksorts in ATS2/Postiats
 ---------------------------
 
+#include "quicksorts/HATS/unstable-quicksort.hats"
+
+A unstable quicksort.
+
+THIS IS A WORK IN PROGRESS.
 
 ----
 

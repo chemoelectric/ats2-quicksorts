@@ -163,19 +163,40 @@ CLEANFILES += $(STABLE_QUICKSORT_DATS_C)
 
 STABLE_QUICKSORT_HATS = quicksorts/HATS/stable-quicksort.hats
 
+UNSTABLE_QUICKSORT_SATS = quicksorts/SATS/unstable-quicksort.sats
+UNSTABLE_QUICKSORT_SATS_C = quicksorts/SATS/unstable-quicksort_sats.c
+CLEANFILES += $(UNSTABLE_QUICKSORT_SATS_C)
+
+UNSTABLE_QUICKSORT_DATS = quicksorts/DATS/unstable-quicksort.dats
+UNSTABLE_QUICKSORT_DATS_C = quicksorts/DATS/unstable-quicksort_dats.c
+CLEANFILES += $(UNSTABLE_QUICKSORT_DATS_C)
+
+UNSTABLE_QUICKSORT_HATS = quicksorts/HATS/unstable-quicksort.hats
+
 QUICKSORTS_SHARE_DATS = quicksorts/DATS/SHARE/quicksorts.share.dats
 QUICKSORTS_CATS = quicksorts/CATS/quicksorts.cats
+
+QUICKSORTS_LCG_SEED_DATS = quicksorts-lcg-seed.dats
+QUICKSORTS_LCG_SEED_DATS_C = quicksorts-lcg-seed_dats.c
+CLEANFILES += $(QUICKSORTS_LCG_SEED_DATS_C)
+EXTRA_DIST += $(QUICKSORTS_LCG_SEED_DATS)
 
 nobase_dist_pkginclude_HEADERS =
 nobase_dist_pkginclude_HEADERS += $(STABLE_QUICKSORT_SATS)
 nobase_dist_pkginclude_HEADERS += $(STABLE_QUICKSORT_DATS)
 nobase_dist_pkginclude_HEADERS += $(STABLE_QUICKSORT_HATS)
+nobase_dist_pkginclude_HEADERS += $(UNSTABLE_QUICKSORT_SATS)
+nobase_dist_pkginclude_HEADERS += $(UNSTABLE_QUICKSORT_DATS)
+nobase_dist_pkginclude_HEADERS += $(UNSTABLE_QUICKSORT_HATS)
 nobase_dist_pkginclude_HEADERS += $(QUICKSORTS_CATS)
 nobase_dist_pkginclude_HEADERS += $(QUICKSORTS_SHARE_DATS)
 
 nodist_libats2_quicksorts_la_SOURCES =
 nodist_libats2_quicksorts_la_SOURCES += $(STABLE_QUICKSORT_SATS_C)
 nodist_libats2_quicksorts_la_SOURCES += $(STABLE_QUICKSORT_DATS_C)
+nodist_libats2_quicksorts_la_SOURCES += $(UNSTABLE_QUICKSORT_SATS_C)
+nodist_libats2_quicksorts_la_SOURCES += $(UNSTABLE_QUICKSORT_DATS_C)
+nodist_libats2_quicksorts_la_SOURCES += $(QUICKSORTS_LCG_SEED_DATS_C)
 libats2_quicksorts_la_DEPENDENCIES =
 libats2_quicksorts_la_DEPENDENCIES += $(QUICKSORTS_SHARE_DATS)
 libats2_quicksorts_la_DEPENDENCIES += $(QUICKSORTS_CATS)

@@ -179,8 +179,12 @@ libats2_quicksorts_la_LIBADD =
 am__dirstamp = $(am__leading_dot)dirstamp
 am__objects_1 = quicksorts/SATS/stable-quicksort_sats.lo
 am__objects_2 = quicksorts/DATS/stable-quicksort_dats.lo
+am__objects_3 = quicksorts/SATS/unstable-quicksort_sats.lo
+am__objects_4 = quicksorts/DATS/unstable-quicksort_dats.lo
+am__objects_5 = quicksorts-lcg-seed_dats.lo
 nodist_libats2_quicksorts_la_OBJECTS = $(am__objects_1) \
-	$(am__objects_2)
+	$(am__objects_2) $(am__objects_3) $(am__objects_4) \
+	$(am__objects_5)
 libats2_quicksorts_la_OBJECTS =  \
 	$(nodist_libats2_quicksorts_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -212,8 +216,11 @@ DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/list_ats_dependencies-list-ats-dependencies_depsprog.Po \
+	./$(DEPDIR)/quicksorts-lcg-seed_dats.Plo \
 	quicksorts/DATS/$(DEPDIR)/stable-quicksort_dats.Plo \
+	quicksorts/DATS/$(DEPDIR)/unstable-quicksort_dats.Plo \
 	quicksorts/SATS/$(DEPDIR)/stable-quicksort_sats.Plo \
+	quicksorts/SATS/$(DEPDIR)/unstable-quicksort_sats.Plo \
 	tests/$(DEPDIR)/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.Po \
 	tests/$(DEPDIR)/test_arrays_stability-test-arrays-stability_tests.Po
 am__mv = mv -f
@@ -642,10 +649,13 @@ AUTOMAKE_OPTIONS = foreign subdir-objects -Wno-portability
 @CODE_COVERAGE_ENABLED_TRUE@code_coverage_sanitize = $(subst -,_,$(subst .,_,$(1)))
 @CODE_COVERAGE_ENABLED_TRUE@AM_DISTCHECK_CONFIGURE_FLAGS := $(AM_DISTCHECK_CONFIGURE_FLAGS) --disable-code-coverage
 EXTRA_DIST = $(srcdir)/silent-rules.mk COPYING INSTALL README AUTHORS \
+	$(QUICKSORTS_LCG_SEED_DATS) \
 	tests/test-arrays-patterns-stable.dats \
 	tests/test-arrays-stability.dats list-ats-dependencies.dats
 MOSTLYCLEANFILES = 
 CLEANFILES = $(STABLE_QUICKSORT_SATS_C) $(STABLE_QUICKSORT_DATS_C) \
+	$(UNSTABLE_QUICKSORT_SATS_C) $(UNSTABLE_QUICKSORT_DATS_C) \
+	$(QUICKSORTS_LCG_SEED_DATS_C) \
 	tests/test-arrays-patterns-stable \
 	tests/test-arrays-patterns-stable_tests.c \
 	tests/test-arrays-stability \
@@ -693,13 +703,23 @@ STABLE_QUICKSORT_SATS_C = quicksorts/SATS/stable-quicksort_sats.c
 STABLE_QUICKSORT_DATS = quicksorts/DATS/stable-quicksort.dats
 STABLE_QUICKSORT_DATS_C = quicksorts/DATS/stable-quicksort_dats.c
 STABLE_QUICKSORT_HATS = quicksorts/HATS/stable-quicksort.hats
+UNSTABLE_QUICKSORT_SATS = quicksorts/SATS/unstable-quicksort.sats
+UNSTABLE_QUICKSORT_SATS_C = quicksorts/SATS/unstable-quicksort_sats.c
+UNSTABLE_QUICKSORT_DATS = quicksorts/DATS/unstable-quicksort.dats
+UNSTABLE_QUICKSORT_DATS_C = quicksorts/DATS/unstable-quicksort_dats.c
+UNSTABLE_QUICKSORT_HATS = quicksorts/HATS/unstable-quicksort.hats
 QUICKSORTS_SHARE_DATS = quicksorts/DATS/SHARE/quicksorts.share.dats
 QUICKSORTS_CATS = quicksorts/CATS/quicksorts.cats
+QUICKSORTS_LCG_SEED_DATS = quicksorts-lcg-seed.dats
+QUICKSORTS_LCG_SEED_DATS_C = quicksorts-lcg-seed_dats.c
 nobase_dist_pkginclude_HEADERS = $(STABLE_QUICKSORT_SATS) \
 	$(STABLE_QUICKSORT_DATS) $(STABLE_QUICKSORT_HATS) \
-	$(QUICKSORTS_CATS) $(QUICKSORTS_SHARE_DATS)
+	$(UNSTABLE_QUICKSORT_SATS) $(UNSTABLE_QUICKSORT_DATS) \
+	$(UNSTABLE_QUICKSORT_HATS) $(QUICKSORTS_CATS) \
+	$(QUICKSORTS_SHARE_DATS)
 nodist_libats2_quicksorts_la_SOURCES = $(STABLE_QUICKSORT_SATS_C) \
-	$(STABLE_QUICKSORT_DATS_C)
+	$(STABLE_QUICKSORT_DATS_C) $(UNSTABLE_QUICKSORT_SATS_C) \
+	$(UNSTABLE_QUICKSORT_DATS_C) $(QUICKSORTS_LCG_SEED_DATS_C)
 libats2_quicksorts_la_DEPENDENCIES = $(QUICKSORTS_SHARE_DATS) \
 	$(QUICKSORTS_CATS)
 tests_test_arrays_patterns_stable_SOURCES =  \
@@ -869,6 +889,12 @@ quicksorts/DATS/$(DEPDIR)/$(am__dirstamp):
 quicksorts/DATS/stable-quicksort_dats.lo:  \
 	quicksorts/DATS/$(am__dirstamp) \
 	quicksorts/DATS/$(DEPDIR)/$(am__dirstamp)
+quicksorts/SATS/unstable-quicksort_sats.lo:  \
+	quicksorts/SATS/$(am__dirstamp) \
+	quicksorts/SATS/$(DEPDIR)/$(am__dirstamp)
+quicksorts/DATS/unstable-quicksort_dats.lo:  \
+	quicksorts/DATS/$(am__dirstamp) \
+	quicksorts/DATS/$(DEPDIR)/$(am__dirstamp)
 
 libats2-quicksorts.la: $(libats2_quicksorts_la_OBJECTS) $(libats2_quicksorts_la_DEPENDENCIES) $(EXTRA_libats2_quicksorts_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(LINK) -rpath $(libdir) $(libats2_quicksorts_la_OBJECTS) $(libats2_quicksorts_la_LIBADD) $(LIBS)
@@ -907,8 +933,11 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/list_ats_dependencies-list-ats-dependencies_depsprog.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quicksorts-lcg-seed_dats.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quicksorts/DATS/$(DEPDIR)/stable-quicksort_dats.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quicksorts/DATS/$(DEPDIR)/unstable-quicksort_dats.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quicksorts/SATS/$(DEPDIR)/stable-quicksort_sats.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quicksorts/SATS/$(DEPDIR)/unstable-quicksort_sats.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_arrays_stability-test-arrays-stability_tests.Po@am__quote@ # am--include-marker
 
@@ -1531,8 +1560,11 @@ clean-am: clean-binPROGRAMS clean-generic clean-libLTLIBRARIES \
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 		-rm -f ./$(DEPDIR)/list_ats_dependencies-list-ats-dependencies_depsprog.Po
+	-rm -f ./$(DEPDIR)/quicksorts-lcg-seed_dats.Plo
 	-rm -f quicksorts/DATS/$(DEPDIR)/stable-quicksort_dats.Plo
+	-rm -f quicksorts/DATS/$(DEPDIR)/unstable-quicksort_dats.Plo
 	-rm -f quicksorts/SATS/$(DEPDIR)/stable-quicksort_sats.Plo
+	-rm -f quicksorts/SATS/$(DEPDIR)/unstable-quicksort_sats.Plo
 	-rm -f tests/$(DEPDIR)/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.Po
 	-rm -f tests/$(DEPDIR)/test_arrays_stability-test-arrays-stability_tests.Po
 	-rm -f GNUmakefile
@@ -1585,8 +1617,11 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
 		-rm -f ./$(DEPDIR)/list_ats_dependencies-list-ats-dependencies_depsprog.Po
+	-rm -f ./$(DEPDIR)/quicksorts-lcg-seed_dats.Plo
 	-rm -f quicksorts/DATS/$(DEPDIR)/stable-quicksort_dats.Plo
+	-rm -f quicksorts/DATS/$(DEPDIR)/unstable-quicksort_dats.Plo
 	-rm -f quicksorts/SATS/$(DEPDIR)/stable-quicksort_sats.Plo
+	-rm -f quicksorts/SATS/$(DEPDIR)/unstable-quicksort_sats.Plo
 	-rm -f tests/$(DEPDIR)/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.Po
 	-rm -f tests/$(DEPDIR)/test_arrays_stability-test-arrays-stability_tests.Po
 	-rm -f GNUmakefile
