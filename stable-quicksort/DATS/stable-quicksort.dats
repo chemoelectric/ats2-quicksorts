@@ -90,6 +90,32 @@ implement
 g1uint_mod<uint64_kind> (x, y) =
   g1uint_mod_uint64 (x, y)
 
+extern fn
+move_bytes_right :
+  {k : int}
+  {n : int}
+  (ptr, size_t n, size_t k) -< !wrt > void = "mac#%"
+
+fn {a : vt@ype}
+array_subcirculate_right
+          {n    : int}
+          {i, j : int | i <= j; j < n}
+          (arr  : &array (a, n) >> _,
+           i    : size_t i,
+           j    : size_t j)
+    :<!wrt> void =
+  if i = j then
+    ()
+  else
+    let
+      val pi = ptr_add<a> (addr@ arr, i)
+      and pj = ptr_add<a> (addr@ arr, j)
+      val tmp = $UN.ptr0_get<a> pj
+    in
+      move_bytes_right (pi, (j - i) * sizeof<a>, sizeof<a>);
+      $UN.ptr0_set<a> (pi, tmp)
+    end
+
 (*------------------------------------------------------------------*)
 (* A simple linear congruential generator, for pivot selection.     *)
 
@@ -403,7 +429,7 @@ array_insertion_sort
           let
             val j = insertion_position<a> {n} (pf_arr | p_arr, i)
           in
-            array_subcirculate<a> (!p_arr, j, i);
+            array_subcirculate_right<a> (!p_arr, j, i);
             loop (pf_arr | succ i)
           end
 

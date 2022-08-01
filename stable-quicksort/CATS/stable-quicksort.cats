@@ -38,6 +38,20 @@
    (((x) & UINT64_C (0xFF00000000000000)) >> 56))
 #endif
 
+#if defined __GNUC__
+#define ats2_stable_quicksort_memmove __builtin_memmove
+#else
+#define ats2_stable_quicksort_memmove memmove
+#endif
+
+ATSinline() void
+ats2_stable_quicksort_move_bytes_right (atstype_ptr p,
+                                        atstype_size n, 
+                                        atstype_size k)
+{
+  ats2_stable_quicksort_memmove (((atstype_byte *) p) + k, p, n);
+}
+
 ATSinline() atstype_uint64
 ats2_stable_quicksort_g1uint_mod_uint64 (atstype_uint64 x,
                                          atstype_uint64 y)
