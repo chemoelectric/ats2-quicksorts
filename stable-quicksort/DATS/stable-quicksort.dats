@@ -91,6 +91,25 @@ g1uint_mod<uint64_kind> (x, y) =
   g1uint_mod_uint64 (x, y)
 
 extern fn
+copy_bytes :
+  {n : int}
+  (ptr, ptr, size_t n) -< !wrt > void = "mac#%"
+
+fn {a : vt@ype}
+my_array_copy
+          {n : int}
+          (dst : &array (a?, n) >> array (a, n),
+           src : &array (a, n) >> array (a?!, n),
+           n: size_t n)
+    :<!wrt> void =
+  let
+    val () = copy_bytes (addr@ dst, addr@ src, n * sizeof<a>)
+    prval () = $UN.castview2void_at{array (a, n)} (view@ dst)
+    prval () = $UN.castview2void_at{array (a?!, n)} (view@ src)
+  in
+  end
+
+extern fn
 move_bytes_right :
   {k : int}
   {n : int}
@@ -774,7 +793,7 @@ select_pivot_and_partition_array
     val p_ge1 = ptr1_succ<a> p_pivot_entry1
     val () =
       ptr_set<a> (pf_pivot_entry1 | p_pivot_entry1, !p_pivot_temp)
-    val () = array_copy<a> (!p_ge1, !p_work, n_ge)
+    val () = my_array_copy<a> (!p_ge1, !p_work, n_ge)
 
     (* Restore the view of the workspace array. *)
     prval pf_ge = discard_used_contents {a} pf_ge

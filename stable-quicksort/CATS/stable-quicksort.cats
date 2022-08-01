@@ -39,17 +39,28 @@
 #endif
 
 #if defined __GNUC__
+#define ats2_stable_quicksort_memcpy __builtin_memcpy
 #define ats2_stable_quicksort_memmove __builtin_memmove
 #else
+#define ats2_stable_quicksort_memcpy memcpy
 #define ats2_stable_quicksort_memmove memmove
 #endif
+
+ATSinline() void
+ats2_stable_quicksort_copy_bytes (atstype_ptr p_dst,
+                                  atstype_ptr p_src,
+                                  atstype_size n)
+{
+  (void) ats2_stable_quicksort_memcpy (p_dst, p_src, n);
+}
 
 ATSinline() void
 ats2_stable_quicksort_move_bytes_right (atstype_ptr p,
                                         atstype_size n, 
                                         atstype_size k)
 {
-  ats2_stable_quicksort_memmove (((atstype_byte *) p) + k, p, n);
+  (void) ats2_stable_quicksort_memmove (((atstype_byte *) p) + k,
+                                        p, n);
 }
 
 ATSinline() atstype_uint64
