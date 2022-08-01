@@ -101,19 +101,6 @@ uptr_eq {p_arr : addr}
 overload = with uptr_eq
 
 fn {a : vt@ype}
-uptr_lt {p_arr : addr}
-        {n     : nat}
-        {i, j  : int}
-        (up_i  : uptr (a, p_arr, n, i),
-         up_j  : uptr (a, p_arr, n, j))
-    :<> bool (i < j) =
-  (* I can guaranteed two equivalent uptr are equal *only* if they
-     were created by arithmetic from the same uptr. *)
-  $UN.cast ($UN.cast{uintptr} up_i < $UN.cast{uintptr} up_j)
-
-overload < with uptr_lt
-
-fn {a : vt@ype}
 uptr_exch {p_arr  : addr}
           {n      : nat}
           {i, j   : nat | i < n; j < n; i != j}
