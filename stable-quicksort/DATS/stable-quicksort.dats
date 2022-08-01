@@ -28,10 +28,9 @@ staload UN = "prelude/SATS/unsafe.sats"
 #define DEFAULT_ARRAY_INSERTION_SORT_THRESHOLD 80
 
 #ifdef STABLE_QUICKSORT_ARRAY_STACK_STORAGE_THRESHOLD #then
-  #define ARRAY_STACK_STORAGE_THRESHOLD
-    STABLE_QUICKSORT_ARRAY_STACK_STORAGE_THRESHOLD
+  #define WORKSPACE_THRESHOLD STABLE_QUICKSORT_WORKSPACE_THRESHOLD
 #else
-  #define ARRAY_STACK_STORAGE_THRESHOLD 256
+  #define WORKSPACE_THRESHOLD 256
 #endif
 
 #ifdef STABLE_QUICKSORT_STK_MAX #then
@@ -997,9 +996,9 @@ array_stable_quicksort_not_given_workspace {n} (arr, n) =
   in
     if n = i2sz 0 then
       ()
-    else if pred n <= ARRAY_STACK_STORAGE_THRESHOLD then
+    else if pred n <= WORKSPACE_THRESHOLD then
       let
-        var storage : @[a?][ARRAY_STACK_STORAGE_THRESHOLD]
+        var storage : @[a?][WORKSPACE_THRESHOLD]
         val () = quicksort (arr, n, storage)
       in
       end
