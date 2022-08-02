@@ -35,128 +35,8 @@ staload UN = "prelude/SATS/unsafe.sats"
 
 #include "quicksorts/DATS/SHARE/quicksorts.share.dats"
 
-abstype uptr (a : vt@ype, p : addr, n : int, i : int)
-
 fn {a : vt@ype}
-ptr2uptr {p_arr  : addr}
-         {n      : nat}
-         (pf_arr : !array_v (a, p_arr, n) |
-          p_arr  : ptr p_arr)
-    :<> uptr (a, p_arr, n, 0) =
-  $UN.cast ($UN.cast{uintptr} p_arr)
-
-(* One can convert back to a pointer only if the uptr points to an
-   array element. *)
-fn {a : vt@ype}
-uptr2ptr {p_arr  : addr}
-         {n      : nat}
-         {i      : nat | i < n}
-         (pf_arr : !array_v (a, p_arr, n) |
-          up     : uptr (a, p_arr, n, i))
-    :<> ptr (p_arr + (i * sizeof a)) =
-  $UN.cast ($UN.cast{uintptr} up)
-
-fn {a  : vt@ype}
-   {tk : tkind}
-uptr_g1uint_add
-          {p_arr : addr}
-          {n     : nat}
-          {i     : int}
-          {j     : int}
-          (up    : uptr (a, p_arr, n, i),
-           j     : g1uint (tk, j))
-    :<> uptr (a, p_arr, n, i + j) =
-  $UN.cast ($UN.cast{uintptr} up -
-              $UN.cast{uintptr} (g1u2u j * sizeof<a>))
-
-overload uptr_add with uptr_g1uint_add
-
-fn {a : vt@ype}
-uptr_pred {p_arr : addr}
-          {n     : nat}
-          {i     : int}
-          (up    : uptr (a, p_arr, n, i))
-    :<> uptr (a, p_arr, n, i - 1) =
-  $UN.cast ($UN.cast{uintptr} up - $UN.cast{uintptr} sizeof<a>)
-
-fn {a : vt@ype}
-uptr_succ {p_arr : addr}
-          {n     : nat}
-          {i     : int}
-          (up    : uptr (a, p_arr, n, i))
-    :<> uptr (a, p_arr, n, i + 1) =
-  $UN.cast ($UN.cast{uintptr} up + $UN.cast{uintptr} sizeof<a>)
-
-fn {a : vt@ype}
-uptr_eq {p_arr : addr}
-        {n     : nat}
-        {i, j  : int}
-        (up_i  : uptr (a, p_arr, n, i),
-         up_j  : uptr (a, p_arr, n, j))
-    :<> bool (i == j) =
-  (* I can guaranteed two equivalent uptr are equal *only* if they
-     were created by arithmetic from the same uptr. *)
-  $UN.cast ($UN.cast{uintptr} up_i = $UN.cast{uintptr} up_j)
-
-overload = with uptr_eq
-
-fn {a : vt@ype}
-uptr_difference
-          {p_arr  : addr}
-          {n      : nat}
-          {i, j   : nat | j <= i; i < n; 1 <= sizeof a}
-          (pf_arr : !array_v (a, p_arr, n) |
-           up_i   : uptr (a, p_arr, n, i),
-           up_j   : uptr (a, p_arr, n, j))
-    :<> size_t (i - j) =
-  let
-    val ui = $UN.cast{uintptr} up_i
-    and uj = $UN.cast{uintptr} up_j
-    val diff = $UN.cast{size_t} (ui - uj)
-  in
-    $UN.cast (diff / sizeof<a>)
-  end
-
-fn {a : vt@ype}
-uptr_exch {p_arr  : addr}
-          {n      : nat}
-          {i, j   : nat | i < n; j < n; i != j}
-          (pf_arr : !array_v (a, p_arr, n) |
-           up_i   : uptr (a, p_arr, n, i),
-           up_j   : uptr (a, p_arr, n, j))
-    :<!wrt> void =
-  let
-    val p_i = uptr2ptr<a> (pf_arr | up_i)
-    and p_j = uptr2ptr<a> (pf_arr | up_j)
-    prval @(pf_i, pf_j, fpf) =
-      array_v_takeout2 {a} {..} {n} {i, j} pf_arr
-    val () = ptr_exch<a> (pf_i | p_i, !p_j)
-    prval () = pf_arr := fpf (pf_i, pf_j)
-  in
-  end
-
-fn {a : vt@ype}
-array_element_lt_uptr
-          {p_arr  : addr}
-          {n      : int}
-          {i, j   : nat | i < n; j < n; i != j}
-          (pf_arr : !array_v (a, p_arr, n) |
-           up_i   : uptr (a, p_arr, n, i),
-           up_j   : uptr (a, p_arr, n, j))
-    :<> bool =
-  let
-    val p_i = uptr2ptr<a> (pf_arr | up_i)
-    and p_j = uptr2ptr<a> (pf_arr | up_j)
-    prval @(pf_i, pf_j, fpf) =
-      array_v_takeout2 {a} {..} {n} {i, j} pf_arr
-    val is_lt = array_unstable_quicksort$lt<a> (!p_i, !p_j)
-    prval () = pf_arr := fpf (pf_i, pf_j)
-  in
-    is_lt
-  end
-
-fn {a : vt@ype}
-array_element_lt_indices
+array_element_lt
           {n    : int}
           {i, j : nat | i < n; j < n; i != j}
           (arr  : &array (a, n),
@@ -173,9 +53,6 @@ array_element_lt_indices
   in
     is_lt
   end
-
-overload array_element_lt with array_element_lt_uptr
-overload array_element_lt with array_element_lt_indices
 
 implement {a}
 array_unstable_quicksort$lt (x, y) =
@@ -363,115 +240,104 @@ array_insertion_sort
 
 fn {a : vt@ype}
 hoare_partitioning
-          {n      : pos}
-          {p_arr  : addr}
-          (pf_arr : !array_v (a, p_arr, n) |
-           p_arr  : ptr p_arr,
-           n      : size_t n)
-    :<!wrt> [i_final : nat | i_final < n]
-            size_t i_final =
+          {n   : pos}
+          (arr : &array (a, n),
+           n   : size_t n)
+    :<!wrt> [i_pivot_final : nat | i_pivot_final < n]
+            size_t i_pivot_final =
   let
-    val () = $effmask_exn assertloc (i2sz 0 < sizeof<a>)
-
     val [i_pivot : int] i_pivot =
-      array_unstable_quicksort$pivot_index<a> (!p_arr, n)
-
-    val up_arr = ptr2uptr<a> (pf_arr | p_arr)
-    val up_end = uptr_add<a> (up_arr, pred n)
-    and up_pivot = uptr_add<a> (up_arr, i_pivot)
+      array_unstable_quicksort$pivot_index<a> (arr, n)
 
     (* Move the pivot out of the way, to the end. *)
-    val () =
-      if i_pivot <> pred n then
-        uptr_exch<a> (pf_arr | up_pivot, up_end)
+    val () = array_interchange<a> (arr, i_pivot, pred n)
 
     fun
     outer_loop {i, j : int | (~1 == i && j == n - 1) ||
                                (0 <= i && i < j && j < n - 1)}
                .<j - i>.
-               (pf_arr : !array_v (a, p_arr, n) |
-                up_i   : uptr (a, p_arr, n, i),
-                up_j   : uptr (a, p_arr, n, j))
+               (arr : &array (a, n),
+                ip1 : size_t (i + 1),
+                j   : size_t j)
         :<!wrt> [k : nat | k <= n - 1]
-                uptr (a, p_arr, n, k) =
+                size_t k =
       let
-        (* Move up_i so everything to its left is less than or equal
-           to the pivot. *)
-        fun
-        loop {k, j : int | i < k; k <= j; j <= n - 1}
-             .<j - k>.
-             (pf_arr : !array_v (a, p_arr, n) |
-              up_k   : uptr (a, p_arr, n, k),
-              up_j   : uptr (a, p_arr, n, j))
-            :<> [k : nat | i < k; k <= j]
-                uptr (a, p_arr, n, k) =
-          if up_k = up_j then
-            up_k
-          else
-            let
-              val p_k = uptr2ptr<a> (pf_arr | up_k)
-            in
-              if array_element_lt<a> (pf_arr | up_end, up_k) then
-                up_k
-              else
-                loop (pf_arr | uptr_succ<a> up_k, up_j)
-            end
-        val up_i : uptr (a, p_arr, n, i + 1) = uptr_succ<a> up_i
-        val [i1 : int] up_i = loop (pf_arr | up_i, up_j)
-
-        prval () = prop_verify {0 <= i1} ()
-        prval () = prop_verify {i1 <= j} ()
-      in
-        if up_i = up_j then
-          up_i
-        else
-          (* Move up_j so everything to its right is greater than or
-             equal to the pivot. *)
+        (* Move i so everything to its left is less than or equal to
+           the pivot. *)
+        fn
+        move_i {i   : int | ~1 <= i; i < j}
+               (arr : &array (a, n),
+                ip1 : size_t (i + 1))
+            :<> [i1 : nat | i < i1; i1 <= j]
+                size_t i1 =
           let
             fun
-            loop {i, k : nat | i <= k; k < j}
-                 .<k>.
-                 (pf_arr : !array_v (a, p_arr, n) |
-                  up_i   : uptr (a, p_arr, n, i),
-                  up_k   : uptr (a, p_arr, n, k))
-                :<> [k : int | i <= k; k < j]
-                    uptr (a, p_arr, n, k) =
-              if up_i = up_k then
-                up_k
+            loop {k : nat | i < k; k <= j}
+                 .<j - k>.
+                 (arr : &array (a, n),
+                  k   : size_t k)
+                :<> [k : nat | i < k; k <= j]
+                    size_t k =
+              if k = j then
+                k
+              else if array_element_lt<a> (arr, pred n, k) then
+                k
               else
-                let
-                  prval () = prop_verify {0 < k} ()
-                in
-                  if array_element_lt<a> (pf_arr | up_k, up_end) then
-                    up_k
-                  else
-                    loop (pf_arr | up_i, uptr_pred<a> up_k)
-                end
-            val up_j : uptr (a, p_arr, n, j - 1) = uptr_pred<a> up_j
-            val [j1 : int] up_j = loop (pf_arr | up_i, up_j)
-
-            prval () = prop_verify {i1 <= j1} ()
-            prval () = prop_verify {j1 < n - 1} ()
+                loop (arr, succ k)
           in
-            if up_i = up_j then
-              up_i
+            loop {i + 1} (arr, ip1)
+          end
+
+        val [i1 : int] i1 = move_i {i} (arr, ip1)
+      in
+        if i1 = j then
+          i1
+        else
+          let
+            (* Move j so everything to its right is greater than or
+               equal to the pivot. *)
+            fn
+            move_j {j   : int | i1 < j; j <= n - 1}
+                   (arr : &array (a, n),
+                    j   : size_t j)
+                :<> [j1 : nat | i1 <= j1; j1 < j]
+                    size_t j1 =
+              let
+                fun
+                loop {k : int | i1 <= k; k < j}
+                     .<k>.
+                     (arr : &array (a, n),
+                      k   : size_t k)
+                    :<> [k : int | i1 <= k; k < j]
+                        size_t k =
+                  if i1 = k then
+                    k
+                  else if array_element_lt<a> (arr, k, pred n) then
+                    k
+                  else
+                    loop (arr, pred k)
+              in
+                loop (arr, pred j)
+              end
+
+            val [j1 : int] j1 = move_j (arr, j)
+          in
+            if i1 = j1 then
+              i1
             else
               begin
-                uptr_exch<a> (pf_arr | up_i, up_j);
-                outer_loop (pf_arr | up_i, up_j)
+                array_interchange<a> (arr, i1, j1);
+                outer_loop {i1, j1} (arr, succ i1, j1)
               end
           end
       end
 
-    val up_final = outer_loop (pf_arr | uptr_pred<a> up_arr, up_end)
-    val i_final = uptr_difference<a> (pf_arr | up_final, up_arr)
+    val i_pivot_final = outer_loop {~1, n - 1} (arr, i2sz 0, pred n)
 
     (* Move the pivot into its final position. *)
-    val () =
-      if i_final <> pred n then
-        uptr_exch<a> (pf_arr | up_final, up_end)
+    val () = array_interchange<a> (arr, i_pivot_final, pred n)
   in
-    i_final
+    i_pivot_final
   end
 
 fn {a : vt@ype}
@@ -512,7 +378,7 @@ array_unstable_sort
             else
               let
                 val [n1_le : int] n1_le =
-                  hoare_partitioning<a> (pf_arr1 | p_arr1, n1)
+                  hoare_partitioning<a> (!p_arr1, n1)
 
                 val p_le = p_arr1
                 and p_ge = ptr_add<a> (p_arr1, succ n1_le)

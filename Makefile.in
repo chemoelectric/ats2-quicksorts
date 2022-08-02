@@ -115,9 +115,11 @@ host_triplet = @host@
 bin_PROGRAMS =
 EXTRA_PROGRAMS = tests/test-arrays-patterns-stable$(EXEEXT) \
 	tests/test-arrays-stability$(EXEEXT) \
+	tests/test-arrays-patterns-unstable$(EXEEXT) \
 	list-ats-dependencies$(EXEEXT)
 TESTS = tests/test-arrays-patterns-stable$(EXEEXT) \
-	tests/test-arrays-stability$(EXEEXT)
+	tests/test-arrays-stability$(EXEEXT) \
+	tests/test-arrays-patterns-unstable$(EXEEXT)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_ac_append_to_file.m4 \
@@ -197,6 +199,9 @@ list_ats_dependencies_OBJECTS =  \
 am_tests_test_arrays_patterns_stable_OBJECTS = tests/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.$(OBJEXT)
 tests_test_arrays_patterns_stable_OBJECTS =  \
 	$(am_tests_test_arrays_patterns_stable_OBJECTS)
+am_tests_test_arrays_patterns_unstable_OBJECTS = tests/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.$(OBJEXT)
+tests_test_arrays_patterns_unstable_OBJECTS =  \
+	$(am_tests_test_arrays_patterns_unstable_OBJECTS)
 am_tests_test_arrays_stability_OBJECTS = tests/test_arrays_stability-test-arrays-stability_tests.$(OBJEXT)
 tests_test_arrays_stability_OBJECTS =  \
 	$(am_tests_test_arrays_stability_OBJECTS)
@@ -222,6 +227,7 @@ am__depfiles_remade = ./$(DEPDIR)/list_ats_dependencies-list-ats-dependencies_de
 	quicksorts/SATS/$(DEPDIR)/stable-quicksort_sats.Plo \
 	quicksorts/SATS/$(DEPDIR)/unstable-quicksort_sats.Plo \
 	tests/$(DEPDIR)/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.Po \
+	tests/$(DEPDIR)/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.Po \
 	tests/$(DEPDIR)/test_arrays_stability-test-arrays-stability_tests.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -245,8 +251,10 @@ am__v_CCLD_1 =
 SOURCES = $(nodist_libats2_quicksorts_la_SOURCES) \
 	$(nodist_list_ats_dependencies_SOURCES) \
 	$(tests_test_arrays_patterns_stable_SOURCES) \
+	$(tests_test_arrays_patterns_unstable_SOURCES) \
 	$(tests_test_arrays_stability_SOURCES)
 DIST_SOURCES = $(tests_test_arrays_patterns_stable_SOURCES) \
+	$(tests_test_arrays_patterns_unstable_SOURCES) \
 	$(tests_test_arrays_stability_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
@@ -651,7 +659,9 @@ AUTOMAKE_OPTIONS = foreign subdir-objects -Wno-portability
 EXTRA_DIST = $(srcdir)/silent-rules.mk COPYING INSTALL README AUTHORS \
 	$(QUICKSORTS_LCG_SEED_DATS) \
 	tests/test-arrays-patterns-stable.dats \
-	tests/test-arrays-stability.dats list-ats-dependencies.dats
+	tests/test-arrays-stability.dats \
+	tests/test-arrays-patterns-unstable.dats \
+	list-ats-dependencies.dats
 MOSTLYCLEANFILES = 
 CLEANFILES = $(STABLE_QUICKSORT_SATS_C) $(STABLE_QUICKSORT_DATS_C) \
 	$(UNSTABLE_QUICKSORT_SATS_C) $(UNSTABLE_QUICKSORT_DATS_C) \
@@ -659,8 +669,10 @@ CLEANFILES = $(STABLE_QUICKSORT_SATS_C) $(STABLE_QUICKSORT_DATS_C) \
 	tests/test-arrays-patterns-stable \
 	tests/test-arrays-patterns-stable_tests.c \
 	tests/test-arrays-stability \
-	tests/test-arrays-stability_tests.c list-ats-dependencies \
-	list-ats-dependencies_depsprog.c
+	tests/test-arrays-stability_tests.c \
+	tests/test-arrays-patterns-unstable \
+	tests/test-arrays-patterns-unstable_tests.c \
+	list-ats-dependencies list-ats-dependencies_depsprog.c
 DISTCLEANFILES = Makefile GNUmakefile
 BUILT_SOURCES = 
 AM_CPPFLAGS = -I$(builddir) -I$(srcdir) -I$(PATSHOME) \
@@ -738,6 +750,14 @@ tests_test_arrays_stability_DEPENDENCIES =  \
 tests_test_arrays_stability_CPPFLAGS = $(AM_CPPFLAGS) \
 	-DATS_MEMALLOC_LIBC
 tests_test_arrays_stability_LDADD = libats2-quicksorts.la
+tests_test_arrays_patterns_unstable_SOURCES =  \
+	tests/test-arrays-patterns-unstable_tests.c
+tests_test_arrays_patterns_unstable_DEPENDENCIES =  \
+	tests/test-arrays-patterns-unstable.dats libats2-quicksorts.la \
+	$(UNSTABLE_QUICKSORT_HATS)
+tests_test_arrays_patterns_unstable_CPPFLAGS = $(AM_CPPFLAGS) \
+	-DATS_MEMALLOC_LIBC
+tests_test_arrays_patterns_unstable_LDADD = libats2-quicksorts.la
 nodist_list_ats_dependencies_SOURCES =  \
 	list-ats-dependencies_depsprog.c
 list_ats_dependencies_CPPFLAGS = $(AM_CPPFLAGS) -DATS_MEMALLOC_LIBC
@@ -914,6 +934,12 @@ tests/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.$(OBJEXT):  
 tests/test-arrays-patterns-stable$(EXEEXT): $(tests_test_arrays_patterns_stable_OBJECTS) $(tests_test_arrays_patterns_stable_DEPENDENCIES) $(EXTRA_tests_test_arrays_patterns_stable_DEPENDENCIES) tests/$(am__dirstamp)
 	@rm -f tests/test-arrays-patterns-stable$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(tests_test_arrays_patterns_stable_OBJECTS) $(tests_test_arrays_patterns_stable_LDADD) $(LIBS)
+tests/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.$(OBJEXT):  \
+	tests/$(am__dirstamp) tests/$(DEPDIR)/$(am__dirstamp)
+
+tests/test-arrays-patterns-unstable$(EXEEXT): $(tests_test_arrays_patterns_unstable_OBJECTS) $(tests_test_arrays_patterns_unstable_DEPENDENCIES) $(EXTRA_tests_test_arrays_patterns_unstable_DEPENDENCIES) tests/$(am__dirstamp)
+	@rm -f tests/test-arrays-patterns-unstable$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(tests_test_arrays_patterns_unstable_OBJECTS) $(tests_test_arrays_patterns_unstable_LDADD) $(LIBS)
 tests/test_arrays_stability-test-arrays-stability_tests.$(OBJEXT):  \
 	tests/$(am__dirstamp) tests/$(DEPDIR)/$(am__dirstamp)
 
@@ -939,6 +965,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quicksorts/SATS/$(DEPDIR)/stable-quicksort_sats.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quicksorts/SATS/$(DEPDIR)/unstable-quicksort_sats.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_arrays_stability-test-arrays-stability_tests.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -998,6 +1025,20 @@ tests/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.obj: tests/t
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/test-arrays-patterns-stable_tests.c' object='tests/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_arrays_patterns_stable_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tests/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.obj `if test -f 'tests/test-arrays-patterns-stable_tests.c'; then $(CYGPATH_W) 'tests/test-arrays-patterns-stable_tests.c'; else $(CYGPATH_W) '$(srcdir)/tests/test-arrays-patterns-stable_tests.c'; fi`
+
+tests/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.o: tests/test-arrays-patterns-unstable_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_arrays_patterns_unstable_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tests/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.o -MD -MP -MF tests/$(DEPDIR)/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.Tpo -c -o tests/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.o `test -f 'tests/test-arrays-patterns-unstable_tests.c' || echo '$(srcdir)/'`tests/test-arrays-patterns-unstable_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.Tpo tests/$(DEPDIR)/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/test-arrays-patterns-unstable_tests.c' object='tests/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_arrays_patterns_unstable_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tests/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.o `test -f 'tests/test-arrays-patterns-unstable_tests.c' || echo '$(srcdir)/'`tests/test-arrays-patterns-unstable_tests.c
+
+tests/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.obj: tests/test-arrays-patterns-unstable_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_arrays_patterns_unstable_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tests/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.obj -MD -MP -MF tests/$(DEPDIR)/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.Tpo -c -o tests/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.obj `if test -f 'tests/test-arrays-patterns-unstable_tests.c'; then $(CYGPATH_W) 'tests/test-arrays-patterns-unstable_tests.c'; else $(CYGPATH_W) '$(srcdir)/tests/test-arrays-patterns-unstable_tests.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) tests/$(DEPDIR)/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.Tpo tests/$(DEPDIR)/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tests/test-arrays-patterns-unstable_tests.c' object='tests/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_arrays_patterns_unstable_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tests/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.obj `if test -f 'tests/test-arrays-patterns-unstable_tests.c'; then $(CYGPATH_W) 'tests/test-arrays-patterns-unstable_tests.c'; else $(CYGPATH_W) '$(srcdir)/tests/test-arrays-patterns-unstable_tests.c'; fi`
 
 tests/test_arrays_stability-test-arrays-stability_tests.o: tests/test-arrays-stability_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_test_arrays_stability_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tests/test_arrays_stability-test-arrays-stability_tests.o -MD -MP -MF tests/$(DEPDIR)/test_arrays_stability-test-arrays-stability_tests.Tpo -c -o tests/test_arrays_stability-test-arrays-stability_tests.o `test -f 'tests/test-arrays-stability_tests.c' || echo '$(srcdir)/'`tests/test-arrays-stability_tests.c
@@ -1308,6 +1349,13 @@ tests/test-arrays-stability.log: tests/test-arrays-stability$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+tests/test-arrays-patterns-unstable.log: tests/test-arrays-patterns-unstable$(EXEEXT)
+	@p='tests/test-arrays-patterns-unstable$(EXEEXT)'; \
+	b='tests/test-arrays-patterns-unstable'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 .test.log:
 	@p='$<'; \
 	$(am__set_b); \
@@ -1566,6 +1614,7 @@ distclean: distclean-am
 	-rm -f quicksorts/SATS/$(DEPDIR)/stable-quicksort_sats.Plo
 	-rm -f quicksorts/SATS/$(DEPDIR)/unstable-quicksort_sats.Plo
 	-rm -f tests/$(DEPDIR)/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.Po
+	-rm -f tests/$(DEPDIR)/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.Po
 	-rm -f tests/$(DEPDIR)/test_arrays_stability-test-arrays-stability_tests.Po
 	-rm -f GNUmakefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -1623,6 +1672,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quicksorts/SATS/$(DEPDIR)/stable-quicksort_sats.Plo
 	-rm -f quicksorts/SATS/$(DEPDIR)/unstable-quicksort_sats.Plo
 	-rm -f tests/$(DEPDIR)/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.Po
+	-rm -f tests/$(DEPDIR)/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.Po
 	-rm -f tests/$(DEPDIR)/test_arrays_stability-test-arrays-stability_tests.Po
 	-rm -f GNUmakefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
@@ -1829,6 +1879,7 @@ ats-includes-distclean:
 	$(call v,PATSOPT)$(PATSOPT) -o $(@) $(TOTAL_PATSOPTFLAGS) -d $(<)
 tests/test-arrays-patterns-stable_tests.c: tests/test-arrays-patterns-stable.dats
 tests/test-arrays-stability_tests.c: tests/test-arrays-stability.dats
+tests/test-arrays-patterns-unstable_tests.c: tests/test-arrays-patterns-unstable.dats
 
 tests-clean:
 	-rm -f tests/*.$(OBJEXT)
