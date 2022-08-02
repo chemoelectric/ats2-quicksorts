@@ -301,33 +301,22 @@ hoare_partitioning
       let
         (* Move i so everything to its left is less than or equal to
            the pivot. *)
-        fn
-        move_i {i     : int | ~1 <= i; i < j}
+        fun {}
+        move_i {k : nat | i < k; k <= j}
+               .<j - k>.
                (arr   : &array (a, n - 1),
-                ip1   : size_t (i + 1),
+                k     : size_t k,
                 pivot : &a)
-            :<> [i1 : nat | i < i1; i1 <= j]
-                size_t i1 =
-          let
-            fun
-            loop {k : nat | i < k; k <= j}
-                 .<j - k>.
-                 (arr   : &array (a, n - 1),
-                  k     : size_t k,
-                  pivot : &a)
-                :<> [k : nat | i < k; k <= j]
-                    size_t k =
-              if k = j then
-                k
-              else if lt2 (pivot, arr, k) then
-                k
-              else
-                loop (arr, succ k, pivot)
-          in
-            loop {i + 1} (arr, ip1, pivot)
-          end
+            :<> [k : nat | i < k; k <= j]
+                size_t k =
+          if k = j then
+            k
+          else if lt2<> (pivot, arr, k) then
+            k
+          else
+            move_i<> (arr, succ k, pivot)
 
-        val [i1 : int] i1 = move_i {i} (arr, ip1, pivot)
+          val [i1 : int] i1 = move_i<> {i + 1} (arr, ip1, pivot)
       in
         if i1 = j then
           i1
@@ -335,33 +324,22 @@ hoare_partitioning
           let
             (* Move j so everything to its right is greater than or
                equal to the pivot. *)
-            fn
-            move_j {j     : int | i1 < j; j <= n - 1}
+            fun {}
+            move_j {k : int | i1 <= k; k < j}
+                   .<k>.
                    (arr   : &array (a, n - 1),
-                    j     : size_t j,
+                    k     : size_t k,
                     pivot : &a)
-                :<> [j1 : nat | i1 <= j1; j1 < j]
-                    size_t j1 =
-              let
-                fun
-                loop {k : int | i1 <= k; k < j}
-                     .<k>.
-                     (arr   : &array (a, n - 1),
-                      k     : size_t k,
-                      pivot : &a)
-                    :<> [k : int | i1 <= k; k < j]
-                        size_t k =
-                  if i1 = k then
-                    k
-                  else if lt1 (arr, k, pivot) then
-                    k
-                  else
-                    loop (arr, pred k, pivot)
-              in
-                loop (arr, pred j, pivot)
-              end
+                :<> [k : int | i1 <= k; k < j]
+                    size_t k =
+              if i1 = k then
+                k
+              else if lt1<> (arr, k, pivot) then
+                k
+              else
+                move_j<> (arr, pred k, pivot)
 
-            val [j1 : int] j1 = move_j (arr, j, pivot)
+            val [j1 : int] j1 = move_j<> (arr, pred j, pivot)
           in
             if i1 = j1 then
               i1
