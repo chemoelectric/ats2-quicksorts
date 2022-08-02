@@ -85,48 +85,21 @@ array_stable_quicksort_pivot_index_default {n} (arr, n) =
 
 implement {a}
 array_stable_quicksort_pivot_index_random {n} (arr, n) =
-  let
-    val u64_n = $UN.cast{uint64 n} n
-    val u64_rand : [i : nat] uint64 i =
-      g1ofg0 ($effmask_wrt random_uint64 ())
-    val u64_pivot = g1uint_mod (u64_rand, u64_n)
-    val i_pivot = $UN.cast{[i : nat | i < n] size_t i} u64_pivot
-  in
-    i_pivot
-  end
+  quicksorts_pivot_index_random<a> {n} (arr, n)
 
 implement {a}
-array_stable_quicksort_pivot_index_middle (arr, n) =
-  half n
+array_stable_quicksort_pivot_index_middle {n} (arr, n) =
+  quicksorts_pivot_index_middle<a> {n} (arr, n)
 
 implement {a}
 array_stable_quicksort_pivot_index_median_of_three {n} (arr, n) =
-  if n <= 2 then
-    i2sz 0
-  else
-    let
-      val i_first = i2sz 0
-      and i_middle = half n
-      and i_last = pred n
-
-      val middle_lt_first =
-        array_element_lt<a> {n} (arr, i_middle, i_first)
-      and last_lt_first =
-        array_element_lt<a> {n} (arr, i_last, i_first)
-    in
-      if middle_lt_first <> last_lt_first then
-        i_first
-      else
-        let
-          val middle_lt_last =
-            array_element_lt<a> {n} (arr, i_middle, i_last)
-        in
-          if middle_lt_first <> middle_lt_last then
-            i_middle
-          else
-            i_last
-        end
-    end
+  let
+    implement
+    quicksorts$array_element_lt<a> (arr, i, j) =
+      array_element_lt<a> (arr, i, j)
+  in
+    quicksorts_pivot_index_median_of_three<a> {n} (arr, n)
+  end
 
 fn {a : vt@ype}
 make_an_ordered_prefix

@@ -208,3 +208,80 @@ stk_vt_pop
   end
 
 (*------------------------------------------------------------------*)
+(* Some pivot strategies.                                           *)
+
+typedef quicksorts_pivot_index_t (a : vt@ype) =
+  {n : pos}
+  (&array (a, n), size_t n) -<>
+    [i : int | 0 <= i; i < n]
+    size_t i
+
+extern fn {a : vt@ype}
+quicksorts$array_element_lt
+          {n    : int}
+          {i, j : nat | i < n; j < n; i != j}
+          (arr  : &array (a, n),
+           i    : size_t i,
+           j    : size_t j)
+    :<> bool
+
+extern fn {a : vt@ype}
+quicksorts_pivot_index_random :
+  quicksorts_pivot_index_t a
+
+extern fn {a : vt@ype}
+quicksorts_pivot_index_middle :
+  quicksorts_pivot_index_t a
+
+extern fn {a : vt@ype}
+quicksorts_pivot_index_median_of_three :
+  quicksorts_pivot_index_t a
+
+implement {a}
+quicksorts_pivot_index_random {n} (arr, n) =
+  let
+    val u64_n = $UN.cast{uint64 n} n
+    val u64_rand : [i : nat] uint64 i =
+      g1ofg0 ($effmask_wrt random_uint64 ())
+    val u64_pivot = g1uint_mod (u64_rand, u64_n)
+    val i_pivot = $UN.cast{[i : nat | i < n] size_t i} u64_pivot
+  in
+    i_pivot
+  end
+
+implement {a}
+quicksorts_pivot_index_middle (arr, n) =
+  half n
+
+implement {a}
+quicksorts_pivot_index_median_of_three {n} (arr, n) =
+  if n <= 2 then
+    i2sz 0
+  else
+    let
+      macdef lt = quicksorts$array_element_lt<a>
+
+      val i_first = i2sz 0
+      and i_middle = half n
+      and i_last = pred n
+
+      val middle_lt_first =
+        lt {n} (arr, i_middle, i_first)
+      and last_lt_first =
+        lt {n} (arr, i_last, i_first)
+    in
+      if middle_lt_first <> last_lt_first then
+        i_first
+      else
+        let
+          val middle_lt_last =
+            lt {n} (arr, i_middle, i_last)
+        in
+          if middle_lt_first <> middle_lt_last then
+            i_middle
+          else
+            i_last
+        end
+    end
+
+(*------------------------------------------------------------------*)
