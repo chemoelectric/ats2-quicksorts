@@ -101,6 +101,23 @@ uptr_eq {p_arr : addr}
 overload = with uptr_eq
 
 fn {a : vt@ype}
+uptr_difference
+          {p_arr  : addr}
+          {n      : nat}
+          {i, j   : nat | j <= i; i < n; 1 <= sizeof a}
+          (pf_arr : !array_v (a, p_arr, n) |
+           up_i   : uptr (a, p_arr, n, i),
+           up_j   : uptr (a, p_arr, n, j))
+    :<> size_t (i - j) =
+  let
+    val ui = $UN.cast{uintptr} up_i
+    and uj = $UN.cast{uintptr} up_j
+    val diff = $UN.cast{size_t} (ui - uj)
+  in
+    $UN.cast (diff / sizeof<a>)
+  end
+
+fn {a : vt@ype}
 uptr_exch {p_arr  : addr}
           {n      : nat}
           {i, j   : nat | i < n; j < n; i != j}
@@ -119,7 +136,27 @@ uptr_exch {p_arr  : addr}
   end
 
 fn {a : vt@ype}
-array_element_lt
+array_element_lt_uptr
+          {p_arr  : addr}
+          {n      : int}
+          {i, j   : nat | i < n; j < n; i != j}
+          (pf_arr : !array_v (a, p_arr, n) |
+           up_i   : uptr (a, p_arr, n, i),
+           up_j   : uptr (a, p_arr, n, j))
+    :<> bool =
+  let
+    val p_i = uptr2ptr<a> (pf_arr | up_i)
+    and p_j = uptr2ptr<a> (pf_arr | up_j)
+    prval @(pf_i, pf_j, fpf) =
+      array_v_takeout2 {a} {..} {n} {i, j} pf_arr
+    val is_lt = array_unstable_quicksort$lt<a> (!p_i, !p_j)
+    prval () = pf_arr := fpf (pf_i, pf_j)
+  in
+    is_lt
+  end
+
+fn {a : vt@ype}
+array_element_lt_indices
           {n    : int}
           {i, j : nat | i < n; j < n; i != j}
           (arr  : &array (a, n),
@@ -136,6 +173,9 @@ array_element_lt
   in
     is_lt
   end
+
+overload array_element_lt with array_element_lt_uptr
+overload array_element_lt with array_element_lt_indices
 
 implement {a}
 array_unstable_quicksort$lt (x, y) =
@@ -349,80 +389,28 @@ array_insertion_sort
     end
 
 fn {a : vt@ype}
-array_select_pivot
-          {n      : pos}
-          {p_arr  : addr}
-          (pf_arr : array_v (a, p_arr, n) |
-           p_arr  : ptr p_arr,
-           n      : size_t n)
-    :<!wrt> [n_before : nat | n_before + 1 <= n]
-            @(array_v (a, p_arr, n_before),
-              a @ (p_arr + (n_before * sizeof a)),
-              array_v (a, p_arr + (n_before * sizeof a) + sizeof a,
-                       n - n_before - 1) |
-              size_t n_before) =
-  let
-    val [n_before : int] n_before =
-      array_unstable_quicksort$pivot_index<a> (!p_arr, n)
-    prval @(pf_before, pf_more) =
-      array_v_split {a} {p_arr} {n} {n_before} pf_arr
-    prval @(pf_pivot, pf_after) = array_v_uncons pf_more
-  in
-    @(pf_before, pf_pivot, pf_after | n_before)
-  end
-
-fn {a : vt@ype}
-move_pivot_to_end
-          {n         : pos}
-          {n_before  : nat | n_before + 1 <= n}
-          {p_arr     : addr}
-          (pf_before : array_v (a, p_arr, n_before),
-           pf_pivot  : a @ (p_arr + (n_before * sizeof a)),
-           pf_after  : array_v
-                         (a, p_arr + (n_before * sizeof a) + sizeof a,
-                          n - n_before - 1) |
-           p_arr     : ptr p_arr,
-           n         : size_t n,
-           n_before  : size_t n_before)
-    :<!wrt> @(array_v (a, p_arr, n) | ) =
-  if n_before = pred n then
-    let                         (* The pivot already is at the end. *)
-      prval () = array_v_unnil pf_after
-      prval () = lemma_mul_isfun {n_before, sizeof a}
-                                 {n - 1, sizeof a} ()
-    in
-      @(array_v_extend (pf_before, pf_pivot) | )
-    end
-  else
-    let                 (* Exchange the pivot with the end element. *)
-      val p_pivot = ptr_add<a> (p_arr, n_before)
-      and p_end = ptr_add<a> (p_arr, n - 1)
-      prval @(pf_after, pf_end) = array_v_unextend pf_after
-      val () = ptr_exch<a> (pf_end | p_end, !p_pivot)
-      prval pf_arr =
-        array_v_unsplit (pf_before, array_v_cons (pf_pivot, pf_after))
-    in
-      @(array_v_extend (pf_arr, pf_end) | )
-    end
-
-fn {a : vt@ype}
 hoare_partitioning
           {n      : pos}
           {p_arr  : addr}
           (pf_arr : !array_v (a, p_arr, n) |
            p_arr  : ptr p_arr,
            n      : size_t n)
-    :<!wrt> [k : nat | k <= n - 1]
-            uptr (a, p_arr, n, k) =
+    :<!wrt> [i_final : nat | i_final < n]
+            size_t i_final =
   let
-    macdef lt = array_unstable_quicksort$lt
+    val () = $effmask_exn assertloc (i2sz 0 < sizeof<a>)
+
+    val [i_pivot : int] i_pivot =
+      array_unstable_quicksort$pivot_index<a> (!p_arr, n)
 
     val up_arr = ptr2uptr<a> (pf_arr | p_arr)
     val up_end = uptr_add<a> (up_arr, pred n)
-    and p_pivot = ptr_add<a> (p_arr, pred n)
+    and up_pivot = uptr_add<a> (up_arr, i_pivot)
 
-    val up_i = uptr_pred<a> up_arr
-    and up_j = up_end
+    (* Move the pivot out of the way, to the end. *)
+    val () =
+      if i_pivot <> pred n then
+        uptr_exch<a> (pf_arr | up_pivot, up_end)
 
     fun
     outer_loop {i, j : int | (~1 == i && j == n - 1) ||
@@ -449,12 +437,8 @@ hoare_partitioning
           else
             let
               val p_k = uptr2ptr<a> (pf_arr | up_k)
-              prval @(pf_k, pf_pivot, fpf) =
-                array_v_takeout2 {a} {..} {n} {k, n - 1} pf_arr
-              val is_lt = (!p_pivot) \lt (!p_k)
-              prval () = pf_arr := fpf (pf_k, pf_pivot)
             in
-              if is_lt then
+              if array_element_lt<a> (pf_arr | up_end, up_k) then
                 up_k
               else
                 loop (pf_arr | uptr_succ<a> up_k, up_j)
@@ -484,13 +468,8 @@ hoare_partitioning
               else
                 let
                   prval () = prop_verify {0 < k} ()
-                  val p_k = uptr2ptr<a> (pf_arr | up_k)
-                  prval @(pf_k, pf_pivot, fpf) =
-                    array_v_takeout2 {a} {..} {n} {k, n - 1} pf_arr
-                  val is_lt = (!p_k) \lt (!p_pivot)
-                  prval () = pf_arr := fpf (pf_k, pf_pivot)
                 in
-                  if is_lt then
+                  if array_element_lt<a> (pf_arr | up_k, up_end) then
                     up_k
                   else
                     loop (pf_arr | up_i, uptr_pred<a> up_k)
@@ -510,6 +489,14 @@ hoare_partitioning
               end
           end
       end
+
+    val up_final = outer_loop (pf_arr | uptr_pred<a> up_arr, up_end)
+    val i_final = uptr_difference<a> (pf_arr | up_final, up_arr)
+
+    (* Move the pivot into its final position. *)
+    val () =
+      if i_final <> pred n then
+        uptr_exch<a> (pf_arr | up_final, up_end)
   in
-    outer_loop (pf_arr | up_i, up_j)
+    i_final
   end
