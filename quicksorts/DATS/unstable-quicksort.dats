@@ -473,3 +473,140 @@ hoare_partitioning
   in
     i_final
   end
+
+fn {a : vt@ype}
+array_unstable_sort
+          {n         : int}
+          (arr       : &array (a, n),
+           n         : size_t n)
+    :<!wrt> void =
+  if n <= 1 then
+    ()
+  else
+    let
+      fun
+      loop {p_stk    : addr}
+           {depth    : nat}
+           {size_sum : nat}
+           .<size_sum>.
+           (stk : &stk_vt (p_stk, depth, size_sum)
+                  >> stk_vt (p_stk, 0, 0))
+          :<!wrt> void =
+        if (stk.depth) = 0 then
+          $effmask_exn assertloc (stk.size_sum = i2sz 0)
+        else
+          let
+            val () = $effmask_exn assertloc (stk.size_sum <> i2sz 0)
+            val @(p2tr_arr1, n1) = stk_vt_pop<a> stk
+            val @(pf_arr1, fpf_arr1 | p_arr1) =
+              $UN.p2tr_vtake p2tr_arr1
+         in
+            if n1 <= array_unstable_quicksort$small<a> () then
+              let
+                val () =
+                  array_insertion_sort<a> (pf_arr1 | p_arr1, n1)
+                prval () = fpf_arr1 pf_arr1
+              in
+                loop stk
+              end
+            else
+              let
+                val [n1_le : int] n1_le =
+                  hoare_partitioning<a> (pf_arr1 | p_arr1, n1)
+
+                val p_le = p_arr1
+                and p_ge = ptr_add<a> (p_arr1, succ n1_le)
+                and n1_ge = n1 - succ n1_le
+
+                prval [n1 : int] () = g1uint_get_static n1
+                prval @(pf_le, pf_pivot_and_ge) =
+                  array_v_split {a} {..} {n1} {n1_le} pf_arr1
+                prval @(pf_pivot, pf_ge) =
+                  array_v_uncons pf_pivot_and_ge
+              in
+                (* Push the larger part of the partition first.
+                   Otherwise the stack may overflow. *)
+                if n1_le = i2sz 0 then
+                  let
+                    val () = $effmask_exn
+                      assertloc ((stk.depth) <= STK_MAX - 1)
+                    val () = stk_vt_push<a> (pf_ge | p_ge, n1_ge, stk)
+                    val () = loop stk
+                    prval () = pf_arr1 :=
+                      array_v_extend (pf_le, pf_pivot)
+                    prval () = pf_arr1 :=
+                      array_v_unsplit (pf_arr1, pf_ge)
+                    prval () = fpf_arr1 pf_arr1
+                  in
+                  end
+                else if n1_le < n1_ge then
+                  let
+                    val () = $effmask_exn
+                      assertloc ((stk.depth) <= STK_MAX - 2)
+                    val () = stk_vt_push<a> (pf_ge | p_ge, n1_ge, stk)
+                    val () = stk_vt_push<a> (pf_le | p_le, n1_le, stk)
+                    val () = loop stk
+                    prval () = pf_arr1 :=
+                      array_v_extend (pf_le, pf_pivot)
+                    prval () = pf_arr1 :=
+                      array_v_unsplit (pf_arr1, pf_ge)
+                    prval () = fpf_arr1 pf_arr1
+                  in
+                  end
+                else if n1_ge = i2sz 0 then
+                  let
+                    val () = $effmask_exn
+                      assertloc ((stk.depth) <= STK_MAX - 1)
+                    val () = stk_vt_push<a> (pf_le | p_le, n1_le, stk)
+                    val () = loop stk
+                    prval () = pf_arr1 :=
+                      array_v_extend (pf_le, pf_pivot)
+                    prval () = pf_arr1 :=
+                      array_v_unsplit (pf_arr1, pf_ge)
+                    prval () = fpf_arr1 pf_arr1
+                  in
+                  end
+                else
+                  let
+                    val () = $effmask_exn
+                      assertloc ((stk.depth) <= STK_MAX - 2)
+                    val () = stk_vt_push<a> (pf_le | p_le, n1_le, stk)
+                    val () = stk_vt_push<a> (pf_ge | p_ge, n1_ge, stk)
+                    val () = loop stk
+                    prval () = pf_arr1 :=
+                      array_v_extend (pf_le, pf_pivot)
+                    prval () = pf_arr1 :=
+                      array_v_unsplit (pf_arr1, pf_ge)
+                    prval () = fpf_arr1 pf_arr1
+                  in
+                  end
+              end
+          end
+
+      prval () = lemma_array_param arr
+
+      var stk_storage =
+        @[stk_entry_vt][STK_MAX] (@(the_null_ptr, i2sz 0))
+      var stk = stk_vt_make (view@ stk_storage | addr@ stk_storage)
+
+      val () = stk_vt_push<a> (view@ arr | addr@ arr, n, stk)
+      val () = loop stk
+      prval () = view@ stk_storage := stk.pf
+    in
+    end
+
+implement {a}
+array_unstable_quicksort {n} {m1} (arr, n) =
+  if n = i2sz 0 then
+    ()
+  else
+    let
+      prval () = lemma_array_param arr
+      prval () = lemma_g1uint_param n
+
+      prval @(pf_arr1, pf_arr2) =
+        array_v_split {a} {..} {m1} {n} (view@ arr)
+      val () = array_unstable_sort<a> {n} (!(addr@ arr), n)
+      prval () = view@ arr := array_v_unsplit (pf_arr1, pf_arr2)
+    in
+    end

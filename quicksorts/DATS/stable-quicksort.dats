@@ -591,13 +591,13 @@ select_pivot_and_partition_array
   end
 
 fn {a : vt@ype}
-array_sort
+array_stable_sort
           {n         : int}
           (arr       : &array (a, n),
            n         : size_t n,
            workspace : &array (a?, n - 1))
     :<!wrt> void =
-  if n = 0 then
+  if n <= 1 then
     ()
   else
     let
@@ -617,10 +617,9 @@ array_sort
           :<!wrt> void =
         if (stk.depth) = 0 then
           $effmask_exn assertloc (stk.size_sum = i2sz 0)
-        else if stk.size_sum = i2sz 0 then
-          $effmask_exn assertloc (false)
         else
           let
+            val () = $effmask_exn assertloc (stk.size_sum <> i2sz 0)
             val @(p2tr_arr1, n1) = stk_vt_pop<a> stk
             val @(pf_arr1, fpf_arr1 | p_arr1) =
               $UN.p2tr_vtake p2tr_arr1
@@ -725,7 +724,8 @@ array_sort
         @[stk_entry_vt][STK_MAX] (@(the_null_ptr, i2sz 0))
       var stk = stk_vt_make (view@ stk_storage | addr@ stk_storage)
 
-      (* Put the pivot physically near the stack. *)
+      (* Put the pivot physically near the stack. Maybe that will make
+         a difference. *)
       var pivot_temp : a?
 
       val () = stk_vt_push<a> (view@ arr | addr@ arr, n, stk)
@@ -750,7 +750,8 @@ array_stable_quicksort_given_workspace {n} {m1} {m2}
         array_v_split {a} {..} {m1} {n} (view@ arr)
       prval @(pf_work1, pf_work2) =
         array_v_split {a?} {..} {m2} {n - 1} (view@ workspace)
-      val () = array_sort<a> {n} (!(addr@ arr), n, !(addr@ workspace))
+      val () =
+        array_stable_sort<a> {n} (!(addr@ arr), n, !(addr@ workspace))
       prval () = view@ arr :=
         array_v_unsplit (pf_arr1, pf_arr2)
       prval () = view@ workspace :=
