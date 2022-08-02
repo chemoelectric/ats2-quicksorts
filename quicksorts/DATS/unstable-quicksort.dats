@@ -240,14 +240,10 @@ array_insertion_sort
 
 fn {a : vt@ype}
 hoare_partitioning
-          {p_arr         : addr}
-          {n             : pos}
-          {p_pivot_temp  : addr}
-          (pf_arr        : !array_v (a, p_arr, n),
-           pf_pivot_temp : !(a? @ p_pivot_temp) >> _ |
-           p_arr         : ptr p_arr,
-           n             : size_t n,
-           p_pivot_temp  : ptr p_pivot_temp)
+          {n     : pos}
+          (arr   : &array (a, n),
+           n     : size_t n,
+           pivot : &a?)
     :<!wrt> [i_pivot_final : nat | i_pivot_final < n]
             size_t i_pivot_final =
   let
@@ -284,13 +280,13 @@ hoare_partitioning
       end
 
     val [i_pivot : int] i_pivot =
-      array_unstable_quicksort$pivot_index<a> (!p_arr, n)
+      array_unstable_quicksort$pivot_index<a> (arr, n)
 
     (* Remove the pivot. *)
-    val () = array_interchange<a> (!p_arr, i_pivot, pred n)
-    prval @(pf_arr1, pf_end) = array_v_unextend pf_arr
-    val p_end = ptr_add<a> (p_arr, pred n)
-    val () = !p_pivot_temp := ptr_get<a> (pf_end | p_end)
+    val () = array_interchange<a> (arr, i_pivot, pred n)
+    prval @(pf_arr1, pf_end) = array_v_unextend (view@ arr)
+    val p_end = ptr_add<a> (addr@ arr, pred n)
+    val () = pivot := ptr_get<a> (pf_end | p_end)
 
     fun
     outer_loop {i, j : int | (~1 == i && j == n - 1) ||
@@ -378,12 +374,12 @@ hoare_partitioning
       end
 
     val i_pivot_final =
-      outer_loop {~1, n - 1} (!p_arr, i2sz 0, pred n, !p_pivot_temp)
+      outer_loop {~1, n - 1} (arr, i2sz 0, pred n, pivot)
 
     (* Move the pivot into its final position. *)
-    val () = ptr_set<a> (pf_end | p_end, !p_pivot_temp)
-    prval () = pf_arr := array_v_extend (pf_arr1, pf_end)
-    val () = array_interchange<a> (!p_arr, i_pivot_final, pred n)
+    val () = ptr_set<a> (pf_end | p_end, pivot)
+    prval () = view@ arr := array_v_extend (pf_arr1, pf_end)
+    val () = array_interchange<a> (arr, i_pivot_final, pred n)
   in
     i_pivot_final
   end
@@ -429,9 +425,7 @@ array_unstable_sort
             else
               let
                 val [n1_le : int] n1_le =
-                  hoare_partitioning<a>
-                    (pf_arr1, pf_pivot_temp |
-                     p_arr1, n1, p_pivot_temp)
+                  hoare_partitioning<a> (!p_arr1, n1, !p_pivot_temp)
 
                 val p_le = p_arr1
                 and p_ge = ptr_add<a> (p_arr1, succ n1_le)
