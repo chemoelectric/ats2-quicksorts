@@ -121,6 +121,36 @@ array_subcirculate_right
       $UN.ptr0_set<a> (pi, tmp)
     end
 
+(*
+(*------------------------------------------------------------------*)
+(* Variant of ‘andalso’ and ‘orelse’ for dependent types.           *)
+
+fn {}
+andalso1 {b1, b2 : bool}
+         (b1 : bool b1,
+          b2 : bool b2) :<>
+    bool (b1 && b2) =
+  if b1 then
+    b2
+  else
+    false
+
+fn {}
+orelse1 {b1, b2 : bool}
+        (b1 : bool b1,
+         b2 : bool b2) :<>
+    bool (b1 || b2) =
+  if b1 then
+    true
+  else
+    b2
+
+infixl ( && ) &&&
+infixl ( || ) |||
+macdef &&& = andalso1
+macdef ||| = orelse1
+*)
+
 (*------------------------------------------------------------------*)
 (* A simple linear congruential generator, for pivot selection.     *)
 

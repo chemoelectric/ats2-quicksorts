@@ -252,7 +252,7 @@ hoare_partitioning
         (arr   : &array (a, n - 1),
          i     : size_t i,
          pivot : &a)
-        :<> bool =
+        :<> Bool =
       let
         prval @(pf, fpf) =
           array_v_takeout {a} {..} {n - 1} {i} (view@ arr)
@@ -260,7 +260,7 @@ hoare_partitioning
         val is_lt = array_unstable_quicksort$lt<a> (!p, pivot)
         prval () = view@ arr := fpf pf
       in
-        is_lt
+        g1ofg0 is_lt
       end
 
     fn {}
@@ -268,7 +268,7 @@ hoare_partitioning
         (pivot : &a,
          arr   : &array (a, n - 1),
          i     : size_t i)
-        :<> bool =
+        :<> Bool =
       let
         prval @(pf, fpf) =
           array_v_takeout {a} {..} {n - 1} {i} (view@ arr)
@@ -276,7 +276,7 @@ hoare_partitioning
         val is_lt = array_unstable_quicksort$lt<a> (pivot, !p)
         prval () = view@ arr := fpf pf
       in
-        is_lt
+        g1ofg0 is_lt
       end
 
     val [i_pivot : int] i_pivot =
@@ -301,11 +301,12 @@ hoare_partitioning
       let
         (* Move i so everything to its left is less than or equal to
            the pivot. *)
-        fun {}
+        fun
         move_i {k : nat | i < k; k <= j}
                .<j - k>.
                (arr   : &array (a, n - 1),
                 k     : size_t k,
+                j     : size_t j,
                 pivot : &a)
             :<> [k : nat | i < k; k <= j]
                 size_t k =
@@ -314,9 +315,9 @@ hoare_partitioning
           else if lt2<> (pivot, arr, k) then
             k
           else
-            move_i<> (arr, succ k, pivot)
+            move_i {k + 1} (arr, succ k, j, pivot)
 
-          val [i1 : int] i1 = move_i<> {i + 1} (arr, ip1, pivot)
+        val [i1 : int] i1 = move_i {i + 1} (arr, ip1, j, pivot)
       in
         if i1 = j then
           i1
@@ -324,10 +325,11 @@ hoare_partitioning
           let
             (* Move j so everything to its right is greater than or
                equal to the pivot. *)
-            fun {}
+            fun
             move_j {k : int | i1 <= k; k < j}
                    .<k>.
                    (arr   : &array (a, n - 1),
+                    i1    : size_t i1,
                     k     : size_t k,
                     pivot : &a)
                 :<> [k : int | i1 <= k; k < j]
@@ -337,9 +339,10 @@ hoare_partitioning
               else if lt1<> (arr, k, pivot) then
                 k
               else
-                move_j<> (arr, pred k, pivot)
+                move_j {k - 1} (arr, i1, pred k, pivot)
 
-            val [j1 : int] j1 = move_j<> (arr, pred j, pivot)
+            val [j1 : int] j1 =
+              move_j {j - 1} (arr, i1, pred j, pivot)
           in
             if i1 = j1 then
               i1
