@@ -75,7 +75,7 @@ array_unstable_quicksort$pivot_index {n} (arr, n) =
 implement {a}
 array_unstable_quicksort_pivot_index_default {n} (arr, n) =
   (* FIXME: DECIDE WHICH STRATEGY SHOULD BE THE DEFAULT *)
-  array_unstable_quicksort_pivot_index_random<a> {n} (arr, n)
+  array_unstable_quicksort_pivot_index_median_of_three<a> {n} (arr, n)
 
 implement {a}
 array_unstable_quicksort_pivot_index_random {n} (arr, n) =
@@ -241,127 +241,94 @@ array_insertion_sort
 fn {a : vt@ype}
 partition {n     : pos}
           (arr   : &array (a, n),
-           n     : size_t n,
-           pivot : &a?)
+           n     : size_t n)
     :<!wrt> [i_pivot_final : nat | i_pivot_final < n]
             size_t i_pivot_final =
   let
-    fn {}
-    lt1 {i     : nat | i < n - 1}
-        (arr   : &array (a, n - 1),
-         i     : size_t i,
-         pivot : &a)
-        :<> Bool =
-      let
-        prval @(pf, fpf) =
-          array_v_takeout {a} {..} {n - 1} {i} (view@ arr)
-        val p = ptr_add<a> (addr@ arr, i)
-        val is_lt = array_unstable_quicksort$lt<a> (!p, pivot)
-        prval () = view@ arr := fpf pf
-      in
-        g1ofg0 is_lt
-      end
-
-    fn {}
-    lt2 {i     : nat | i < n - 1}
-        (pivot : &a,
-         arr   : &array (a, n - 1),
-         i     : size_t i)
-        :<> Bool =
-      let
-        prval @(pf, fpf) =
-          array_v_takeout {a} {..} {n - 1} {i} (view@ arr)
-        val p = ptr_add<a> (addr@ arr, i)
-        val is_lt = array_unstable_quicksort$lt<a> (pivot, !p)
-        prval () = view@ arr := fpf pf
-      in
-        g1ofg0 is_lt
-      end
-
-    val [i_pivot : int] i_pivot =
+    val [i_pivot_original : int] i_pivot_original =
       array_unstable_quicksort$pivot_index<a> (arr, n)
 
-    (* Remove the pivot. *)
-    val () = array_interchange<a> (arr, i_pivot, pred n)
-    prval @(pf_arr1, pf_end) = array_v_unextend (view@ arr)
-    val p_end = ptr_add<a> (addr@ arr, pred n)
-    val () = pivot := ptr_get<a> (pf_end | p_end)
+    (* Move the pivot to the middle. *)
+    val i_pivot_initial = half n
+    val () = array_interchange<a> (arr, i_pivot_initial,
+                                   i_pivot_original)
 
     fun
-    outer_loop {i, j : int | (~1 == i && j == n - 1) ||
-                               (0 <= i && i < j && j < n - 1)}
+    outer_loop {i_pivot : int | 0 <= i_pivot; i_pivot <= n - 1}
+               {i, j    : int | 0 <= i; i <= i_pivot;
+                                i_pivot <= j; j <= n - 1}
                .<j - i>.
-               (arr   : &array (a, n - 1),
-                ip1   : size_t (i + 1),
-                j     : size_t j,
-                pivot : &a)
-        :<!wrt> [k : nat | k <= n - 1]
-                size_t k =
+               (arr     : &array (a, n),
+                i       : size_t i,
+                j       : size_t j,
+                i_pivot : size_t i_pivot)
+        :<!wrt> [i_pivot_final : nat | i_pivot_final <= n - 1]
+                size_t i_pivot_final =
       let
-        (* Move i so everything to its left is less than or equal to
-           the pivot. *)
         fun
-        move_i {k : nat | i < k; k <= j}
-               .<j - k>.
-               (arr   : &array (a, n - 1),
-                k     : size_t k,
-                j     : size_t j,
-                pivot : &a)
-            :<> [k : nat | i < k; k <= j]
-                size_t k =
-          if k = j then
-            k
-          else if lt2<> (pivot, arr, k) then
-            k
+        move_i_rightwards
+                  {i : int | 0 <= i; i <= i_pivot}
+                  .<i_pivot - i>.
+                  (arr : &array (a, n),
+                   i   : size_t i)
+            :<> [i1 : int | i <= i1; i1 <= i_pivot]
+                size_t i1 =
+          if i = i_pivot then
+            i
+          else if array_element_lt<a> (arr, i_pivot, i) then
+            i
           else
-            move_i {k + 1} (arr, succ k, j, pivot)
+            move_i_rightwards (arr, succ i)
 
-        val [i1 : int] i1 = move_i {i + 1} (arr, ip1, j, pivot)
+        fun
+        move_j_leftwards
+                  {j : int | i_pivot <= j; j <= n - 1}
+                  .<j - i_pivot>.
+                  (arr : &array (a, n),
+                   j   : size_t j)
+            :<> [j1 : int | i_pivot <= j1; j1 <= j]
+                size_t j1 =
+          if j = i_pivot then
+            j
+          else if array_element_lt<a> (arr, j, i_pivot) then
+            j
+          else
+            move_j_leftwards (arr, pred j)
+
+        val [i1 : int] i1 = move_i_rightwards (arr, i)
+        val [j1 : int] j1 = move_j_leftwards (arr, j)
+        val diff = j1 - i1
       in
-        if i1 = j then
-          i1
+        if diff = i2sz 0 then
+          let                   (* i and j have met at the pivot. *)
+            prval () = prop_verify {i1 == i_pivot} ()
+            prval () = prop_verify {j1 == i_pivot} ()
+          in
+            i1
+          end
+        else if diff = i2sz 1 then
+          let               (* Either i or j has reached the pivot. *)
+            prval () = prop_verify {i1 == i_pivot || j1 == i_pivot} ()
+          in
+            array_interchange<a> (arr, i1, j1);
+            if i1 = i_pivot then j1 else i1
+          end
         else
           let
-            (* Move j so everything to its right is greater than or
-               equal to the pivot. *)
-            fun
-            move_j {k : int | i1 <= k; k < j}
-                   .<k>.
-                   (arr   : &array (a, n - 1),
-                    i1    : size_t i1,
-                    k     : size_t k,
-                    pivot : &a)
-                :<> [k : int | i1 <= k; k < j]
-                    size_t k =
-              if i1 = k then
-                k
-              else if lt1<> (arr, k, pivot) then
-                k
-              else
-                move_j {k - 1} (arr, i1, pred k, pivot)
-
-            val [j1 : int] j1 =
-              move_j {j - 1} (arr, i1, pred j, pivot)
+            prval () = prop_verify {i1 <= i_pivot} ()
+            prval () = prop_verify {i_pivot <= j1} ()
           in
-            if i1 = j1 then
-              i1
+            array_interchange<a> (arr, i1, j1);
+            if i1 = i_pivot then
+              outer_loop (arr, succ i1, j1, j1)
+            else if j1 = i_pivot then
+              outer_loop (arr, i1, pred j1, i1)
             else
-              begin
-                array_interchange<a> (arr, i1, j1);
-                outer_loop {i1, j1} (arr, succ i1, j1, pivot)
-              end
+              outer_loop (arr, succ i1, pred j1, i_pivot)
           end
       end
-
-    val i_pivot_final =
-      outer_loop {~1, n - 1} (arr, i2sz 0, pred n, pivot)
-
-    (* Move the pivot into its final position. *)
-    val () = ptr_set<a> (pf_end | p_end, pivot)
-    prval () = view@ arr := array_v_extend (pf_arr1, pf_end)
-    val () = array_interchange<a> (arr, i_pivot_final, pred n)
   in
-    i_pivot_final
+    outer_loop (arr, i2sz 0, pred n, i_pivot_initial)
   end
 
 fn {a : vt@ype}
@@ -378,12 +345,9 @@ array_unstable_sort
       loop {p_stk    : addr}
            {depth    : nat}
            {size_sum : nat}
-           {p_pivot_temp  : addr}
            .<size_sum>.
-           (pf_pivot_temp : !(a? @ p_pivot_temp) >> _ |
-            p_pivot_temp  : ptr p_pivot_temp,
-            stk           : &stk_vt (p_stk, depth, size_sum)
-                            >> stk_vt (p_stk, 0, 0))
+           (stk : &stk_vt (p_stk, depth, size_sum)
+                  >> stk_vt (p_stk, 0, 0))
           :<!wrt> void =
         if (stk.depth) = 0 then
           $effmask_exn assertloc (stk.size_sum = i2sz 0)
@@ -400,12 +364,11 @@ array_unstable_sort
                   array_insertion_sort<a> (pf_arr1 | p_arr1, n1)
                 prval () = fpf_arr1 pf_arr1
               in
-                loop (pf_pivot_temp | p_pivot_temp, stk)
+                loop stk
               end
             else
               let
-                val [n1_le : int] n1_le =
-                  partition<a> (!p_arr1, n1, !p_pivot_temp)
+                val [n1_le : int] n1_le = partition<a> (!p_arr1, n1)
 
                 val p_le = p_arr1
                 and p_ge = ptr_add<a> (p_arr1, succ n1_le)
@@ -424,7 +387,7 @@ array_unstable_sort
                     val () = $effmask_exn
                       assertloc ((stk.depth) <= STK_MAX - 1)
                     val () = stk_vt_push<a> (pf_ge | p_ge, n1_ge, stk)
-                    val () = loop (pf_pivot_temp | p_pivot_temp, stk)
+                    val () = loop stk
                     prval () = pf_arr1 :=
                       array_v_extend (pf_le, pf_pivot)
                     prval () = pf_arr1 :=
@@ -438,7 +401,7 @@ array_unstable_sort
                       assertloc ((stk.depth) <= STK_MAX - 2)
                     val () = stk_vt_push<a> (pf_ge | p_ge, n1_ge, stk)
                     val () = stk_vt_push<a> (pf_le | p_le, n1_le, stk)
-                    val () = loop (pf_pivot_temp | p_pivot_temp, stk)
+                    val () = loop stk
                     prval () = pf_arr1 :=
                       array_v_extend (pf_le, pf_pivot)
                     prval () = pf_arr1 :=
@@ -451,7 +414,7 @@ array_unstable_sort
                     val () = $effmask_exn
                       assertloc ((stk.depth) <= STK_MAX - 1)
                     val () = stk_vt_push<a> (pf_le | p_le, n1_le, stk)
-                    val () = loop (pf_pivot_temp | p_pivot_temp, stk)
+                    val () = loop stk
                     prval () = pf_arr1 :=
                       array_v_extend (pf_le, pf_pivot)
                     prval () = pf_arr1 :=
@@ -465,7 +428,7 @@ array_unstable_sort
                       assertloc ((stk.depth) <= STK_MAX - 2)
                     val () = stk_vt_push<a> (pf_le | p_le, n1_le, stk)
                     val () = stk_vt_push<a> (pf_ge | p_ge, n1_ge, stk)
-                    val () = loop (pf_pivot_temp | p_pivot_temp, stk)
+                    val () = loop stk
                     prval () = pf_arr1 :=
                       array_v_extend (pf_le, pf_pivot)
                     prval () = pf_arr1 :=
@@ -482,12 +445,8 @@ array_unstable_sort
         @[stk_entry_vt][STK_MAX] (@(the_null_ptr, i2sz 0))
       var stk = stk_vt_make (view@ stk_storage | addr@ stk_storage)
 
-      (* Put the pivot physically near the stack. Maybe that will make
-         a difference. *)
-      var pivot_temp : a?
-
       val () = stk_vt_push<a> (view@ arr | addr@ arr, n, stk)
-      val () = loop (view@ pivot_temp | addr@ pivot_temp, stk)
+      val () = loop stk
       prval () = view@ stk_storage := stk.pf
     in
     end

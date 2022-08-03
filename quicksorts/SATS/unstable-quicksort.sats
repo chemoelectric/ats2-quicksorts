@@ -49,11 +49,9 @@ fn {a : vt@ype}
 array_unstable_quicksort$small :
   () -<> [n : pos] size_t n
 
-(* For an unstable quicksort, the pivot selection is allowed to
-   rearrange elements. Thus the !wrt effect is allowed. *)
 typedef array_unstable_quicksort_pivot_index_t (a : vt@ype) =
   {n : pos}
-  (&array (a, n), size_t n) -< !wrt >
+  (&array (a, n), size_t n) -<>
     [i : int | 0 <= i; i < n]
     size_t i
 fn {a : vt@ype}
