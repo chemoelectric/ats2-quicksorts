@@ -239,8 +239,7 @@ array_insertion_sort
     end
 
 fn {a : vt@ype}
-hoare_partitioning
-          {n     : pos}
+partition {n     : pos}
           (arr   : &array (a, n),
            n     : size_t n,
            pivot : &a?)
@@ -406,7 +405,7 @@ array_unstable_sort
             else
               let
                 val [n1_le : int] n1_le =
-                  hoare_partitioning<a> (!p_arr1, n1, !p_pivot_temp)
+                  partition<a> (!p_arr1, n1, !p_pivot_temp)
 
                 val p_le = p_arr1
                 and p_ge = ptr_add<a> (p_arr1, succ n1_le)
