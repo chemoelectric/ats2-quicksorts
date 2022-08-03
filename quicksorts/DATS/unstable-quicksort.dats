@@ -75,7 +75,7 @@ array_unstable_quicksort$pivot_index {n} (arr, n) =
 implement {a}
 array_unstable_quicksort_pivot_index_default {n} (arr, n) =
   (* FIXME: DECIDE WHICH STRATEGY SHOULD BE THE DEFAULT *)
-  array_unstable_quicksort_pivot_index_median_of_three<a> {n} (arr, n)
+  array_unstable_quicksort_pivot_index_random<a> {n} (arr, n)
 
 implement {a}
 array_unstable_quicksort_pivot_index_random {n} (arr, n) =
@@ -254,77 +254,99 @@ partition {n     : pos}
                                    i_pivot_original)
 
     fun
-    outer_loop {i_pivot : int | 0 <= i_pivot; i_pivot <= n - 1}
-               {i, j    : int | 0 <= i; i <= i_pivot;
-                                i_pivot <= j; j <= n - 1}
+    outer_loop {i, j    : int | 0 <= i; i <= j; j <= n - 1}
+               {i_pivot : int | 0 <= i_pivot; i_pivot <= n - 1}
                .<j - i>.
                (arr     : &array (a, n),
                 i       : size_t i,
                 j       : size_t j,
                 i_pivot : size_t i_pivot)
-        :<!wrt> [i_pivot_final : nat | i_pivot_final <= n - 1]
-                size_t i_pivot_final =
+        :<!wrt> [i_final : nat | i_final <= n - 1]
+                size_t i_final =
       let
         fun
         move_i_rightwards
-                  {i : int | 0 <= i; i <= i_pivot}
-                  .<i_pivot - i>.
+                  {i, j : nat | i <= j; j <= n - 1}
+                  .<n - i>.
                   (arr : &array (a, n),
-                   i   : size_t i)
-            :<> [i1 : int | i <= i1; i1 <= i_pivot]
+                   i   : size_t i,
+                   j   : size_t j)
+            :<> [i1 : int | i <= i1; i1 <= j]
                 size_t i1 =
           if i = i_pivot then
             i
           else if array_element_lt<a> (arr, i_pivot, i) then
             i
           else
-            move_i_rightwards (arr, succ i)
+            let
+              val () = $effmask_all assertloc (i < j)
+            in
+              move_i_rightwards (arr, succ i, j)
+            end
 
-        fun
+        fn
         move_j_leftwards
-                  {j : int | i_pivot <= j; j <= n - 1}
-                  .<j - i_pivot>.
+                  {i1, j : nat | i1 <= j; j <= n - 1}
                   (arr : &array (a, n),
+                   i1  : size_t i1,
                    j   : size_t j)
-            :<> [j1 : int | i_pivot <= j1; j1 <= j]
+            :<> [j1 : nat | i1 <= j1; j1 <= j]
                 size_t j1 =
-          if j = i_pivot then
-            j
-          else if array_element_lt<a> (arr, j, i_pivot) then
-            j
-          else
-            move_j_leftwards (arr, pred j)
+          let
+            fun
+            loop {i1, j : nat | i1 <= j; j <= n - 1}
+                 .<j>.
+                 (arr : &array (a, n),
+                  i1  : size_t i1,
+                  j   : size_t j)
+                :<> [j1 : nat | i1 <= j1; j1 <= j]
+                    size_t j1 =
+              if j = i_pivot then
+                j
+              else if array_element_lt<a> (arr, j, i_pivot) then
+                j
+              else
+                let
+                  val () = $effmask_all assertloc (i1 < j)
+                in
+                  loop (arr, i1, pred j)
+                end
+          in
+            if i1 = j then
+              j
+            else
+              loop (arr, i1, j)
+          end
 
-        val [i1 : int] i1 = move_i_rightwards (arr, i)
-        val [j1 : int] j1 = move_j_leftwards (arr, j)
+        val [i1 : int] i1 = move_i_rightwards (arr, i, j)
+        val [j1 : int] j1 = move_j_leftwards (arr, i1, j)
+        prval () = prop_verify {i1 <= j1} ()
         val diff = j1 - i1
       in
         if diff = i2sz 0 then
-          let                   (* i and j have met at the pivot. *)
-            prval () = prop_verify {i1 == i_pivot} ()
-            prval () = prop_verify {j1 == i_pivot} ()
-          in
-            i1
-          end
-        else if diff = i2sz 1 then
-          let               (* Either i or j has reached the pivot. *)
-            prval () = prop_verify {i1 == i_pivot || j1 == i_pivot} ()
-          in
-            array_interchange<a> (arr, i1, j1);
-            if i1 = i_pivot then j1 else i1
-          end
+          i_pivot
         else
           let
-            prval () = prop_verify {i1 <= i_pivot} ()
-            prval () = prop_verify {i_pivot <= j1} ()
+            prval () = prop_verify {i1 < j1} ()
           in
             array_interchange<a> (arr, i1, j1);
             if i1 = i_pivot then
-              outer_loop (arr, succ i1, j1, j1)
+              let               (* Keep the pivot between i and j. *)
+                val i_pivot1 = j1 - half diff
+              in
+                array_interchange<a> (arr, i_pivot1, j1);
+                outer_loop (arr, succ i1, j1, i_pivot1)
+              end
             else if j1 = i_pivot then
-              outer_loop (arr, i1, pred j1, i1)
+              let               (* Keep the pivot between i and j. *)
+                val i_pivot1 = i1 + half diff
+              in
+                array_interchange<a> (arr, i_pivot1, i1);
+                outer_loop (arr, i1, pred j1, i_pivot1)
+              end
             else
-              outer_loop (arr, succ i1, pred j1, i_pivot)
+              outer_loop (arr, succ i1, max (succ i1, pred j1), (* FIXME: THIS MAX SHOULD NOT BE NECESSARY *)
+                          i_pivot)
           end
       end
   in
