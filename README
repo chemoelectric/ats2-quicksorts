@@ -31,7 +31,7 @@ for an already-ordered prefix.
 
 This is an array quicksort of the move usual, unstable kind. It uses
 O(1) workspace and seems to perform well, even on large arrays. It can
-easily beat my system qsort (GNU) in sorting various contrived arrays
+easily beat my system qsort (GNU) at sorting various contrived arrays
 of integers.
 
 The current default is to use a random pivot, via a built-in linear
