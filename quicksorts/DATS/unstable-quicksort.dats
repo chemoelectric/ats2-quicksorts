@@ -239,6 +239,60 @@ array_insertion_sort
     end
 
 fn {a : vt@ype}
+move_i_rightwards
+          {n          : int}
+          {i, i_pivot : nat | i <= i_pivot; i_pivot <= n - 1}
+          (arr        : &array (a, n),
+           i          : size_t i,
+           i_pivot    : size_t i_pivot)
+    :<> [i1 : int | i <= i1; i1 <= i_pivot]
+        size_t i1 =
+  let
+    fun
+    loop {i : nat | i <= i_pivot; i_pivot <= n - 1}
+         .<i_pivot - i>.
+         (arr     : &array (a, n),
+          i       : size_t i)
+        :<> [i1 : int | i <= i1; i1 <= i_pivot]
+            size_t i1 =
+      if i = i_pivot then
+        i
+      else if array_element_lt<a> (arr, i_pivot, i) then
+        i
+      else
+        loop (arr, succ i)
+  in
+    loop (arr, i)
+  end
+
+fn {a : vt@ype}
+move_j_leftwards
+          {n          : int}
+          {i_pivot, j : nat | i_pivot <= j; j <= n - 1}
+          (arr        : &array (a, n),
+           j          : size_t j,
+           i_pivot    : size_t i_pivot)
+    :<> [j1 : nat | i_pivot <= j1; j1 <= j]
+        size_t j1 =
+  let
+    fun
+    loop {j : nat | i_pivot <= j; j <= n - 1}
+         .<j>.
+         (arr : &array (a, n),
+          j   : size_t j)
+        :<> [j1 : nat | i_pivot <= j1; j1 <= j]
+            size_t j1 =
+      if j = i_pivot then
+        j
+      else if array_element_lt<a> (arr, j, i_pivot) then
+        j
+      else
+        loop (arr, pred j)
+  in
+    loop (arr, j)
+  end
+
+fn {a : vt@ype}
 partition {n     : pos}
           (arr   : &array (a, n),
            n     : size_t n)
@@ -264,38 +318,8 @@ partition {n     : pos}
         :<!wrt> [i_final : nat | i_final <= n - 1]
                 size_t i_final =
       let
-        fun
-        move_i_rightwards
-                  {i : nat | i <= i_pivot}
-                  .<n - i>.
-                  (arr : &array (a, n),
-                   i   : size_t i)
-            :<> [i1 : int | i <= i1; i1 <= i_pivot]
-                size_t i1 =
-          if i = i_pivot then
-            i
-          else if array_element_lt<a> (arr, i_pivot, i) then
-            i
-          else
-            move_i_rightwards (arr, succ i)
-
-        fun
-        move_j_leftwards
-                  {j : nat | i_pivot <= j; j <= n - 1}
-                  .<j>.
-                  (arr : &array (a, n),
-                   j   : size_t j)
-            :<> [j1 : nat | i_pivot <= j1; j1 <= j]
-                size_t j1 =
-          if j = i_pivot then
-            j
-          else if array_element_lt<a> (arr, j, i_pivot) then
-            j
-          else
-            move_j_leftwards (arr, pred j)
-
-        val [i1 : int] i1 = move_i_rightwards (arr, i)
-        and [j1 : int] j1 = move_j_leftwards (arr, j)
+        val [i1 : int] i1 = move_i_rightwards<a> (arr, i, i_pivot)
+        and [j1 : int] j1 = move_j_leftwards<a> (arr, j, i_pivot)
 
         prval () = prop_verify {i1 <= j1} ()
 
