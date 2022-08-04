@@ -30,7 +30,9 @@ for an already-ordered prefix.
 #include "quicksorts/HATS/unstable-quicksort.hats"
 
 This is an array quicksort of the move usual, unstable kind. It uses
-O(1) workspace and seems to perform well, even on large arrays.
+O(1) workspace and seems to perform well, even on large arrays. It can
+easily beat my system qsort (GNU) in sorting certain arrays of
+integers.
 
 The current default is to use a random pivot, via a built-in linear
 congruential generator. I have implemented other choices of pivot,
