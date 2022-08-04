@@ -299,14 +299,6 @@ partition {n     : pos}
     :<!wrt> [i_pivot_final : nat | i_pivot_final < n]
             size_t i_pivot_final =
   let
-    val [i_pivot_original : int] i_pivot_original =
-      array_unstable_quicksort$pivot_index<a> (arr, n)
-
-    (* Move the pivot to the middle. *)
-    val i_pivot_initial = half n
-    val () = array_interchange<a> (arr, i_pivot_initial,
-                                   i_pivot_original)
-
     fun
     outer_loop {i, j    : int | 0 <= i; i <= j; j <= n - 1}
                {i_pivot : int | i <= i_pivot; i_pivot <= j}
@@ -350,6 +342,9 @@ partition {n     : pos}
               outer_loop (arr, succ i1, pred j1, i_pivot)
           end
       end
+
+    val i_pivot_initial =
+      array_unstable_quicksort$pivot_index<a> (arr, n)
   in
     outer_loop (arr, i2sz 0, pred n, i_pivot_initial)
   end
