@@ -276,7 +276,7 @@ move_j_leftwards
   let
     fun
     loop {j : nat | i_pivot <= j; j <= n - 1}
-         .<j>.
+         .<j - i_pivot>.
          (arr : &array (a, n),
           j   : size_t j)
         :<> [j1 : nat | i_pivot <= j1; j1 <= j]
