@@ -19,10 +19,8 @@ predicate inlined, the sort seems to compete favorably against my
 system qsort (GNU).
 
 I have also implemented other pivot choices, but these currently do
-not work well at all with large arrays. I do not know why. There seems
-to be similar degradation with array size in the prelude’s quicksort,
-which uses median-of-three for the pivot. My processor type is AMD
-Opteron 6344.
+not work well at all with large arrays. I do not know why. My
+processor type is AMD Opteron 6344.
 
 The current ‘small’ sort is a binary insertion sort that first checks
 for an already-ordered prefix.
