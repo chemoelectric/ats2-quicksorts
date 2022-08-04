@@ -59,7 +59,7 @@ fn {a : vt@ype}
 array_stable_quicksort$cmp :
   (&a, &a) -<> int
 
-(* When should we switch over to insertion sort? *)
+(* When should we switch over to a ‘small’ sort? *)
 fn {a : vt@ype}
 array_stable_quicksort$small :
   () -<> [n : pos] size_t n
