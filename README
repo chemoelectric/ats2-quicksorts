@@ -1,18 +1,17 @@
 Quicksorts in ATS2/Postiats
 ---------------------------
 
-#include "quicksorts/HATS/unstable-quicksort.hats"
-
-A unstable quicksort.
-
-THIS IS A WORK IN PROGRESS.
+Quicksorts as ATS2 templates, configurable by the template
+mechanism. You can use either a strcmp-style function or a ‘less than’
+predicate. You can change the pivot selection method. You can
+configure when to switch over to the ‘small’ sort.
 
 ----
 
 #include "quicksorts/HATS/stable-quicksort.hats"
 
-This is a *stable* quicksort, and so (unlike most quicksorts) uses
-O(n) workspace (in addition to the usual space for a stack or queue).
+This is a *stable* array quicksort, and so (unlike most quicksorts)
+uses O(n) workspace. It is possible to provide your own workspace.
 
 The current default is to use a random pivot, via a built-in linear
 congruential generator. With this pivot choice, and with the order
@@ -25,4 +24,19 @@ to be similar degradation with array size in the prelude’s quicksort,
 which uses median-of-three for the pivot. My processor type is AMD
 Opteron 6344.
 
+The current ‘small’ sort is a binary insertion sort that first checks
+for an already-ordered prefix.
+
 ----
+
+#include "quicksorts/HATS/unstable-quicksort.hats"
+
+This is an array quicksort of the move usual, unstable kind. It uses
+O(1) workspace and seems to perform well, even on large arrays.
+
+The current default is to use a random pivot, via a built-in linear
+congruential generator. I have implemented other choices of pivot,
+should you prefer one of them: median-of-three, and middle-element.
+
+The current ‘small’ sort is a binary insertion sort that first checks
+for an already-ordered prefix.

@@ -74,7 +74,6 @@ array_unstable_quicksort$pivot_index {n} (arr, n) =
 
 implement {a}
 array_unstable_quicksort_pivot_index_default {n} (arr, n) =
-  (* FIXME: DECIDE WHICH STRATEGY SHOULD BE THE DEFAULT *)
   array_unstable_quicksort_pivot_index_random<a> {n} (arr, n)
 
 implement {a}
