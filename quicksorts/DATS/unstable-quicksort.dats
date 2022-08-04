@@ -257,7 +257,7 @@ move_i_rightwards
             size_t i1 =
       if i = i_pivot then
         i
-      else if array_element_lt<a> (arr, i_pivot, i) then
+      else if ~array_element_lt<a> (arr, i, i_pivot) then
         i
       else
         loop (arr, succ i)
@@ -284,7 +284,7 @@ move_j_leftwards
             size_t j1 =
       if j = i_pivot then
         j
-      else if array_element_lt<a> (arr, j, i_pivot) then
+      else if ~array_element_lt<a> (arr, i_pivot, j) then
         j
       else
         loop (arr, pred j)

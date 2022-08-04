@@ -121,6 +121,7 @@ array_subcirculate_right
       $UN.ptr0_set<a> (pi, tmp)
     end
 
+(*
 (*------------------------------------------------------------------*)
 (* Variant of ‘andalso’ and ‘orelse’ for dependent types.           *)
 
@@ -148,12 +149,29 @@ infixl ( && ) &&&
 infixl ( || ) |||
 macdef &&& = andalso1
 macdef ||| = orelse1
+*)
 
 (*------------------------------------------------------------------*)
-(* A simple linear congruential generator, for pivot selection.     *)
+(* A simple linear congruential generator.                          *)
 
 extern fn
 random_uint64 () :<!wrt> uint64 = "mac#%"
+
+fn {tk : tkind}
+g1uint_randint
+          {n : pos}
+          (n : g1uint (tk, n))
+    :<> [i : nat | i <= n - 1] g1uint (tk, i) =
+  let
+    val u64_n = $UN.cast{uint64 n} n
+    val u64_rand : [i : nat] uint64 i =
+      g1ofg0 ($effmask_wrt random_uint64 ())
+    val u64_result = g1uint_mod (u64_rand, u64_n)
+  in
+    $UN.cast u64_result
+  end
+
+overload randint with g1uint_randint
 
 (*------------------------------------------------------------------*)
 (* A stack for non-recursive implementation of quicksort.           *)
@@ -267,15 +285,7 @@ quicksorts_pivot_index_median_of_three :
 
 implement {a}
 quicksorts_pivot_index_random {n} (arr, n) =
-  let
-    val u64_n = $UN.cast{uint64 n} n
-    val u64_rand : [i : nat] uint64 i =
-      g1ofg0 ($effmask_wrt random_uint64 ())
-    val u64_pivot = g1uint_mod (u64_rand, u64_n)
-    val i_pivot = $UN.cast{[i : nat | i < n] size_t i} u64_pivot
-  in
-    i_pivot
-  end
+  randint n
 
 implement {a}
 quicksorts_pivot_index_middle (arr, n) =
