@@ -27,10 +27,16 @@ staload UN = "prelude/SATS/unsafe.sats"
 
 #define DEFAULT_ARRAY_INSERTION_SORT_THRESHOLD 80
 
-#ifdef UNSTABLE_QUICKSORT_STK_MAX #then
-  #define STK_MAX UNSTABLE_QUICKSORT_STK_MAX
+#ifdef ATS2_QUICKSORTS_CHAR_BIT #then
+  #define CHAR_BIT ATS2_QUICKSORTS_CHAR_BIT
 #else
-  #define STK_MAX 64   (* Enough for arrays of up to 2**64 entries. *)
+  #define CHAR_BIT 8
+#endif
+
+#ifdef ATS2_QUICKSORTS_STK_MAX #then
+  #define STK_MAX ATS2_QUICKSORTS_STK_MAX
+#else
+  #define STK_MAX 64         (* Enough for size_t of up to 64 bits. *)
 #endif
 
 #include "quicksorts/DATS/SHARE/quicksorts.share.dats"
@@ -476,6 +482,9 @@ array_unstable_quicksort {n} {m1} (arr, n) =
     let
       prval () = lemma_array_param arr
       prval () = lemma_g1uint_param n
+
+      val () = $effmask_exn
+        assertloc (CHAR_BIT * sizeof<size_t> <= i2sz STK_MAX)
 
       prval @(pf_arr1, pf_arr2) =
         array_v_split {a} {..} {m1} {n} (view@ arr)

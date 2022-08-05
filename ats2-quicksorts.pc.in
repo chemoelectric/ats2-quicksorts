@@ -6,6 +6,8 @@ host=@host@
 package=@PACKAGE@
 version=@VERSION@
 pkgincludedir="${includedir}/${package}"
+char_bit=@CHAR_BIT@
+bitsizeof_size_t=@BITSIZEOF_SIZE_T@
 
 # It is recommended you override this with
 # --define-variable=PATSHOME="${PATSHOME}"
@@ -14,10 +16,10 @@ PATSHOME="@PKGCONFIG_PATSHOME@"
 CPPFLAGS="-I${pkgincludedir} -I${PATSHOME} -I${PATSHOME}/ccomp/runtime"
 
 # Options for patsopt.
-PATSOPTFLAGS="-IATS ${pkgincludedir}"
+PATSOPTFLAGS="-IATS ${pkgincludedir} -IATS ATS2_QUICKSORTS_CHAR_BIT=${char_bit} -IATS ATS2_QUICKSORTS_STK_MAX=${bitsizeof_size_t}"
 
 # Options for patscc.
-PATSCCFLAGS="-IIATS ${pkgincludedir}"
+PATSCCFLAGS="-IIATS ${pkgincludedir} -IATS ATS2_QUICKSORTS_CHAR_BIT=${char_bit} -IATS ATS2_QUICKSORTS_STK_MAX=${bitsizeof_size_t}"
 
 Name: ${package}
 Description: Quicksorts for ATS2

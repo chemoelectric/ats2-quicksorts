@@ -33,7 +33,7 @@
 #
 
 # aminclude_static.am generated automatically by Autoconf
-# from AX_AM_MACROS_STATIC on Mon Aug  1 13:01:19 CDT 2022
+# from AX_AM_MACROS_STATIC on Fri Aug  5 15:06:38 CDT 2022
 
 
 
@@ -501,9 +501,11 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BITSIZEOF_SIZE_T = @BITSIZEOF_SIZE_T@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHAR_BIT = @CHAR_BIT@
 CODE_COVERAGE_CFLAGS = @CODE_COVERAGE_CFLAGS@
 CODE_COVERAGE_CPPFLAGS = @CODE_COVERAGE_CPPFLAGS@
 CODE_COVERAGE_CXXFLAGS = @CODE_COVERAGE_CXXFLAGS@
@@ -578,6 +580,7 @@ RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SIZEOF_SIZE_T = @SIZEOF_SIZE_T@
 STRIP = @STRIP@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
@@ -706,7 +709,9 @@ escape = $(subst $$,\$$,$(subst ^,\^,$(subst ],\],$(subst [,\[,$(subst .,\.,$(su
 
 #--------------------------------------------------------------------------
 PATSOPT_DEPS = 
-AM_PATSOPTFLAGS = -IATS $(builddir) -IATS $(srcdir)
+AM_PATSOPTFLAGS = -IATS $(builddir) -IATS $(srcdir) -IATS \
+	ATS2_QUICKSORTS_CHAR_BIT=$(CHAR_BIT) -IATS \
+	ATS2_QUICKSORTS_STK_MAX=$(BITSIZEOF_SIZE_T)
 TOTAL_PATSOPTFLAGS = $(AM_PATSOPTFLAGS) $(PATSOPTFLAGS) \
 	$(XPATSOPTFLAGS)
 TESTS_PATSOPTFLAGS = -IATS $(builddir)/tests -IATS $(srcdir)/tests
