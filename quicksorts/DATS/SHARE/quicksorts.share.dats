@@ -121,35 +121,6 @@ array_subcirculate_right
       $UN.ptr0_set<a> (pi, tmp)
     end
 
-fn {tk : tkind}
-g1uint_two_raised
-          {n : int}
-          (n : g1uint (tk, n))
-    :<> [p : int]
-        @(EXP2 (n, p) | g1uint (tk, p)) =
-  let
-    (* Nothing fancy. No ‘exponentiation by squaring’. Just repeated
-       doubling. Doubling is fast, and so I expect this implementation
-       to be pretty fast. *)
-    fun
-    loop {i : nat | i <= n}
-         {q : nat}
-         .<n - i>.
-         (pf : EXP2 (i, q) |
-          i  : g1uint (tk, i),
-          q  : g1uint (tk, q))
-        :<> [p : int]
-            @(EXP2 (n, p) | g1uint (tk, p)) =
-      if i = n then
-        @(pf | q)
-      else
-        loop (EXP2ind pf | succ i, q + q)
-
-    prval () = lemma_g1uint_param n
-  in
-    loop (EXP2bas () | g1u2u 0U, g1u2u 1U)
-  end
-
 (*------------------------------------------------------------------*)
 (* A simple linear congruential generator.                          *)
 
