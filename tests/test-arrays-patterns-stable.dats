@@ -192,7 +192,7 @@ test_reverse_presorted_arrays_with_int_keys () : void =
   end
 
 fn
-test_random_sign_reversal_arrays_with_int_keys () : void =
+test_sign_reversal_random_arrays_with_int_keys () : void =
   let
     implement
     array_initize$init<int> (i, x) =
@@ -201,7 +201,7 @@ test_random_sign_reversal_arrays_with_int_keys () : void =
       else
         x := random_int (~1000, ~1)
   in
-    println! "Random sign-reversal arrays:";
+    println! "Sign-reversal random arrays:";
     test_arrays_with_int_keys<> ()
   end
 
@@ -238,7 +238,7 @@ main0 () =
     test_random_arrays_with_int_keys ();
     test_presorted_arrays_with_int_keys ();
     test_reverse_presorted_arrays_with_int_keys ();
-    test_random_sign_reversal_arrays_with_int_keys ();
+    test_sign_reversal_random_arrays_with_int_keys ();
     test_constant_arrays_with_int_keys ();
     test_sign_reversal_constant_arrays_with_int_keys ()
   end
