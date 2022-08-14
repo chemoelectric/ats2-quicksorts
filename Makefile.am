@@ -68,18 +68,6 @@ CODE_COVERAGE_IGNORE_PATTERN += $(PATSHOME)/prelude/CATS/*
 clean-local: code-coverage-clean tests-clean
 distclean-local: code-coverage-dist-clean ats-includes-distclean
 
-#---------------------------------------------------------------------
-#
-# Some GNU Make aids you might want to use.
-#
-
-comma := ,
-empty :=
-space := $(empty) $(empty)
-
-# Escape things for sed expressions, etc.
-escape = $(subst $$,\$$,$(subst ^,\^,$(subst ],\],$(subst [,\[,$(subst .,\.,$(subst \,\\,$(1)))))))
-
 #--------------------------------------------------------------------------
 
 PATSOPT_DEPS =
