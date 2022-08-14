@@ -245,22 +245,26 @@ array_insertion_sort
 
 fn {a : vt@ype}
 move_i_rightwards
-          {n          : int}
-          {i, i_pivot : nat | i <= i_pivot; i_pivot <= n - 1}
-          (arr        : &array (a, n),
-           i          : size_t i,
-           i_pivot    : size_t i_pivot)
-    :<> [i1 : int | i <= i1; i1 <= i_pivot]
+          {n       : int}
+          {i, j    : nat | i <= j; j <= n - 1}
+          {i_pivot : nat | i_pivot <= n - 1}
+          (arr     : &array (a, n),
+           i       : size_t i,
+           j       : size_t j,
+           i_pivot : size_t i_pivot)
+    :<> [i1 : int | i <= i1; i1 <= j]
         size_t i1 =
   let
     fun
-    loop {i : nat | i <= i_pivot; i_pivot <= n - 1}
-         .<i_pivot - i>.
-         (arr     : &array (a, n),
-          i       : size_t i)
-        :<> [i1 : int | i <= i1; i1 <= i_pivot]
+    loop {i : nat | i <= j}
+         .<j - i>.
+         (arr : &array (a, n),
+          i   : size_t i)
+        :<> [i1 : int | i <= i1; i1 <= j]
             size_t i1 =
-      if i = i_pivot then
+      if i = j then
+        i
+      else if i = i_pivot then
         i
       else if ~array_element_lt<a> (arr, i, i_pivot) then
         i
@@ -272,22 +276,26 @@ move_i_rightwards
 
 fn {a : vt@ype}
 move_j_leftwards
-          {n          : int}
-          {i_pivot, j : nat | i_pivot <= j; j <= n - 1}
-          (arr        : &array (a, n),
-           j          : size_t j,
-           i_pivot    : size_t i_pivot)
-    :<> [j1 : nat | i_pivot <= j1; j1 <= j]
+          {n       : int}
+          {i, j    : nat | i <= j; j <= n - 1}
+          {i_pivot : nat | i_pivot <= n - 1}
+          (arr     : &array (a, n),
+           i       : size_t i,
+           j       : size_t j,
+           i_pivot : size_t i_pivot)
+    :<> [j1 : nat | i <= j1; j1 <= j]
         size_t j1 =
   let
     fun
-    loop {j : nat | i_pivot <= j; j <= n - 1}
-         .<j - i_pivot>.
+    loop {j : nat | i <= j; j <= n - 1}
+         .<j - i>.
          (arr : &array (a, n),
           j   : size_t j)
-        :<> [j1 : nat | i_pivot <= j1; j1 <= j]
+        :<> [j1 : nat | i <= j1; j1 <= j]
             size_t j1 =
-      if j = i_pivot then
+      if i = j then
+        j
+      else if j = i_pivot then
         j
       else if ~array_element_lt<a> (arr, i_pivot, j) then
         j
@@ -304,54 +312,98 @@ partition {n     : pos}
     :<!wrt> [i_pivot_final : nat | i_pivot_final < n]
             size_t i_pivot_final =
   let
+    macdef lt (arr, p, q) =
+      if ,(p) = ,(q) then
+        false
+      else
+        array_element_lt<a> (,(arr), ,(p), ,(q))
+
     fun
-    outer_loop {i, j    : int | 0 <= i; i <= j; j <= n - 1}
-               {i_pivot : int | i <= i_pivot; i_pivot <= j}
-               .<j - i>.
-               (arr     : &array (a, n),
-                i       : size_t i,
-                j       : size_t j,
-                i_pivot : size_t i_pivot)
-        :<!wrt> [i_final : nat | i_final <= n - 1]
-                size_t i_final =
-      let
-        val [i1 : int] i1 = move_i_rightwards<a> (arr, i, i_pivot)
-        and [j1 : int] j1 = move_j_leftwards<a> (arr, j, i_pivot)
+    loop {i, j    : nat | i <= j; j <= n - 1}
+         {i_pivot : nat | i_pivot <= n - 1}
+         .<j - i>.
+         (arr     : &array (a, n),
+          i       : size_t i,
+          j       : size_t j,
+          i_pivot : size_t i_pivot)
+        :<!wrt> [i_pivot_final : nat | i_pivot_final <= n - 1]
+                size_t i_pivot_final =
+      if i <> j then
+        let
+          val () = array_interchange<a> (arr, i, j)
 
-        prval () = prop_verify {i1 <= j1} ()
-
-        val diff = j1 - i1
-      in
-        if diff = i2sz 0 then
-          i_pivot
-        else
-          let
-            prval () = prop_verify {i1 < j1} ()
-          in
-            array_interchange<a> (arr, i1, j1);
-            if i1 = i_pivot then
-              let               (* Keep the pivot between i and j. *)
-                val i_pivot1 = j1 - half diff
-              in
-                array_interchange<a> (arr, i_pivot1, j1);
-                outer_loop (arr, succ i1, j1, i_pivot1)
-              end
-            else if j1 = i_pivot then
-              let               (* Keep the pivot between i and j. *)
-                val i_pivot1 = i1 + half diff
-              in
-                array_interchange<a> (arr, i_pivot1, i1);
-                outer_loop (arr, i1, pred j1, i_pivot1)
-              end
-            else
-              outer_loop (arr, succ i1, pred j1, i_pivot)
-          end
-      end
+          (* array_interchange may have just moved the pivot. *)
+          val i_pivot =
+            (if i_pivot = i then
+               j
+             else if i_pivot = j then
+               i
+             else
+               i_pivot) : [k : nat | k <= n - 1] size_t k
+        in
+          if succ i <> j then
+            let
+              val i = move_i_rightwards<a> (arr, succ i, j, i_pivot)
+            in
+              if i <> j then
+                let
+                  val j = move_j_leftwards<a> (arr, i, pred j,
+                                               i_pivot)
+                in
+                  loop (arr, i, j, i_pivot)
+                end
+              else
+                (* The following will be the last call to the top of
+                   the loop. *)
+                loop (arr, i, j, i_pivot)
+            end
+          else
+            (* The following will be the last call to the top of the
+               loop. *)
+            loop (arr, succ i, j, i_pivot)
+        end
+      else if lt (arr, i_pivot, j) then
+        begin
+          (* Put the pivot between the two parts of the partition. *)
+          if (i_pivot < j) then
+            begin
+              array_interchange<a> (arr, i_pivot, pred j);
+              pred j
+            end
+          else
+            begin
+              array_interchange<a> (arr, i_pivot, j);
+              j
+            end
+        end
+      else
+        begin
+          (* Put the pivot between the two parts of the partition. *)
+          if (j < i_pivot) then
+            begin
+              array_interchange<a> (arr, i_pivot, succ j);
+              succ j
+            end
+          else
+            begin
+              array_interchange<a> (arr, i_pivot, j);
+              j
+            end
+        end
 
     val i_pivot_initial =
       array_unstable_quicksort$pivot_index<a> (arr, n)
+
+    (* Put the pivot in the middle, so it will be as near to other
+       elements as possible. *)
+    val i_pivot_middle = half n
+    val () = array_interchange<a> (arr, i_pivot_initial,
+                                   i_pivot_middle)
+
+    val i = move_i_rightwards<a> (arr, i2sz 0, pred n, i_pivot_middle)
+    val j = move_j_leftwards<a> (arr, i, pred n, i_pivot_middle)
   in
-    outer_loop (arr, i2sz 0, pred n, i_pivot_initial)
+    loop (arr, i, j, i_pivot_middle)
   end
 
 fn {a : vt@ype}
