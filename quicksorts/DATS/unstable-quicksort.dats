@@ -42,6 +42,15 @@ staload UN = "prelude/SATS/unsafe.sats"
 #include "quicksorts/DATS/SHARE/quicksorts.share.dats"
 
 fn {a : vt@ype}
+lt {p, q : addr}
+   (pf_p : !a @ p,
+    pf_q : !a @ q |
+    p    : ptr p,
+    q    : ptr q)
+    :<> bool =
+  array_unstable_quicksort$lt<a> (!p, !q)
+
+fn {a : vt@ype}
 array_element_lt
           {n    : int}
           {i, j : nat | i < n; j < n; i != j}
@@ -53,8 +62,8 @@ array_element_lt
     prval @(pf_i, pf_j, fpf) =
       array_v_takeout2 {a} {..} {n} {i, j} (view@ arr)
     val is_lt =
-      array_unstable_quicksort$lt<a> (!(ptr_add<a> (addr@ arr, i)),
-                                      !(ptr_add<a> (addr@ arr, j)))
+      lt<a> (pf_i, pf_j | ptr_add<a> (addr@ arr, i),
+                          ptr_add<a> (addr@ arr, j))
     prval () = view@ arr := fpf (pf_i, pf_j)
   in
     is_lt
@@ -111,54 +120,73 @@ make_an_ordered_prefix
                                    prefix_length <= n]
             size_t prefix_length =
   let
-    macdef arr = !p_arr
+    prval @(pf0, pf1, fpf) =
+      array_v_takeout2 {a} {p_arr} {n} {0, 1} pf_arr
+    val is_lt = lt<a> (pf1, pf0 | ptr1_succ<a> p_arr, p_arr)
+    prval () = pf_arr := fpf (pf0, pf1)
   in
-    if ~array_element_lt<a> (arr, i2sz 1, i2sz 0) then
+    if ~is_lt then
       let                       (* Non-decreasing order. *)
         fun
         loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
              .<n - pfx_len>.
-             (arr     : &array (a, n) >> _,
-              pfx_len : size_t pfx_len)
+             (pf_arr  : !array_v (a, p_arr, n) |
+              pfx_len : size_t pfx_len,
+              p       : ptr (p_arr + (pfx_len * sizeof a)))
             :<> [prefix_length : int | 2 <= prefix_length;
                                        prefix_length <= n]
                 size_t prefix_length =
           if pfx_len = n then
             pfx_len
-          else if array_element_lt<a>
-                    {n} {pfx_len, pfx_len - 1}
-                    (arr, pfx_len, pred pfx_len) then
-            pfx_len
           else
-            loop (arr, succ pfx_len)
+            let
+              prval @(pf0, pf1, fpf) =
+                array_v_takeout2
+                  {a} {p_arr} {n} {pfx_len - 1, pfx_len} pf_arr
+              val is_lt = lt<a> (pf1, pf0 | p, ptr1_pred<a> p)
+              prval () = pf_arr := fpf (pf0, pf1)
+            in
+              if is_lt then
+                pfx_len
+              else
+                loop (pf_arr | succ pfx_len, ptr1_succ<a> p)
+            end
 
-        val prefix_length = loop (arr, i2sz 2)
+        val pfx_len = loop (pf_arr | i2sz 2, ptr_add<a> (p_arr, 2))
       in
-        prefix_length
+        pfx_len
       end
     else
       let      (* Non-increasing order. This branch sorts unstably. *)
         fun
         loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
              .<n - pfx_len>.
-             (arr     : &array (a, n) >> _,
-              pfx_len : size_t pfx_len)
+             (pf_arr  : !array_v (a, p_arr, n) |
+              pfx_len : size_t pfx_len,
+              p       : ptr (p_arr + (pfx_len * sizeof a)))
             :<> [prefix_length : int | 2 <= prefix_length;
                                        prefix_length <= n]
                 size_t prefix_length =
           if pfx_len = n then
             pfx_len
-          else if array_element_lt<a>
-                     {n} {pfx_len - 1, pfx_len}
-                     (arr, pred pfx_len, pfx_len) then
-            pfx_len
           else
-            loop (arr, succ pfx_len)
+            let
+              prval @(pf0, pf1, fpf) =
+                array_v_takeout2
+                  {a} {p_arr} {n} {pfx_len - 1, pfx_len} pf_arr
+              val is_lt = lt<a> (pf0, pf1 | ptr1_pred<a> p, p)
+              prval () = pf_arr := fpf (pf0, pf1)
+            in
+              if is_lt then
+                pfx_len
+              else
+                loop (pf_arr | succ pfx_len, ptr1_succ<a> p)
+            end
 
-        val prefix_length = loop (arr, i2sz 2)
+        val pfx_len = loop (pf_arr | i2sz 2, ptr_add<a> (p_arr, 2))
       in
-        array_subreverse<a> (arr, i2sz 0, prefix_length);
-        prefix_length
+        array_subreverse<a> (!p_arr, i2sz 0, pfx_len);
+        pfx_len
       end
   end
 

@@ -696,17 +696,6 @@ nodist_pkgconfig_DATA = ats2-quicksorts.pc
 CODE_COVERAGE_IGNORE_PATTERN = /usr/include/* /usr/include/*/* \
 	$(PATSHOME)/ccomp/runtime/* $(PATSHOME)/prelude/CATS/*
 
-#---------------------------------------------------------------------
-#
-# Some GNU Make aids you might want to use.
-#
-comma := ,
-empty := 
-space := $(empty) $(empty)
-
-# Escape things for sed expressions, etc.
-escape = $(subst $$,\$$,$(subst ^,\^,$(subst ],\],$(subst [,\[,$(subst .,\.,$(subst \,\\,$(1)))))))
-
 #--------------------------------------------------------------------------
 PATSOPT_DEPS = 
 AM_PATSOPTFLAGS = -IATS $(builddir) -IATS $(srcdir) -IATS \
