@@ -14,9 +14,7 @@ This is a *stable* array quicksort, and so (unlike most quicksorts)
 uses O(n) workspace. It is possible to provide your own workspace.
 
 The current default is to use a random pivot, via a built-in linear
-congruential generator. With this pivot choice, and with the order
-predicate inlined, the sort seems to compete favorably against my
-system qsort (GNU).
+congruential generator.
 
 I have also implemented other pivot choices, but these currently do
 not work well at all with large arrays. I do not know why. My
@@ -30,9 +28,7 @@ for an already-ordered prefix.
 #include "quicksorts/HATS/unstable-quicksort.hats"
 
 This is an array quicksort of the move usual, unstable kind. It uses
-O(1) workspace and seems to perform well, even on large arrays. It can
-easily beat my system qsort (GNU) at sorting various contrived arrays
-of integers.
+O(1) workspace and seems to perform well, even on large arrays.
 
 The current default is to use a random pivot, via a built-in linear
 congruential generator. I have implemented other choices of pivot,
