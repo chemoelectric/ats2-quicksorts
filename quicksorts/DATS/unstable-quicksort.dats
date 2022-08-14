@@ -340,27 +340,19 @@ partition {n     : pos}
                i
              else
                i_pivot) : [k : nat | k <= n - 1] size_t k
+
+          val i = move_i_rightwards<a> (arr, succ i, j, i_pivot)
         in
-          if succ i <> j then
+          if i <> j then
             let
-              val i = move_i_rightwards<a> (arr, succ i, j, i_pivot)
+              val j = move_j_leftwards<a> (arr, i, pred j, i_pivot)
             in
-              if i <> j then
-                let
-                  val j = move_j_leftwards<a> (arr, i, pred j,
-                                               i_pivot)
-                in
-                  loop (arr, i, j, i_pivot)
-                end
-              else
-                (* The following will be the last call to the top of
-                   the loop. *)
-                loop (arr, i, j, i_pivot)
+              loop (arr, i, j, i_pivot)
             end
           else
             (* The following will be the last call to the top of the
                loop. *)
-            loop (arr, succ i, j, i_pivot)
+            loop (arr, i, j, i_pivot)
         end
       else if lt (arr, i_pivot, j) then
         begin
