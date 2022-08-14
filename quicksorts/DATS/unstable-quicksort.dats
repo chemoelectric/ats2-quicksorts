@@ -241,6 +241,97 @@ insertion_position
     loop (!p_arr, i2sz 0, pred i)
   end
 
+fn {a  : vt@ype}
+insertion_position__FIXME_______POINTER_VERSION_____________________________________________
+          {n      : int | 0 < sizeof a}
+          {i      : pos | i < n}
+          {p_arr  : addr}
+          (pf_arr : !array_v (a, p_arr, n) >> _ |
+           p_arr  : ptr p_arr,
+           pi     : ptr (p_arr + (i * sizeof a)))
+    :<> [p : addr | p_arr <= p; p <= p_arr + (i * sizeof a)]
+        ptr p =
+  (*
+    A binary search.
+
+    References:
+
+      * H. Bottenbruch, "Structure and use of ALGOL 60", Journal of
+        the ACM, Volume 9, Issue 2, April 1962, pp.161-221.
+        https://doi.org/10.1145/321119.321120
+
+        The general algorithm is described on pages 214 and 215.
+
+      * https://en.wikipedia.org/w/index.php?title=Binary_search_algorithm&oldid=1062988272#Alternative_procedure
+  *)
+  let
+    fun
+    loop {j, k : int | 0 <= j; j <= k; k < i}
+         .<k - j>.
+         (pf_arr : !array_v (a, p_arr, n) |
+          pj     : ptr (p_arr + (j * sizeof a)),
+          pk     : ptr (p_arr + (k * sizeof a)))
+        :<> [p : addr | p_arr <= p; p <= p_arr + (i * sizeof a)]
+            ptr p =
+      if ~ptr1_eq {a} {p_arr} {j, k} (pj, pk) then
+        let
+          (* Ceiling division. *)
+          stadef h = k - ((k - j) / 2)
+          val ph : ptr (p_arr + (h * sizeof a)) =
+            ptr1_ceiling_mean<a> {p_arr} {j, k} (pj, pk)
+
+          prval () = prop_verify {j < h} ()
+          prval () = prop_verify {h <= k} ()
+
+          prval @(pf_i, pf_h, fpf) =
+            array_v_takeout2 {a} {p_arr} {n} {i, h} pf_arr
+          val is_lt = lt<a> (pf_i, pf_h | pi, ph)
+          prval () = pf_arr := fpf (pf_i, pf_h)
+         in
+          if is_lt then
+            loop {j, h - 1} (pf_arr | pj, ptr1_pred<a> ph)
+          else
+            loop {h, k} (pf_arr | ph, pk)
+        end
+      else if ~ptr1_eq {a} {p_arr} {j, 0} (pj, p_arr) then
+        let
+          val pj1 = ptr1_succ<a> pj
+          prval () = ptr_comparison {a} {p_arr} {0, j + 1}
+                                    (p_arr, pj1)
+          prval () = ptr_comparison {a} {p_arr} {j + 1, i}
+                                    (pj1, pi)
+        in
+          pj1
+        end
+      else
+        let
+          prval @(pf_i, pf_0, fpf) =
+            array_v_takeout2 {a} {p_arr} {n} {i, 0} pf_arr
+          val is_lt = lt<a> (pf_i, pf_0 | pi, p_arr)
+          prval () = pf_arr := fpf (pf_i, pf_0)
+        in
+          if is_lt then
+            let
+              prval () = ptr_comparison {a} {p_arr} {0, i}
+                                        (p_arr, pi)
+            in
+              p_arr
+            end
+          else
+            let
+              val p1 = ptr1_succ<a> p_arr
+              prval () = ptr_comparison {a} {p_arr} {1, i}
+                                        (p1, pi)
+            in
+              p1
+            end
+        end
+
+    val p_pos = loop {0, i - 1} (pf_arr | p_arr, ptr1_pred<a> pi)
+  in
+    p_pos
+  end
+
 fn {a : vt@ype}
 array_insertion_sort
           {n       : nat}

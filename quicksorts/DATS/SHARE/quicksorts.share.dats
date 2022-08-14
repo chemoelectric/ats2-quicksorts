@@ -67,6 +67,31 @@ array_ptr_gez :
   {n : pos}
   (!array_v (a, p, n)) -<prf> [null < p] void
 
+extern praxi
+scaled_comparison
+          {i, j : int}
+          {n    : pos}
+          ()
+    :<prf> [i * n == n * i;
+            j * n == n * j;
+            (i < j && i * n < j * n)
+              || (i == j && i * n == j * n)
+              || (i > j && i * n > j * n)]
+           void
+
+prfn
+ptr_comparison
+          {a    : vt@ype | 0 < sizeof a}
+          {p    : addr}
+          {i, j : int}
+          (pi   : ptr (p + (i * sizeof a)),
+           pj   : ptr (p + (j * sizeof a)))
+    :<prf> [(i < j && p + (i * sizeof a) < p + (j * sizeof a))
+              || (i == j && p + (i * sizeof a) == p + (j * sizeof a))
+              || (i > j && p + (i * sizeof a) > p + (j * sizeof a))]
+           void =
+  scaled_comparison {i, j} {sizeof a} ()
+
 extern fn
 g1uint_mod_uint64 :
   {x, y : int}
@@ -75,6 +100,36 @@ g1uint_mod_uint64 :
 implement
 g1uint_mod<uint64_kind> (x, y) =
   g1uint_mod_uint64 (x, y)
+
+extern fn
+ptr1_eq {a    : vt@ype}
+        {p    : addr}
+        {i, j : int}
+        (pi   : ptr (p + (i * sizeof a)),
+         pj   : ptr (p + (j * sizeof a)))
+    :<> bool (i == j) = "mac#%"
+
+fn {a : vt@ype}
+ptr1_ceiling_mean
+          {p    : addr | 0 < sizeof a}
+          {i, j : int | i < j}
+          (pi   : ptr (p + (i * sizeof a)),
+           pj   : ptr (p + (j * sizeof a)))
+    :<> ptr (p + (j - ((j - i) / 2)) * sizeof a) =
+  let
+    extern fn
+    ptr1_ceiling_mean__
+              {p      : addr}
+              {i, j   : int | i < j}
+              {elemsz : pos}
+              (pi     : ptr (p + (i * elemsz)),
+               pj     : ptr (p + (j * elemsz)),
+               elemsz : size_t elemsz)
+      :<> ptr (p + (j - ((j - i) / 2)) * elemsz) = "mac#%"
+  in
+    ptr1_ceiling_mean__ {p} {i, j} {sizeof a}
+                        (pi, pj, sizeof<a>)
+  end
 
 extern fn
 copy_bytes :
