@@ -113,12 +113,11 @@ fn {a : vt@ype}
 make_an_ordered_prefix
           {n      : int | 2 <= n}
           {p_arr  : addr}
-          (pf_arr : !array_v (a, p_arr, n) >> _ |
+          (pf_arr : !array_v (a, p_arr, n) |
            p_arr  : ptr p_arr,
            n      : size_t n)
-    :<!wrt> [prefix_length : int | 2 <= prefix_length;
-                                   prefix_length <= n]
-            size_t prefix_length =
+    :<!wrt> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
+            size_t pfx_len =
   let
     prval @(pf0, pf1, fpf) =
       array_v_takeout2 {a} {p_arr} {n} {0, 1} pf_arr
@@ -133,9 +132,8 @@ make_an_ordered_prefix
              (pf_arr  : !array_v (a, p_arr, n) |
               pfx_len : size_t pfx_len,
               p       : ptr (p_arr + (pfx_len * sizeof a)))
-            :<> [prefix_length : int | 2 <= prefix_length;
-                                       prefix_length <= n]
-                size_t prefix_length =
+            :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
+                size_t pfx_len =
           if pfx_len = n then
             pfx_len
           else
@@ -164,9 +162,8 @@ make_an_ordered_prefix
              (pf_arr  : !array_v (a, p_arr, n) |
               pfx_len : size_t pfx_len,
               p       : ptr (p_arr + (pfx_len * sizeof a)))
-            :<> [prefix_length : int | 2 <= prefix_length;
-                                       prefix_length <= n]
-                size_t prefix_length =
+            :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
+                size_t pfx_len =
           if pfx_len = n then
             pfx_len
           else
@@ -189,6 +186,87 @@ make_an_ordered_prefix
         pfx_len
       end
   end
+
+(* fn {a : vt@ype} *)
+(* make_an_ordered_prefix_____PREFIX_____ *)
+(*           {n      : int | 2 <= n} *)
+(*           {p_arr  : addr} *)
+(*           (pf_arr : !array_v (a, p_arr, n) | *)
+(*            p_arr  : p3tr (a, p_arr, 0), *)
+(*            n      : size_t n) *)
+(*     :<!wrt> [pfx_len : int | 2 <= pfx_len; pfx_len <= n] *)
+(*             p3tr (a, p_arr, pfx_len) = *)
+(*   let *)
+(*     prval @(pf0, pf1, fpf) = *)
+(*       array_v_takeout2 {a} {p_arr} {n} {0, 1} pf_arr *)
+(*     val is_lt = lt<a> (pf1, pf0 | p2tr2ptr (p2tr_succ<a> p_arr), *)
+(*                                   p2tr2ptr p_arr) *)
+(*     prval () = pf_arr := fpf (pf0, pf1) *)
+(*   in *)
+(*     if ~is_lt then *)
+(*       let                       (\* Non-decreasing order. *\) *)
+(*         fun *)
+(*         loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n} *)
+(*              .<n - pfx_len>. *)
+(*              (pf_arr  : !array_v (a, p_arr, n) | *)
+(*               pfx_len : size_t pfx_len, *)
+(*               p       : p3tr (a, p_arr, pfx_len)) *)
+(*             :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n] *)
+(*                 p3tr (a, p_arr, pfx_len) = *)
+(*           if pfx_len = n then *)
+(*             p//p3tr_add<a> (p_arr, pfx_len) *)
+(*           else *)
+(*             let *)
+(*               prval @(pf0, pf1, fpf) = *)
+(*                 array_v_takeout2 *)
+(*                   {a} {p_arr} {n} {pfx_len - 1, pfx_len} pf_arr *)
+(*               val is_lt = lt<a> (pf1, pf0 | p2tr2ptr p, *)
+(*                                             p2tr2ptr (p2tr_pred<a> p)) *)
+(*               prval () = pf_arr := fpf (pf0, pf1) *)
+(*             in *)
+(*               if is_lt then *)
+(*                 p3tr_add<a> (p_arr, pfx_len) *)
+(*               else *)
+(*                 loop (pf_arr | succ pfx_len, p2tr_succ<a> p) *)
+(*             end *)
+
+(*         val pi = loop (pf_arr | i2sz 2, p3tr_add<a> (p_arr, 2)) *)
+(*       in *)
+(*         pi *)
+(*       end *)
+(*     else *)
+(*       let      (\* Non-increasing order. This branch sorts unstably. *\) *)
+(*         fun *)
+(*         loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n} *)
+(*              .<n - pfx_len>. *)
+(*              (pf_arr  : !array_v (a, p_arr, n) | *)
+(*               pfx_len : size_t pfx_len, *)
+(*               p       : p3tr (a, p_arr, pfx_len)) *)
+(*             :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n] *)
+(*                 p3tr (a, p_arr, pfx_len) = *)
+(*           if pfx_len = n then *)
+(*             p3tr_add<a> (p_arr, pfx_len) *)
+(*           else *)
+(*             let *)
+(*               prval @(pf0, pf1, fpf) = *)
+(*                 array_v_takeout2 *)
+(*                   {a} {p_arr} {n} {pfx_len - 1, pfx_len} pf_arr *)
+(*               val is_lt = lt<a> (pf0, pf1 | p2tr2ptr (p2tr_pred<a> p), *)
+(*                                             p2tr2ptr p) *)
+(*               prval () = pf_arr := fpf (pf0, pf1) *)
+(*             in *)
+(*               if is_lt then *)
+(*                 p3tr_add<a> (p_arr, pfx_len) *)
+(*               else *)
+(*                 loop (pf_arr | succ pfx_len, p2tr_succ<a> p) *)
+(*             end *)
+
+(*         val pi = loop (pf_arr | i2sz 2, p3tr_add<a> (p_arr, 2)) *)
+(*       in *)
+(* // FIXME        array_subreverse<a> (!(p2tr2ptr p_arr), i2sz 0, pfx_len); *)
+(*         pi *)
+(*       end *)
+(*   end *)
 
 fn {a  : vt@ype}
 insertion_position
@@ -241,16 +319,21 @@ insertion_position
     loop (!p_arr, i2sz 0, pred i)
   end
 
+(*
 fn {a  : vt@ype}
-insertion_position__FIXME_______POINTER_VERSION_____________________________________________
+insertion_position__FIXME_______POINTER_VERSION___
           {n      : int | 0 < sizeof a}
           {i      : pos | i < n}
           {p_arr  : addr}
           (pf_arr : !array_v (a, p_arr, n) >> _ |
            p_arr  : ptr p_arr,
            pi     : ptr (p_arr + (i * sizeof a)))
+(*
     :<> [p : addr | p_arr <= p; p <= p_arr + (i * sizeof a)]
         ptr p =
+*)
+    :<> [j : int | 0 <= j; j <= i]
+        ptr (p_arr + (j * sizeof a)) =
   (*
     A binary search.
 
@@ -271,8 +354,17 @@ insertion_position__FIXME_______POINTER_VERSION_________________________________
          (pf_arr : !array_v (a, p_arr, n) |
           pj     : ptr (p_arr + (j * sizeof a)),
           pk     : ptr (p_arr + (k * sizeof a)))
+(*
         :<> [p : addr | p_arr <= p; p <= p_arr + (i * sizeof a)]
             ptr p =
+*)
+        :<> [j1 : int | 0 <= j1; j1 <= i]
+            ptr (p_arr + (j1 * sizeof a)) =
+(*
+        :<> [p : addr | p_arr <= p; p <= p_arr + (i * sizeof a)]
+            [j : int | p - p_arr == j * sizeof a]
+            ptr p =
+*)
       if ~ptr1_eq {a} {p_arr} {j, k} (pj, pk) then
         let
           (* Ceiling division. *)
@@ -289,9 +381,20 @@ insertion_position__FIXME_______POINTER_VERSION_________________________________
           prval () = pf_arr := fpf (pf_i, pf_h)
          in
           if is_lt then
-            loop {j, h - 1} (pf_arr | pj, ptr1_pred<a> ph)
+            let
+              prval () = ptr_comparison {a} {p_arr} {0, j}
+                                        (p_arr, pj)
+              prval () = ptr_comparison {a} {p_arr} {0, h}
+                                        (p_arr, ph)
+            in
+$UN.cast(
+              loop {j, h - 1} (pf_arr | pj, ptr1_pred<a> ph)
+)
+            end
           else
+$UN.cast(
             loop {h, k} (pf_arr | ph, pk)
+)
         end
       else if ~ptr1_eq {a} {p_arr} {j, 0} (pj, p_arr) then
         let
@@ -301,7 +404,9 @@ insertion_position__FIXME_______POINTER_VERSION_________________________________
           prval () = ptr_comparison {a} {p_arr} {j + 1, i}
                                     (pj1, pi)
         in
+$UN.cast(
           pj1
+)
         end
       else
         let
@@ -315,7 +420,9 @@ insertion_position__FIXME_______POINTER_VERSION_________________________________
               prval () = ptr_comparison {a} {p_arr} {0, i}
                                         (p_arr, pi)
             in
+$UN.cast(
               p_arr
+)
             end
           else
             let
@@ -323,14 +430,19 @@ insertion_position__FIXME_______POINTER_VERSION_________________________________
               prval () = ptr_comparison {a} {p_arr} {1, i}
                                         (p1, pi)
             in
+$UN.cast(
               p1
+)
             end
         end
 
     val p_pos = loop {0, i - 1} (pf_arr | p_arr, ptr1_pred<a> pi)
   in
+$UN.cast(
     p_pos
+)
   end
+*)
 
 fn {a : vt@ype}
 array_insertion_sort
@@ -361,6 +473,46 @@ array_insertion_sort
     in
       loop (pf_arr | prefix_length)
     end
+
+(*
+fn {a : vt@ype}
+array_insertion_sort__FIXME_______POINTER_VERSION___
+          {n       : nat | 0 < sizeof a}
+          {p_arr   : addr}
+          (pf_arr  : !array_v (a, p_arr, n) >> _ |
+           p_arr   : ptr p_arr,
+           n       : size_t n)
+    :<!wrt> void =
+  if n > i2sz 1 then
+    let
+      fun
+      loop {i : pos | i <= n}
+           .<n - i>.
+           (pf_arr : !array_v (a, p_arr, n) >> _ |
+            i      : size_t i,
+            pi     : ptr (p_arr + (i * sizeof a)))
+          :<!wrt> void =
+        if i <> n then (* FIXME: USE A POINTER TO DETECT END. *)   (* FIXME: USE A POINTER TO DETECT END. *)
+          let
+            val pj = insertion_position__FIXME_______POINTER_VERSION___<a> {n} {i} {p_arr} (pf_arr | p_arr, pi)
+//            prval [j : int] () =
+//              ptr1_get_static_relative {a} {p_arr} (p_arr, pj)
+(*
+            prval () = ptr_comparison {a} {p_arr} {0, i} (p_arr, pi)
+            prval () = ptr_comparison {a} {p_arr} (pi, pj)
+*)
+          in
+//            circulate_right<a> {n} {p_arr} {j, i} (pf_arr | pj, pi);
+            circulate_right<a> {n} {p_arr} (pf_arr | pj, pi);
+            loop (pf_arr | succ i, ptr1_succ<a> pi)
+          end
+
+      val pfx_len = (* FIXME: GET A POINTER. *)(* FIXME: GET A POINTER. *)(* FIXME: GET A POINTER. *)
+        make_an_ordered_prefix<a> (pf_arr | p_arr, n)
+    in
+      loop (pf_arr | pfx_len, ptr_add<a> (p_arr, pfx_len))
+    end
+*)
 
 fn {a : vt@ype}
 move_i_rightwards

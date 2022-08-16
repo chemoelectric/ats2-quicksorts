@@ -148,6 +148,7 @@ ptr1_eq {a    : vt@ype}
          pj   : ptr (p + (j * sizeof a)))
     :<> bool (i == j) = "mac#%"
 
+(* FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME
 fn {a : vt@ype}
 ptr1_ceiling_mean
           {p    : addr | 0 < sizeof a}
@@ -164,10 +165,85 @@ ptr1_ceiling_mean
               (pi     : ptr (p + (i * elemsz)),
                pj     : ptr (p + (j * elemsz)),
                elemsz : size_t elemsz)
-      :<> ptr (p + (j - ((j - i) / 2)) * elemsz) = "mac#%"
+        :<> ptr (p + (j - ((j - i) / 2)) * sizeof a) = "mac#%"
   in
     ptr1_ceiling_mean__ {p} {i, j} {sizeof a}
                         (pi, pj, sizeof<a>)
+  end
+*)
+
+typedef p3tr (a : vt@ype+, p : addr, i : int) =
+  p2tr (a, p + (i * sizeof a))
+
+fn {a  : vt@ype}
+   {tk : tkind}
+g1uint_p3tr_add {p : addr}
+                {i : int}
+                {j : int}
+                (p : p3tr (a, p, i),
+                 j : g1uint (tk, j))
+    :<> p3tr (a, p, i + j) =
+  $UN.cast (ptr_add<a> (p2tr2ptr p, j))
+
+fn {a  : vt@ype}
+   {tk : tkind}
+g1int_p3tr_add {p : addr}
+               {i : int}
+               {j : int}
+               (p : p3tr (a, p, i),
+                j : g1int (tk, j))
+    :<> p3tr (a, p, i + j) =
+  $UN.cast (ptr_add<a> (p2tr2ptr p, j))
+
+overload p3tr_add with g1uint_p3tr_add
+overload p3tr_add with g1int_p3tr_add
+
+fn {a  : vt@ype}
+   {tk : tkind}
+g1uint_p3tr_sub {p : addr}
+                {i : int}
+                {j : int}
+                (p : p3tr (a, p, i),
+                 j : g1uint (tk, j))
+    :<> p3tr (a, p, i + j) =
+  $UN.cast (ptr_sub<a> (p2tr2ptr p, j))
+
+fn {a  : vt@ype}
+   {tk : tkind}
+g1int_p3tr_sub {p : addr}
+               {i : int}
+               {j : int}
+               (p : p3tr (a, p, i),
+                j : g1int (tk, j))
+    :<> p3tr (a, p, i + j) =
+  $UN.cast (ptr_sub<a> (p2tr2ptr p, j))
+
+overload p3tr_sub with g1uint_p3tr_sub
+overload p3tr_sub with g1int_p3tr_sub
+
+fn {a : vt@ype}
+p3tr_ceiling_mean
+          {p    : addr | 0 < sizeof a}
+          {i, j : int | i < j}
+          (pi   : p3tr (a, p, i),
+           pj   : p3tr (a, p, j))
+    :<> p3tr (a, p, j - ((j - i) / 2)) =
+  let
+    extern fn
+    ptr1_ceiling_mean__
+              {p      : addr}
+              {i, j   : int | i < j}
+              {elemsz : pos}
+              (pi     : ptr (p + (i * elemsz)),
+               pj     : ptr (p + (j * elemsz)),
+               elemsz : size_t elemsz)
+        :<> ptr (p + ((j - ((j - i) / 2)) * sizeof a)) = "mac#%"
+
+    val ph =
+      ptr1_ceiling_mean__ {p} {i, j} {sizeof a}
+                          (p2tr2ptr pi, p2tr2ptr pj, sizeof<a>)
+  in
+    $UN.ptr2p2tr {a} {p + ((j - ((j - i) / 2)) * sizeof a)} ph
   end
 
 extern fn
@@ -195,7 +271,7 @@ move_bytes_right :
   {n : int}
   (ptr, size_t n, size_t k) -< !wrt > void = "mac#%"
 
-fn {a : vt@ype}
+fn {a : vt@ype} (* FIXME: WILL I NEED THIS? *)   (* FIXME: WILL I NEED THIS? *)   (* FIXME: WILL I NEED THIS? *)
 array_subcirculate_right
           {n    : int}
           {i, j : int | i <= j; j < n}
@@ -212,6 +288,24 @@ array_subcirculate_right
       val tmp = $UN.ptr0_get<a> pj
     in
       move_bytes_right (pi, (j - i) * sizeof<a>, sizeof<a>);
+      $UN.ptr0_set<a> (pi, tmp)
+    end
+
+fn {a : vt@ype}
+circulate_right
+          {n      : int | 0 < sizeof a}
+          {p      : addr}
+          {i, j   : int | 0 <= i; i <= j; j <= n - 1}
+          (pf_arr : !array_v (a, p, n) |
+           pi     : ptr (p + (i * sizeof a)),
+           pj     : ptr (p + (j * sizeof a)))
+    :<!wrt> void =
+  if pi <> pj then
+    let
+      val tmp = $UN.ptr0_get<a> pj
+      prval () = ptr_comparison {a} {p} {i, j} (pi, pj)
+    in
+      move_bytes_right (pi, g1i2u (pj - pi), sizeof<a>);
       $UN.ptr0_set<a> (pi, tmp)
     end
 
