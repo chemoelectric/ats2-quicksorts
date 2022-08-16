@@ -47,7 +47,7 @@ uptr2ptr :
 
 fn {a  : vt@ype}
    {tk : tkind}
-g1uint_uptr_add :
+uptr_add_g1uint :
   {p : addr}
   {i : int}
   {j : int}
@@ -55,20 +55,20 @@ g1uint_uptr_add :
 
 fn {a  : vt@ype}
    {tk : tkind}
-g1int_uptr_add :
+uptr_add_g1int :
   {p : addr}
   {i : int}
   {j : int}
   (uptr (a, p, i), g1int (tk, j)) -<> uptr (a, p, i + j)
 
-overload uptr_add with g1uint_uptr_add
-overload uptr_add with g1int_uptr_add
+overload uptr_add with uptr_add_g1uint
+overload uptr_add with uptr_add_g1int
 
 (*------------------------------------------------------------------*)
 
 fn {a  : vt@ype}
    {tk : tkind}
-g1uint_uptr_sub :
+uptr_sub_g1uint :
   {p : addr}
   {i : int}
   {j : int}
@@ -76,27 +76,52 @@ g1uint_uptr_sub :
 
 fn {a  : vt@ype}
    {tk : tkind}
-g1int_uptr_sub :
+uptr_sub_g1int :
   {p : addr}
   {i : int}
   {j : int}
   (uptr (a, p, i), g1int (tk, j)) -<> uptr (a, p, i - j)
 
-overload uptr_sub with g1uint_uptr_sub
-overload uptr_sub with g1int_uptr_sub
+overload uptr_sub with uptr_sub_g1uint
+overload uptr_sub with uptr_sub_g1int
 
 (*------------------------------------------------------------------*)
 
-fn {a  : vt@ype}
+fn {a : vt@ype}
 uptr_succ :
   {p : addr}
   {i : int}
   uptr (a, p, i) -<> uptr (a, p, i + 1)
 
-fn {a  : vt@ype}
+fn {a : vt@ype}
 uptr_pred :
   {p : addr}
   {i : int}
   uptr (a, p, i) -<> uptr (a, p, i - 1)
+
+(*------------------------------------------------------------------*)
+
+fn {a : vt@ype}
+uptr_get :
+  {p : addr}
+  {i : int}
+  (!a @ (p + (i * sizeof a)) >> a?! @ (p + (i * sizeof a)) |
+   uptr (a, p, i)) -<>
+    a
+
+fn {a : vt@ype}
+uptr_set :
+  {p : addr}
+  {i : int}
+  (!a? @ (p + (i * sizeof a)) >> a @ (p + (i * sizeof a)) |
+   uptr (a, p, i), a) -< !wrt >
+    void
+
+fn {a : vt@ype}
+uptr_exch :
+  {p : addr}
+  {i : int}
+  (!a @ (p + (i * sizeof a)) | uptr (a, p, i), &a >> a) -< !wrt >
+    void
 
 (*------------------------------------------------------------------*)

@@ -37,7 +37,7 @@ ats2_quicksorts_uptr_uptr2ptr__ (atstype_uintptr up)
 }
 
 ats2_quicksorts_uptr_inline atstype_uintptr
-ats2_quicksorts_uptr_uptr_size_add__ (atstype_uintptr up,
+ats2_quicksorts_uptr_uptr_add_size__ (atstype_uintptr up,
                                       atstype_size j,
                                       atstype_size elemsz)
 {
@@ -45,7 +45,7 @@ ats2_quicksorts_uptr_uptr_size_add__ (atstype_uintptr up,
 }
 
 ats2_quicksorts_uptr_inline atstype_uintptr
-ats2_quicksorts_uptr_uptr_ssize_add__ (atstype_uintptr up,
+ats2_quicksorts_uptr_uptr_add_ssize__ (atstype_uintptr up,
                                        atstype_ssize j,
                                        atstype_size elemsz)
 {
@@ -53,7 +53,7 @@ ats2_quicksorts_uptr_uptr_ssize_add__ (atstype_uintptr up,
 }
 
 ats2_quicksorts_uptr_inline atstype_uintptr
-ats2_quicksorts_uptr_uptr_size_sub__ (atstype_uintptr up,
+ats2_quicksorts_uptr_uptr_sub_size__ (atstype_uintptr up,
                                       atstype_size j,
                                       atstype_size elemsz)
 {
@@ -61,7 +61,7 @@ ats2_quicksorts_uptr_uptr_size_sub__ (atstype_uintptr up,
 }
 
 ats2_quicksorts_uptr_inline atstype_uintptr
-ats2_quicksorts_uptr_uptr_ssize_sub__ (atstype_uintptr up,
+ats2_quicksorts_uptr_uptr_sub_ssize__ (atstype_uintptr up,
                                        atstype_ssize j,
                                        atstype_size elemsz)
 {

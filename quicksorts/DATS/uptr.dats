@@ -65,10 +65,10 @@ uptr2ptr {p} {i} up =
   end
 
 implement {a} {tk}
-g1uint_uptr_add {p} {i} {j} (up, j) =
+uptr_add_g1uint {p} {i} {j} (up, j) =
   let
     extern fn
-    uptr_size_add__ :
+    uptr_add_size__ :
       {a : vt@ype}
       {p : addr}
       {i : int}
@@ -76,14 +76,14 @@ g1uint_uptr_add {p} {i} {j} (up, j) =
       (uptr (a, p, i), size_t j, size_t (sizeof a)) -<>
         uptr (a, p, i + j) = "mac#%"
   in
-    uptr_size_add__ {a} {p} {i} {j} (up, g1u2u j, sizeof<a>)
+    uptr_add_size__ {a} {p} {i} {j} (up, g1u2u j, sizeof<a>)
   end
 
 implement {a} {tk}
-g1int_uptr_add {p} {i} {j} (up, j) =
+uptr_add_g1int {p} {i} {j} (up, j) =
   let
     extern fn
-    uptr_ssize_add__ :
+    uptr_add_ssize__ :
       {a : vt@ype}
       {p : addr}
       {i : int}
@@ -91,14 +91,14 @@ g1int_uptr_add {p} {i} {j} (up, j) =
       (uptr (a, p, i), ssize_t j, size_t (sizeof a)) -<>
         uptr (a, p, i + j) = "mac#%"
   in
-    uptr_ssize_add__ {a} {p} {i} {j} (up, g1i2i j, sizeof<a>)
+    uptr_add_ssize__ {a} {p} {i} {j} (up, g1i2i j, sizeof<a>)
   end
 
 implement {a} {tk}
-g1uint_uptr_sub {p} {i} {j} (up, j) =
+uptr_sub_g1uint {p} {i} {j} (up, j) =
   let
     extern fn
-    uptr_size_sub__ :
+    uptr_sub_size__ :
       {a : vt@ype}
       {p : addr}
       {i : int}
@@ -106,11 +106,11 @@ g1uint_uptr_sub {p} {i} {j} (up, j) =
       (uptr (a, p, i), size_t j, size_t (sizeof a)) -<>
         uptr (a, p, i - j) = "mac#%"
   in
-    uptr_size_sub__ {a} {p} {i} {j} (up, g1u2u j, sizeof<a>)
+    uptr_sub_size__ {a} {p} {i} {j} (up, g1u2u j, sizeof<a>)
   end
 
 implement {a} {tk}
-g1int_uptr_sub {p} {i} {j} (up, j) =
+uptr_sub_g1int {p} {i} {j} (up, j) =
   let
     extern fn
     uptr_ssize_sub__ :
@@ -151,3 +151,15 @@ uptr_pred {p} {i} up =
   in
     uptr_pred__ {a} {p} {i} (up, sizeof<a>)
   end
+
+implement {a}
+uptr_get {p} {i} (pf_view | up) =
+  ptr_get<a> (pf_view | uptr2ptr {p} {i} up)
+
+implement {a}
+uptr_set {p} {i} (pf_view | up, x) =
+  ptr_set<a> (pf_view | uptr2ptr {p} {i} up, x)
+
+implement {a}
+uptr_exch {p} {i} (pf_view | up, x) =
+  ptr_exch<a> (pf_view | uptr2ptr {p} {i} up, x)
