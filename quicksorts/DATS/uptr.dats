@@ -255,22 +255,23 @@ implement {a}
 subreverse_uptr_uptr {p} {n} {i, j} (pf_arr | anchor, up_i, up_j) =
   let
     fun
-    loop {i, j : int | 0 <= i; i <= j; j <= n - 1}
-         .<1 + (j - i)>.
+    loop {i, j : int | 0 <= i; i <= j; j <= n}
+         .<j - i>.
          (pf_arr : !array_v (a, p, n) |
           up_i   : uptr (a, p, i),
           up_j   : uptr (a, p, j))
         :<!wrt> void =
-      begin
-        interchange_uptr_uptr<a> (pf_arr | anchor, up_i, up_j);
-        let
-          val up_i = uptr_succ<a> up_i
-        in
-          if up_i < up_j then
-            loop (pf_arr | up_i, uptr_pred<a> up_j)
-        end
+      let
+        val up_i1 = uptr_succ<a> up_i
+      in
+        if up_i1 < up_j then
+          let
+            val up_j1 = uptr_pred<a> up_j
+          in
+            interchange_uptr_uptr<a> (pf_arr | anchor, up_i, up_j1);
+            loop (pf_arr | up_i1, up_j1)
+          end
       end
   in
-    if up_i < up_j then
-      loop (pf_arr | up_i, uptr_pred<a> up_j)
+    loop (pf_arr | up_i, up_j)
   end
