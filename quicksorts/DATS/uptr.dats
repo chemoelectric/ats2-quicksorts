@@ -231,7 +231,7 @@ uptr_exch (pf_view | anchor, up, x) =
   ptr_exch<a> (pf_view | uptr2ptr (anchor, up), x)
 
 implement {a}
-uptr_interchange {p} {n} {i, j} (pf_arr | anchor, up_i, up_j) =
+interchange_uptr_uptr {p} {n} {i, j} (pf_arr | anchor, up_i, up_j) =
   if up_i <> up_j then
     let
       fn {}
@@ -250,3 +250,27 @@ uptr_interchange {p} {n} {i, j} (pf_arr | anchor, up_i, up_j) =
       prval () = pf_arr := fpf (pf_i, pf_j)
     in
     end
+
+implement {a}
+subreverse_uptr_uptr {p} {n} {i, j} (pf_arr | anchor, up_i, up_j) =
+  let
+    fun
+    loop {i, j : int | 0 <= i; i <= j; j <= n - 1}
+         .<1 + (j - i)>.
+         (pf_arr : !array_v (a, p, n) |
+          up_i   : uptr (a, p, i),
+          up_j   : uptr (a, p, j))
+        :<!wrt> void =
+      begin
+        interchange_uptr_uptr<a> (pf_arr | anchor, up_i, up_j);
+        let
+          val up_i = uptr_succ<a> up_i
+        in
+          if up_i < up_j then
+            loop (pf_arr | up_i, uptr_pred<a> up_j)
+        end
+      end
+  in
+    if up_i < up_j then
+      loop (pf_arr | up_i, uptr_pred<a> up_j)
+  end

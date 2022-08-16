@@ -120,48 +120,6 @@ uptr_diff_unsigned :
 
 (*------------------------------------------------------------------*)
 
-fn {a : vt@ype}
-uptr_get :
-  {p : addr}
-  {i : int}
-  (!a @ (p + (i * sizeof a)) >> a?! @ (p + (i * sizeof a)) |
-   uptr_anchor (a, p),
-   uptr (a, p, i)) -<>
-    a
-
-fn {a : vt@ype}
-uptr_set :
-  {p : addr}
-  {i : int}
-  (!a? @ (p + (i * sizeof a)) >> a @ (p + (i * sizeof a)) |
-   uptr_anchor (a, p),
-   uptr (a, p, i),
-   a) -< !wrt >
-    void
-
-fn {a : vt@ype}
-uptr_exch :
-  {p : addr}
-  {i : int}
-  (!a @ (p + (i * sizeof a)) |
-   uptr_anchor (a, p),
-   uptr (a, p, i),
-   &a >> a) -< !wrt >
-    void
-
-fn {a : vt@ype}
-uptr_interchange :
-  {p : addr}
-  {n : int}
-  {i, j : nat | i <= n - 1; j <= n - 1}
-  (!array_v (a, p, n) |
-   uptr_anchor (a, p),
-   uptr (a, p, i),
-   uptr (a, p, j)) -< !wrt >
-    void
-
-(*------------------------------------------------------------------*)
-
 fn
 lt_uptr_uptr :
   {a : vt@ype}
@@ -219,5 +177,66 @@ overload = with eq_uptr_uptr of 30
 overload <> with neq_uptr_uptr of 30
 overload != with neq_uptr_uptr of 30
 overload compare with compare_uptr_uptr of 30
+
+(*------------------------------------------------------------------*)
+
+fn {a : vt@ype}
+uptr_get :
+  {p : addr}
+  {i : int}
+  (!a @ (p + (i * sizeof a)) >> a?! @ (p + (i * sizeof a)) |
+   uptr_anchor (a, p),
+   uptr (a, p, i)) -<>
+    a
+
+fn {a : vt@ype}
+uptr_set :
+  {p : addr}
+  {i : int}
+  (!a? @ (p + (i * sizeof a)) >> a @ (p + (i * sizeof a)) |
+   uptr_anchor (a, p),
+   uptr (a, p, i),
+   a) -< !wrt >
+    void
+
+fn {a : vt@ype}
+uptr_exch :
+  {p : addr}
+  {i : int}
+  (!a @ (p + (i * sizeof a)) |
+   uptr_anchor (a, p),
+   uptr (a, p, i),
+   &a >> a) -< !wrt >
+    void
+
+(* Interchange two elements of an array. *)
+fn {a : vt@ype}
+interchange_uptr_uptr :
+  {p : addr}
+  {n : int}
+  {i, j : nat | i <= n - 1; j <= n - 1}
+  (!array_v (a, p, n) |
+   uptr_anchor (a, p),
+   uptr (a, p, i),
+   uptr (a, p, j)) -< !wrt >
+    void
+
+(* Reverse a subarray. The first uptr points at the first element. The
+   second uptr points at one position past the last element. (These
+   arguments are chosen for consistency with the prelude’s
+   array_subreverse.) *)
+fn {a : vt@ype}
+subreverse_uptr_uptr :
+  {p    : addr}
+  {n    : int}
+  {i, j : int | 0 <= i; i < j; j <= n}
+  (!array_v (a, p, n) |
+   uptr_anchor (a, p),
+   uptr (a, p, i),
+   uptr (a, p, j)) -< !wrt >
+    void
+
+overload interchange with interchange_uptr_uptr
+overload subreverse with subreverse_uptr_uptr
 
 (*------------------------------------------------------------------*)

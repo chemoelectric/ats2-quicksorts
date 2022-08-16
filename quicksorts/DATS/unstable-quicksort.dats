@@ -214,13 +214,15 @@ make_an_ordered_prefix___FIXME___
            up_arr : uptr_anchor (a, p_arr),
            n      : size_t n)
     :<!wrt> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
-            size_t pfx_len =
+            uptr (a, p_arr, pfx_len) =
   let
     prval @(pf0, pf1, fpf) =
       array_v_takeout2 {a} {p_arr} {n} {0, 1} pf_arr
     val is_lt =
       lt<a> (pf1, pf0 | up_arr, uptr_succ<a> up_arr, up_arr)
     prval () = pf_arr := fpf (pf0, pf1)
+
+    val up_n = uptr_add<a> (up_arr, n)
   in
     if ~is_lt then
       let                       (* Non-decreasing order. *)
@@ -228,12 +230,11 @@ make_an_ordered_prefix___FIXME___
         loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
              .<n - pfx_len>.
              (pf_arr  : !array_v (a, p_arr, n) |
-              pfx_len : size_t pfx_len,
               up      : uptr (a, p_arr, pfx_len))
             :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
-                size_t pfx_len =
-          if pfx_len = n then
-            uptr_diff_unsigned<a> (up, up_arr)
+                uptr (a, p_arr, pfx_len) =
+          if up = up_n then
+            up
           else
             let
               prval @(pf0, pf1, fpf) =
@@ -244,14 +245,12 @@ make_an_ordered_prefix___FIXME___
               prval () = pf_arr := fpf (pf0, pf1)
             in
               if is_lt then
-                pfx_len
+                up
               else
-                loop (pf_arr | succ pfx_len, uptr_succ<a> up)
+                loop (pf_arr | uptr_succ<a> up)
             end
-
-        val pfx_len = loop (pf_arr | i2sz 2, uptr_add<a> (up_arr, 2))
       in
-        pfx_len
+        loop (pf_arr | uptr_add<a> (up_arr, 2))
       end
     else
       let      (* Non-increasing order. This branch sorts unstably. *)
@@ -259,12 +258,11 @@ make_an_ordered_prefix___FIXME___
         loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
              .<n - pfx_len>.
              (pf_arr  : !array_v (a, p_arr, n) |
-              pfx_len : size_t pfx_len,
               up      : uptr (a, p_arr, pfx_len))
             :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
-                size_t pfx_len =
-          if pfx_len = n then
-            pfx_len
+                uptr (a, p_arr, pfx_len) =
+          if up = up_n then
+            up
           else
             let
               prval @(pf0, pf1, fpf) =
@@ -275,16 +273,15 @@ make_an_ordered_prefix___FIXME___
               prval () = pf_arr := fpf (pf0, pf1)
             in
               if is_lt then
-                pfx_len
+                up
               else
-                loop (pf_arr | succ pfx_len, uptr_succ<a> up)
+                loop (pf_arr | uptr_succ<a> up)
             end
 
-        val pfx_len = loop (pf_arr | i2sz 2, uptr_add<a> (up_arr, 2))
+        val up = loop (pf_arr | uptr_add<a> (up_arr, 2))
       in
-        array_subreverse<a> (!(uptr_anchor2ptr up_arr),
-                             i2sz 0, pfx_len);
-        pfx_len
+        subreverse<a> (pf_arr | up_arr, up_arr, up);
+        up
       end
   end
 
