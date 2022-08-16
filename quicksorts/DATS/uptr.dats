@@ -157,6 +157,34 @@ uptr_pred {p} {i} up =
   end
 
 implement {a}
+uptr_diff {p} {i, j} (up_i, up_j) =
+  let
+    extern fn
+    uptr_diff__ :
+      {a    : vt@ype}
+      {p    : addr}
+      {i, j : int}
+      (uptr (a, p, i), uptr (a, p, j), size_t (sizeof a)) -<>
+        ssize_t (i - j) = "mac#%"
+  in
+    uptr_diff__ {a} {p} {i, j} (up_i, up_j, sizeof<a>)
+  end
+
+implement {a}
+uptr_diff_unsigned {p} {i, j} (up_i, up_j) =
+  let
+    extern fn
+    uptr_diff_unsigned__ :
+      {a    : vt@ype}
+      {p    : addr}
+      {i, j : int}
+      (uptr (a, p, i), uptr (a, p, j), size_t (sizeof a)) -<>
+        size_t (i - j) = "mac#%"
+  in
+    uptr_diff_unsigned__ {a} {p} {i, j} (up_i, up_j, sizeof<a>)
+  end
+
+implement {a}
 uptr_get {p} {i} (pf_view | up) =
   ptr_get<a> (pf_view | uptr2ptr {p} {i} up)
 

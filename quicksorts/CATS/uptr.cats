@@ -82,6 +82,22 @@ ats2_quicksorts_uptr_uptr_pred__ (atstype_uintptr up,
   return (uintptr_t) ((char *) up - elemsz);
 }
 
+ats2_quicksorts_uptr_inline atstype_ssize
+ats2_quicksorts_uptr_diff__ (atstype_uintptr up,
+                             atstype_uintptr uq,
+                             atstype_size elemsz)
+{
+  return ((char *) up - (char *) uq) / elemsz;
+}
+
+ats2_quicksorts_uptr_inline atstype_size
+ats2_quicksorts_uptr_diff_unsigned__ (atstype_uintptr up,
+                                      atstype_uintptr uq,
+                                      atstype_size elemsz)
+{
+  return ((size_t) ((char *) up - (char *) uq)) / elemsz;
+}
+
 ats2_quicksorts_uptr_inline atstype_bool
 ats2_quicksorts_lt_uptr_uptr (atstype_uintptr up,
                               atstype_uintptr uq)

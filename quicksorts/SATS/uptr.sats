@@ -25,10 +25,15 @@
 
 (*------------------------------------------------------------------*)
 
+(*
+stacst addr2uint : addr -> int
+
+typedef uptr (a : vt@ype+, p : addr, i : int) =
+  uintptr (addr2uint p + (i * sizeof a))
+*)
 abst@ype uptr (a : vt@ype+, p : addr, i : int) = uintptr
 
-typedef uptr_anchor (a : vt@ype+,
-                     p : addr) =
+typedef uptr_anchor (a : vt@ype+, p : addr) =
   uptr (a, p, 0)
 
 fn {a : vt@ype}
@@ -106,6 +111,20 @@ uptr_pred :
 (*------------------------------------------------------------------*)
 
 fn {a : vt@ype}
+uptr_diff :
+  {p    : addr}
+  {i, j : int}
+  (uptr (a, p, i), uptr (a, p, j)) -<> ssize_t (i - j)
+
+fn {a : vt@ype}
+uptr_diff_unsigned :
+  {p    : addr}
+  {i, j : int | i >= j}
+  (uptr (a, p, i), uptr (a, p, j)) -<> size_t (i - j)
+
+(*------------------------------------------------------------------*)
+
+fn {a : vt@ype}
 uptr_get :
   {p : addr}
   {i : int}
@@ -130,44 +149,51 @@ uptr_exch :
 
 (*------------------------------------------------------------------*)
 
-fn {a : vt@ype}
+fn
 lt_uptr_uptr :
+  {a : vt@ype}
   {p    : addr}
   {i, j : int}
   (uptr (a, p, i), uptr (a, p, j)) -<> bool (i < j) = "mac#%"
 
-fn {a : vt@ype}
+fn
 lte_uptr_uptr :
+  {a : vt@ype}
   {p    : addr}
   {i, j : int}
   (uptr (a, p, i), uptr (a, p, j)) -<> bool (i <= j) = "mac#%"
 
-fn {a : vt@ype}
+fn
 gt_uptr_uptr :
+  {a    : vt@ype}
   {p    : addr}
   {i, j : int}
   (uptr (a, p, i), uptr (a, p, j)) -<> bool (i > j) = "mac#%"
 
-fn {a : vt@ype}
+fn
 gte_uptr_uptr :
+  {a    : vt@ype}
   {p    : addr}
   {i, j : int}
   (uptr (a, p, i), uptr (a, p, j)) -<> bool (i >= j) = "mac#%"
 
-fn {a : vt@ype}
+fn
 eq_uptr_uptr :
+  {a    : vt@ype}
   {p    : addr}
   {i, j : int}
   (uptr (a, p, i), uptr (a, p, j)) -<> bool (i == j) = "mac#%"
 
-fn {a : vt@ype}
+fn
 neq_uptr_uptr :
+  {a    : vt@ype}
   {p    : addr}
   {i, j : int}
   (uptr (a, p, i), uptr (a, p, j)) -<> bool (i != j) = "mac#%"
 
-fn {a : vt@ype}
+fn
 compare_uptr_uptr :
+  {a    : vt@ype}
   {p    : addr}
   {i, j : int}
   (uptr (a, p, i), uptr (a, p, j)) -<> int (sgn (i - j)) = "mac#%"
