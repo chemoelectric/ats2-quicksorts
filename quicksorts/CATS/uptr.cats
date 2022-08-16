@@ -25,15 +25,22 @@
 #define ats2_quicksorts_uptr_inline ATSinline ()
 
 ats2_quicksorts_uptr_inline atstype_uintptr
-ats2_quicksorts_uptr_ptr2uptr__ (atstype_ptr p)
+ats2_quicksorts_uptr_ptr2uptr_anchor__ (atstype_ptr p)
 {
   return (uintptr_t) p;
 }
 
 ats2_quicksorts_uptr_inline atstype_ptr
-ats2_quicksorts_uptr_uptr2ptr__ (atstype_uintptr up)
+ats2_quicksorts_uptr_uptr_anchor2ptr (atstype_uintptr up)
 {
   return (void *) up;
+}
+
+ats2_quicksorts_uptr_inline atstype_ptr
+ats2_quicksorts_uptr_uptr2ptr__ (atstype_uintptr anchor,
+                                 atstype_uintptr up)
+{
+  return (void *) ((char *) (void *) anchor + (up - anchor));
 }
 
 ats2_quicksorts_uptr_inline atstype_uintptr
@@ -41,7 +48,7 @@ ats2_quicksorts_uptr_uptr_add_size__ (atstype_uintptr up,
                                       atstype_size j,
                                       atstype_size elemsz)
 {
-  return (uintptr_t) ((char *) up + (j * elemsz));
+  return (uintptr_t) (up + (j * elemsz));
 }
 
 ats2_quicksorts_uptr_inline atstype_uintptr
@@ -49,7 +56,7 @@ ats2_quicksorts_uptr_uptr_add_ssize__ (atstype_uintptr up,
                                        atstype_ssize j,
                                        atstype_size elemsz)
 {
-  return (uintptr_t) ((char *) up + (j * elemsz));
+  return (uintptr_t) (up + (j * elemsz));
 }
 
 ats2_quicksorts_uptr_inline atstype_uintptr
@@ -57,7 +64,7 @@ ats2_quicksorts_uptr_uptr_sub_size__ (atstype_uintptr up,
                                       atstype_size j,
                                       atstype_size elemsz)
 {
-  return (uintptr_t) ((char *) up - (j * elemsz));
+  return (uintptr_t) (up - (j * elemsz));
 }
 
 ats2_quicksorts_uptr_inline atstype_uintptr
@@ -65,21 +72,21 @@ ats2_quicksorts_uptr_uptr_sub_ssize__ (atstype_uintptr up,
                                        atstype_ssize j,
                                        atstype_size elemsz)
 {
-  return (uintptr_t) ((char *) up - (j * elemsz));
+  return (uintptr_t) (up - (j * elemsz));
 }
 
 ats2_quicksorts_uptr_inline atstype_uintptr
 ats2_quicksorts_uptr_uptr_succ__ (atstype_uintptr up,
                                   atstype_size elemsz)
 {
-  return (uintptr_t) ((char *) up + elemsz);
+  return (uintptr_t) (up + elemsz);
 }
 
 ats2_quicksorts_uptr_inline atstype_uintptr
 ats2_quicksorts_uptr_uptr_pred__ (atstype_uintptr up,
                                   atstype_size elemsz)
 {
-  return (uintptr_t) ((char *) up - elemsz);
+  return (uintptr_t) (up - elemsz);
 }
 
 ats2_quicksorts_uptr_inline atstype_ssize
@@ -87,7 +94,7 @@ ats2_quicksorts_uptr_diff__ (atstype_uintptr up,
                              atstype_uintptr uq,
                              atstype_size elemsz)
 {
-  return ((char *) up - (char *) uq) / elemsz;
+  return (up - uq) / elemsz;
 }
 
 ats2_quicksorts_uptr_inline atstype_size
@@ -95,57 +102,56 @@ ats2_quicksorts_uptr_diff_unsigned__ (atstype_uintptr up,
                                       atstype_uintptr uq,
                                       atstype_size elemsz)
 {
-  return ((size_t) ((char *) up - (char *) uq)) / elemsz;
+  return ((size_t) (up - uq)) / elemsz;
 }
 
 ats2_quicksorts_uptr_inline atstype_bool
 ats2_quicksorts_lt_uptr_uptr (atstype_uintptr up,
                               atstype_uintptr uq)
 {
-  return ((char *) up < (char *) uq);
+  return (up < uq);
 }
 
 ats2_quicksorts_uptr_inline atstype_bool
 ats2_quicksorts_lte_uptr_uptr (atstype_uintptr up,
                                atstype_uintptr uq)
 {
-  return ((char *) up <= (char *) uq);
+  return (up <= uq);
 }
 
 ats2_quicksorts_uptr_inline atstype_bool
 ats2_quicksorts_gt_uptr_uptr (atstype_uintptr up,
                               atstype_uintptr uq)
 {
-  return ((char *) up > (char *) uq);
+  return (up > uq);
 }
 
 ats2_quicksorts_uptr_inline atstype_bool
 ats2_quicksorts_gte_uptr_uptr (atstype_uintptr up,
                                atstype_uintptr uq)
 {
-  return ((char *) up >= (char *) uq);
+  return (up >= uq);
 }
 
 ats2_quicksorts_uptr_inline atstype_bool
 ats2_quicksorts_eq_uptr_uptr (atstype_uintptr up,
                               atstype_uintptr uq)
 {
-  return ((char *) up == (char *) uq);
+  return (up == uq);
 }
 
 ats2_quicksorts_uptr_inline atstype_bool
 ats2_quicksorts_neq_uptr_uptr (atstype_uintptr up,
                                atstype_uintptr uq)
 {
-  return ((char *) up != (char *) uq);
+  return (up != uq);
 }
 
 ats2_quicksorts_uptr_inline atstype_int
 ats2_quicksorts_compare_uptr_uptr (atstype_uintptr up,
                                    atstype_uintptr uq)
 {
-  return (((char *) up < (char *) uq) ? -1 :
-          ((char *) up > (char *) uq) ? 1 : 0);
+  return ((up < uq) ? (-1) : ((up > uq) ? 1 : 0));
 }
 
 #endif /* QUICKSORTS__CATS__UPTR_CATS__HEADER_GUARD__ */

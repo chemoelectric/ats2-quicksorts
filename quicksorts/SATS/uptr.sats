@@ -25,32 +25,28 @@
 
 (*------------------------------------------------------------------*)
 
-(*
-stacst addr2uint : addr -> int
-
-typedef uptr (a : vt@ype+, p : addr, i : int) =
-  uintptr (addr2uint p + (i * sizeof a))
-*)
 abst@ype uptr (a : vt@ype+, p : addr, i : int) = uintptr
 
 typedef uptr_anchor (a : vt@ype+, p : addr) =
   uptr (a, p, 0)
 
 fn {a : vt@ype}
-ptr2uptr :
+ptr2uptr_anchor :
   {p : addr}
   ptr p -<> uptr_anchor (a, p)
+
+fn
+uptr_anchor2ptr :
+  {a : vt@ype}
+  {p : addr}
+  uptr_anchor (a, p) -<> ptr p = "mac#%"
 
 fn {a : vt@ype}
 uptr2ptr :
   {p : addr}
   {i : int}
-  uptr (a, p, i) -<> ptr (p + (i * sizeof a))
-
-fn {a : vt@ype}
-uptr_anchor2ptr :
-  {p : addr}
-  uptr_anchor (a, p) -<> ptr p
+  (uptr_anchor (a, p), uptr (a, p, i)) -<>
+    ptr (p + (i * sizeof a))
 
 (*------------------------------------------------------------------*)
 
@@ -129,6 +125,7 @@ uptr_get :
   {p : addr}
   {i : int}
   (!a @ (p + (i * sizeof a)) >> a?! @ (p + (i * sizeof a)) |
+   uptr_anchor (a, p),
    uptr (a, p, i)) -<>
     a
 
@@ -137,14 +134,19 @@ uptr_set :
   {p : addr}
   {i : int}
   (!a? @ (p + (i * sizeof a)) >> a @ (p + (i * sizeof a)) |
-   uptr (a, p, i), a) -< !wrt >
+   uptr_anchor (a, p),
+   uptr (a, p, i),
+   a) -< !wrt >
     void
 
 fn {a : vt@ype}
 uptr_exch :
   {p : addr}
   {i : int}
-  (!a @ (p + (i * sizeof a)) | uptr (a, p, i), &a >> a) -< !wrt >
+  (!a @ (p + (i * sizeof a)) |
+   uptr_anchor (a, p),
+   uptr (a, p, i),
+   &a >> a) -< !wrt >
     void
 
 (*------------------------------------------------------------------*)

@@ -55,14 +55,16 @@ elem_lt_ptr1_ptr1
 
 fn {a : vt@ype}
 elem_lt_uptr_uptr
-          {p    : addr}
-          {i, j : int}
-          (pf_i : !a @ (p + (i * sizeof a)),
-           pf_j : !a @ (p + (j * sizeof a)) |
-           up_i : uptr (a, p, i),
-           up_j : uptr (a, p, j))
+          {p      : addr}
+          {i, j   : int}
+          (pf_i   : !a @ (p + (i * sizeof a)),
+           pf_j   : !a @ (p + (j * sizeof a)) |
+           anchor : uptr_anchor (a, p),
+           up_i   : uptr (a, p, i),
+           up_j   : uptr (a, p, j))
     :<> bool =
-  elem_lt_ptr1_ptr1<a> (pf_i, pf_j | uptr2ptr up_i, uptr2ptr up_j)
+  elem_lt_ptr1_ptr1<a> (pf_i, pf_j | uptr2ptr (anchor, up_i),
+                                     uptr2ptr (anchor, up_j))
 
 overload lt with elem_lt_ptr1_ptr1
 overload lt with elem_lt_uptr_uptr
@@ -216,7 +218,8 @@ make_an_ordered_prefix___FIXME___
   let
     prval @(pf0, pf1, fpf) =
       array_v_takeout2 {a} {p_arr} {n} {0, 1} pf_arr
-    val is_lt = lt<a> (pf1, pf0 | uptr_succ<a> up_arr, up_arr)
+    val is_lt =
+      lt<a> (pf1, pf0 | up_arr, uptr_succ<a> up_arr, up_arr)
     prval () = pf_arr := fpf (pf0, pf1)
   in
     if ~is_lt then
@@ -230,13 +233,14 @@ make_an_ordered_prefix___FIXME___
             :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
                 size_t pfx_len =
           if pfx_len = n then
-            pfx_len
+            uptr_diff_unsigned<a> (up, up_arr)
           else
             let
               prval @(pf0, pf1, fpf) =
                 array_v_takeout2
                   {a} {p_arr} {n} {pfx_len - 1, pfx_len} pf_arr
-              val is_lt = lt<a> (pf1, pf0 | up, uptr_pred<a> up)
+              val is_lt =
+                lt<a> (pf1, pf0 | up_arr, up, uptr_pred<a> up)
               prval () = pf_arr := fpf (pf0, pf1)
             in
               if is_lt then
@@ -266,7 +270,8 @@ make_an_ordered_prefix___FIXME___
               prval @(pf0, pf1, fpf) =
                 array_v_takeout2
                   {a} {p_arr} {n} {pfx_len - 1, pfx_len} pf_arr
-              val is_lt = lt<a> (pf0, pf1 | uptr_pred<a> up, up)
+              val is_lt =
+                lt<a> (pf0, pf1 | up_arr, uptr_pred<a> up, up)
               prval () = pf_arr := fpf (pf0, pf1)
             in
               if is_lt then
@@ -276,9 +281,9 @@ make_an_ordered_prefix___FIXME___
             end
 
         val pfx_len = loop (pf_arr | i2sz 2, uptr_add<a> (up_arr, 2))
-        val p_arr = uptr_anchor2ptr {p_arr} up_arr
       in
-        array_subreverse<a> (!p_arr, i2sz 0, pfx_len);
+        array_subreverse<a> (!(uptr_anchor2ptr up_arr),
+                             i2sz 0, pfx_len);
         pfx_len
       end
   end

@@ -40,33 +40,29 @@ lemma_mul_isfun
   end
 
 implement {a}
-ptr2uptr {p} p =
+ptr2uptr_anchor {p} p =
   let
     extern fn
-    ptr2uptr__ :
+    ptr2uptr_anchor__ :
       {a : vt@ype}
       {p : addr}
       ptr p -<> uptr (a, p, 0) = "mac#%"
   in
-    ptr2uptr__ {a} {p} p
+    ptr2uptr_anchor__ {a} {p} p
   end
 
 implement {a}
-uptr2ptr {p} {i} up =
+uptr2ptr {p} {i} (anchor, up) =
   let
     extern fn
     uptr2ptr__ :
-      {a : vt@ype}
       {p : addr}
       {i : int}
-      uptr (a, p, i) -<> ptr (p + (i * sizeof a)) = "mac#%"
+      (uptr_anchor (a, p), uptr (a, p, i)) -<>
+        ptr (p + (i * sizeof a)) = "mac#%"
   in
-    uptr2ptr__ {a} {p} {i} up
+    uptr2ptr__ {p} {i} (anchor, up)
   end
-
-implement {a}
-uptr_anchor2ptr {p} up =
-  uptr2ptr {p} {0} up
 
 implement {a} {tk}
 uptr_add_g1uint {p} {i} {j} (up, j) =
@@ -184,6 +180,7 @@ uptr_diff_unsigned {p} {i, j} (up_i, up_j) =
     uptr_diff_unsigned__ {a} {p} {i, j} (up_i, up_j, sizeof<a>)
   end
 
+(*
 implement {a}
 uptr_get {p} {i} (pf_view | up) =
   ptr_get<a> (pf_view | uptr2ptr {p} {i} up)
@@ -195,3 +192,4 @@ uptr_set {p} {i} (pf_view | up, x) =
 implement {a}
 uptr_exch {p} {i} (pf_view | up, x) =
   ptr_exch<a> (pf_view | uptr2ptr {p} {i} up, x)
+*)
