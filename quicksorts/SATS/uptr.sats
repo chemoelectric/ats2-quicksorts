@@ -125,3 +125,56 @@ uptr_exch :
     void
 
 (*------------------------------------------------------------------*)
+
+fn {a : vt@ype}
+lt_uptr_uptr :
+  {p    : addr}
+  {i, j : int}
+  (uptr (a, p, i), uptr (a, p, j)) -<> bool (i < j) = "mac#%"
+
+fn {a : vt@ype}
+lte_uptr_uptr :
+  {p    : addr}
+  {i, j : int}
+  (uptr (a, p, i), uptr (a, p, j)) -<> bool (i <= j) = "mac#%"
+
+fn {a : vt@ype}
+gt_uptr_uptr :
+  {p    : addr}
+  {i, j : int}
+  (uptr (a, p, i), uptr (a, p, j)) -<> bool (i > j) = "mac#%"
+
+fn {a : vt@ype}
+gte_uptr_uptr :
+  {p    : addr}
+  {i, j : int}
+  (uptr (a, p, i), uptr (a, p, j)) -<> bool (i >= j) = "mac#%"
+
+fn {a : vt@ype}
+eq_uptr_uptr :
+  {p    : addr}
+  {i, j : int}
+  (uptr (a, p, i), uptr (a, p, j)) -<> bool (i == j) = "mac#%"
+
+fn {a : vt@ype}
+neq_uptr_uptr :
+  {p    : addr}
+  {i, j : int}
+  (uptr (a, p, i), uptr (a, p, j)) -<> bool (i != j) = "mac#%"
+
+fn {a : vt@ype}
+compare_uptr_uptr :
+  {p    : addr}
+  {i, j : int}
+  (uptr (a, p, i), uptr (a, p, j)) -<> int (sgn (i - j)) = "mac#%"
+
+overload < with lt_uptr_uptr of 30
+overload <= with lte_uptr_uptr of 30
+overload > with gt_uptr_uptr of 30
+overload >= with gte_uptr_uptr of 30
+overload = with eq_uptr_uptr of 30
+overload <> with neq_uptr_uptr of 30
+overload != with neq_uptr_uptr of 30
+overload compare with compare_uptr_uptr of 30
+
+(*------------------------------------------------------------------*)
