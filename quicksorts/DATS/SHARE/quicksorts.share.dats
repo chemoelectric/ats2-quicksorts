@@ -93,13 +93,6 @@ discard_used_contents :
   {n : int}
   array_v (a?!, p, n) -<prf> array_v (a?, p, n)
 
-extern praxi
-array_ptr_gez :
-  {a : vt@ype}
-  {p : addr}
-  {n : pos}
-  (!array_v (a, p, n)) -<prf> [null < p] void
-
 extern fn
 g1uint_mod_uint64 :
   {x, y : int}
@@ -224,7 +217,6 @@ stk_vt_push
     :<!wrt> void =
   let
     macdef storage = !(stk.p)
-    prval () = array_ptr_gez pf_entry
   in
     stk.depth := succ (stk.depth);
     storage[STK_MAX - stk.depth] := @(p_entry, size);
