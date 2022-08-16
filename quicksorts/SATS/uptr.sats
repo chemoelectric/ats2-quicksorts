@@ -149,6 +149,17 @@ uptr_exch :
    &a >> a) -< !wrt >
     void
 
+fn {a : vt@ype}
+uptr_interchange :
+  {p : addr}
+  {n : int}
+  {i, j : nat | i <= n - 1; j <= n - 1}
+  (!array_v (a, p, n) |
+   uptr_anchor (a, p),
+   uptr (a, p, i),
+   uptr (a, p, j)) -< !wrt >
+    void
+
 (*------------------------------------------------------------------*)
 
 fn

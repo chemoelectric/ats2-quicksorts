@@ -16,6 +16,9 @@
   <https://www.gnu.org/licenses/>.
 *)
 
+staload "quicksorts/SATS/uptr.sats"
+staload _ = "quicksorts/DATS/uptr.dats"
+
 staload UN = "prelude/SATS/unsafe.sats"
 
 (*------------------------------------------------------------------*)
@@ -166,6 +169,7 @@ ptr1_ceiling_mean
   end
 *)
 
+(*
 typedef p3tr (a : vt@ype+, p : addr, i : int) =
   p2tr (a, p + (i * sizeof a))
 
@@ -239,6 +243,7 @@ p3tr_ceiling_mean
   in
     $UN.ptr2p2tr {a} {p + ((j - ((j - i) / 2)) * sizeof a)} ph
   end
+*)
 
 extern fn
 copy_bytes :
@@ -285,6 +290,7 @@ array_subcirculate_right
       $UN.ptr0_set<a> (pi, tmp)
     end
 
+(*
 fn {a : vt@ype}
 circulate_right
           {n      : int | 0 < sizeof a}
@@ -302,6 +308,7 @@ circulate_right
       move_bytes_right (pi, g1i2u (pj - pi), sizeof<a>);
       $UN.ptr0_set<a> (pi, tmp)
     end
+*)
 
 (*------------------------------------------------------------------*)
 (* A simple linear congruential generator.                          *)

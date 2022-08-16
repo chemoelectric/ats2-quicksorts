@@ -25,19 +25,57 @@
 staload "quicksorts/SATS/uptr.sats"
 staload UN = "prelude/SATS/unsafe.sats"
 
-prfn
-lemma_mul_isfun
-          {m1, n1 : int}
-          {m2, n2 : int | m1 == m2; n1 == n2}
-          ()
-    :<prf> [m1 * n1 == m2 * n2]
-           void =
-  let
-    prval pf1 = mul_make {m1, n1} ()
-    prval pf2 = mul_make {m2, n2} ()
-    prval () = mul_isfun {m1, n1} {m1 * n1, m2 * n2} (pf1, pf2)
-  in
-  end
+extern prfn
+array_v_takeout2 :     (* Get views for two distinct array elements.*)
+  {a     : vt@ype}
+  {p     : addr}
+  {n     : int}
+  {i, j  : nat | i < n; j < n; i != j}
+  array_v (a, p, n) -<prf>
+    @(a @ p + (i * sizeof a),
+      a @ p + (j * sizeof a),
+      (a @ p + (i * sizeof a),
+       a @ p + (j * sizeof a)) -<prf,lin>
+        array_v (a, p, n))
+
+primplement
+array_v_takeout2 {a} {p} {n} {i, j} pf_arr =
+  sif i < j then
+    let
+      prval @(pf1, pf1a) = array_v_split {a} {p} {n} {i} pf_arr
+      prval @(pf2, pf3) =
+        array_v_split {a} {p + (i * sizeof a)} {n - i} {j - i} pf1a
+      prval @(pf_i, pf2a) =
+        array_v_uncons {a} {p + (i * sizeof a)} {j - i} pf2
+      prval @(pf_j, pf3a) =
+        array_v_uncons {a} {p + (j * sizeof a)} {n - j} pf3
+    in
+      @(pf_i, pf_j,
+        lam (pf_i, pf_j) =<lin,prf>
+          let
+            prval pf3 =
+              array_v_cons
+                {a} {p + (j * sizeof a)} {n - j - 1} (pf_j, pf3a)
+            prval pf2 =
+              array_v_cons
+                {a} {p + (i * sizeof a)} {j - i - 1} (pf_i, pf2a)
+            prval pf1a =
+              array_v_unsplit {a} {p + (i * sizeof a)} {j - i, n - j}
+                              (pf2, pf3)
+            prval pf_arr =
+              array_v_unsplit {a} {p} {i, n - i} (pf1, pf1a)
+          in
+            pf_arr
+          end)
+    end
+  else
+    let
+      prval @(pf_j, pf_i, fpf_ji) =
+        array_v_takeout2 {a} {p} {n} {j, i} pf_arr
+    in
+      @(pf_i, pf_j,
+        lam (pf_i, pf_j) =<lin,prf> fpf_ji (pf_j, pf_i))
+    end
 
 implement {a}
 ptr2uptr_anchor {p} p =
@@ -180,16 +218,35 @@ uptr_diff_unsigned {p} {i, j} (up_i, up_j) =
     uptr_diff_unsigned__ {a} {p} {i, j} (up_i, up_j, sizeof<a>)
   end
 
-(*
 implement {a}
-uptr_get {p} {i} (pf_view | up) =
-  ptr_get<a> (pf_view | uptr2ptr {p} {i} up)
+uptr_get (pf_view | anchor, up) =
+  ptr_get<a> (pf_view | uptr2ptr (anchor, up))
 
 implement {a}
-uptr_set {p} {i} (pf_view | up, x) =
-  ptr_set<a> (pf_view | uptr2ptr {p} {i} up, x)
+uptr_set (pf_view | anchor, up, x) =
+  ptr_set<a> (pf_view | uptr2ptr (anchor, up), x)
 
 implement {a}
-uptr_exch {p} {i} (pf_view | up, x) =
-  ptr_exch<a> (pf_view | uptr2ptr {p} {i} up, x)
-*)
+uptr_exch (pf_view | anchor, up, x) =
+  ptr_exch<a> (pf_view | uptr2ptr (anchor, up), x)
+
+implement {a}
+uptr_interchange {p} {n} {i, j} (pf_arr | anchor, up_i, up_j) =
+  if up_i <> up_j then
+    let
+      fn {}
+      exch (pf_i   : !a @ (p + (i * sizeof a)),
+            pf_j   : !a @ (p + (j * sizeof a)) |
+            anchor : uptr_anchor (a, p),
+            up_i   : uptr (a, p, i),
+            p_j    : ptr (p + (j * sizeof a)))
+          :<!wrt> void =
+        uptr_exch<a> (pf_i | anchor, up_i, !p_j)
+
+      prval @(pf_i, pf_j, fpf) =
+        array_v_takeout2 {a} {p} {n} {i, j} pf_arr
+      val p_j = uptr2ptr (anchor, up_j)
+      val () = exch (pf_i, pf_j | anchor, up_i, p_j)
+      prval () = pf_arr := fpf (pf_i, pf_j)
+    in
+    end
