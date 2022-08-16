@@ -187,86 +187,83 @@ make_an_ordered_prefix
       end
   end
 
-(* fn {a : vt@ype} *)
-(* make_an_ordered_prefix_____PREFIX_____ *)
-(*           {n      : int | 2 <= n} *)
-(*           {p_arr  : addr} *)
-(*           (pf_arr : !array_v (a, p_arr, n) | *)
-(*            p_arr  : p3tr (a, p_arr, 0), *)
-(*            n      : size_t n) *)
-(*     :<!wrt> [pfx_len : int | 2 <= pfx_len; pfx_len <= n] *)
-(*             p3tr (a, p_arr, pfx_len) = *)
-(*   let *)
-(*     prval @(pf0, pf1, fpf) = *)
-(*       array_v_takeout2 {a} {p_arr} {n} {0, 1} pf_arr *)
-(*     val is_lt = lt<a> (pf1, pf0 | p2tr2ptr (p2tr_succ<a> p_arr), *)
-(*                                   p2tr2ptr p_arr) *)
-(*     prval () = pf_arr := fpf (pf0, pf1) *)
-(*   in *)
-(*     if ~is_lt then *)
-(*       let                       (\* Non-decreasing order. *\) *)
-(*         fun *)
-(*         loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n} *)
-(*              .<n - pfx_len>. *)
-(*              (pf_arr  : !array_v (a, p_arr, n) | *)
-(*               pfx_len : size_t pfx_len, *)
-(*               p       : p3tr (a, p_arr, pfx_len)) *)
-(*             :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n] *)
-(*                 p3tr (a, p_arr, pfx_len) = *)
-(*           if pfx_len = n then *)
-(*             p//p3tr_add<a> (p_arr, pfx_len) *)
-(*           else *)
-(*             let *)
-(*               prval @(pf0, pf1, fpf) = *)
-(*                 array_v_takeout2 *)
-(*                   {a} {p_arr} {n} {pfx_len - 1, pfx_len} pf_arr *)
-(*               val is_lt = lt<a> (pf1, pf0 | p2tr2ptr p, *)
-(*                                             p2tr2ptr (p2tr_pred<a> p)) *)
-(*               prval () = pf_arr := fpf (pf0, pf1) *)
-(*             in *)
-(*               if is_lt then *)
-(*                 p3tr_add<a> (p_arr, pfx_len) *)
-(*               else *)
-(*                 loop (pf_arr | succ pfx_len, p2tr_succ<a> p) *)
-(*             end *)
+fn {a : vt@ype}
+make_an_ordered_prefix___FIXME___
+          {n      : int | 2 <= n}
+          {p_arr  : addr}
+          (pf_arr : !array_v (a, p_arr, n) |
+           p_arr  : ptr p_arr,
+           n      : size_t n)
+    :<!wrt> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
+            size_t pfx_len =
+  let
+    prval @(pf0, pf1, fpf) =
+      array_v_takeout2 {a} {p_arr} {n} {0, 1} pf_arr
+    val is_lt = lt<a> (pf1, pf0 | ptr1_succ<a> p_arr, p_arr)
+    prval () = pf_arr := fpf (pf0, pf1)
+  in
+    if ~is_lt then
+      let                       (* Non-decreasing order. *)
+        fun
+        loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
+             .<n - pfx_len>.
+             (pf_arr  : !array_v (a, p_arr, n) |
+              pfx_len : size_t pfx_len,
+              p       : ptr (p_arr + (pfx_len * sizeof a)))
+            :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
+                size_t pfx_len =
+          if pfx_len = n then
+            pfx_len
+          else
+            let
+              prval @(pf0, pf1, fpf) =
+                array_v_takeout2
+                  {a} {p_arr} {n} {pfx_len - 1, pfx_len} pf_arr
+              val is_lt = lt<a> (pf1, pf0 | p, ptr1_pred<a> p)
+              prval () = pf_arr := fpf (pf0, pf1)
+            in
+              if is_lt then
+                pfx_len
+              else
+                loop (pf_arr | succ pfx_len, ptr1_succ<a> p)
+            end
 
-(*         val pi = loop (pf_arr | i2sz 2, p3tr_add<a> (p_arr, 2)) *)
-(*       in *)
-(*         pi *)
-(*       end *)
-(*     else *)
-(*       let      (\* Non-increasing order. This branch sorts unstably. *\) *)
-(*         fun *)
-(*         loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n} *)
-(*              .<n - pfx_len>. *)
-(*              (pf_arr  : !array_v (a, p_arr, n) | *)
-(*               pfx_len : size_t pfx_len, *)
-(*               p       : p3tr (a, p_arr, pfx_len)) *)
-(*             :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n] *)
-(*                 p3tr (a, p_arr, pfx_len) = *)
-(*           if pfx_len = n then *)
-(*             p3tr_add<a> (p_arr, pfx_len) *)
-(*           else *)
-(*             let *)
-(*               prval @(pf0, pf1, fpf) = *)
-(*                 array_v_takeout2 *)
-(*                   {a} {p_arr} {n} {pfx_len - 1, pfx_len} pf_arr *)
-(*               val is_lt = lt<a> (pf0, pf1 | p2tr2ptr (p2tr_pred<a> p), *)
-(*                                             p2tr2ptr p) *)
-(*               prval () = pf_arr := fpf (pf0, pf1) *)
-(*             in *)
-(*               if is_lt then *)
-(*                 p3tr_add<a> (p_arr, pfx_len) *)
-(*               else *)
-(*                 loop (pf_arr | succ pfx_len, p2tr_succ<a> p) *)
-(*             end *)
+        val pfx_len = loop (pf_arr | i2sz 2, ptr_add<a> (p_arr, 2))
+      in
+        pfx_len
+      end
+    else
+      let      (* Non-increasing order. This branch sorts unstably. *)
+        fun
+        loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
+             .<n - pfx_len>.
+             (pf_arr  : !array_v (a, p_arr, n) |
+              pfx_len : size_t pfx_len,
+              p       : ptr (p_arr + (pfx_len * sizeof a)))
+            :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
+                size_t pfx_len =
+          if pfx_len = n then
+            pfx_len
+          else
+            let
+              prval @(pf0, pf1, fpf) =
+                array_v_takeout2
+                  {a} {p_arr} {n} {pfx_len - 1, pfx_len} pf_arr
+              val is_lt = lt<a> (pf0, pf1 | ptr1_pred<a> p, p)
+              prval () = pf_arr := fpf (pf0, pf1)
+            in
+              if is_lt then
+                pfx_len
+              else
+                loop (pf_arr | succ pfx_len, ptr1_succ<a> p)
+            end
 
-(*         val pi = loop (pf_arr | i2sz 2, p3tr_add<a> (p_arr, 2)) *)
-(*       in *)
-(* // FIXME        array_subreverse<a> (!(p2tr2ptr p_arr), i2sz 0, pfx_len); *)
-(*         pi *)
-(*       end *)
-(*   end *)
+        val pfx_len = loop (pf_arr | i2sz 2, ptr_add<a> (p_arr, 2))
+      in
+        array_subreverse<a> (!p_arr, i2sz 0, pfx_len);
+        pfx_len
+      end
+  end
 
 fn {a  : vt@ype}
 insertion_position
@@ -712,7 +709,7 @@ array_unstable_sort
                 and p_ge = ptr_add<a> (p_arr1, succ n1_le)
                 and n1_ge = n1 - succ n1_le
 
-                prval [n1 : int] () = g1uint_get_static n1
+                prval [n1 : int] EQINT () = eqint_make_guint n1
                 prval @(pf_le, pf_pivot_and_ge) =
                   array_v_split {a} {..} {n1} {n1_le} pf_arr1
                 prval @(pf_pivot, pf_ge) =

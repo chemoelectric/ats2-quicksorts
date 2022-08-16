@@ -629,7 +629,7 @@ array_stable_sort
             val @(p2tr_arr1, n1) = stk_vt_pop<a> stk
             val @(pf_arr1, fpf_arr1 | p_arr1) =
               $UN.p2tr_vtake p2tr_arr1
-            prval [n1 : int] () = g1uint_get_static n1
+            prval [n1 : int] EQINT () = eqint_make_guint n1
           in
             if n1 <= array_stable_quicksort$small<a> () then
               let

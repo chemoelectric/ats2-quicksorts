@@ -32,16 +32,25 @@ typedef uptr (a : vt@ype+,
               i : int) =
   uintptr (addr2uint p + (i * sizeof a))
 
+typedef uptr_anchor (a : vt@ype+,
+                     p : addr) =
+  uptr (a, p, 0)
+
 fn {a : vt@ype}
 ptr2uptr :
   {p : addr}
-  ptr p -<> uptr (a, p, 0)
+  ptr p -<> uptr_anchor (a, p)
 
 fn {a : vt@ype}
 uptr2ptr :
   {p : addr}
   {i : int}
   uptr (a, p, i) -<> ptr (p + (i * sizeof a))
+
+fn {a : vt@ype}
+uptr_anchor2ptr :
+  {p : addr}
+  uptr_anchor (a, p) -<> ptr p
 
 (*------------------------------------------------------------------*)
 

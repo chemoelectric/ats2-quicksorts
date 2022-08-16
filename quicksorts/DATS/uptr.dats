@@ -64,6 +64,10 @@ uptr2ptr {p} {i} up =
     uptr2ptr__ {a} {p} {i} up
   end
 
+implement {a}
+uptr_anchor2ptr {p} up =
+  uptr2ptr {p} {0} up
+
 implement {a} {tk}
 uptr_add_g1uint {p} {i} {j} (up, j) =
   let

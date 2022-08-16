@@ -94,19 +94,13 @@ discard_used_contents :
   array_v (a?!, p, n) -<prf> array_v (a?, p, n)
 
 extern praxi
-g1uint_get_static :
-  {tk : tkind}
-  {i  : int}
-  g1uint (tk, i) -<prf> [j : int | j == i] void
-
-extern praxi
 array_ptr_gez :
   {a : vt@ype}
   {p : addr}
   {n : pos}
   (!array_v (a, p, n)) -<prf> [null < p] void
 
-extern praxi
+extern praxi (* FIXME: WILL WE NEED THIS? *) (* FIXME: WILL WE NEED THIS? *) (* FIXME: WILL WE NEED THIS? *)
 scaled_comparison
           {i, j : int}
           {n    : pos}
@@ -118,7 +112,7 @@ scaled_comparison
               || (i > j && i * n > j * n)]
            void
 
-prfn
+prfn (* FIXME: WILL WE NEED THIS? *) (* FIXME: WILL WE NEED THIS? *) (* FIXME: WILL WE NEED THIS? *)
 ptr_comparison
           {a    : vt@ype | 0 < sizeof a}
           {p    : addr}
@@ -404,7 +398,7 @@ stk_vt_pop
     val size_sum = stk.size_sum
     val () = $effmask_exn assertloc (size <= size_sum)
     val () = stk.size_sum := size_sum - size
-    prval [size : int] () = g1uint_get_static size
+    prval [size : int] EQINT () = eqint_make_guint size
     val () = $effmask_exn assertloc (ptr_isnot_null p_arr1)
   in
     @($UN.ptr2p2tr {array (a, size)} p_arr1,
