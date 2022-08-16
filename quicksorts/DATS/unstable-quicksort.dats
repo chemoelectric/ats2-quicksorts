@@ -397,7 +397,7 @@ array_unstable_sort
                 and p_ge = ptr_add<a> (p_arr1, succ n1_le)
                 and n1_ge = n1 - succ n1_le
 
-                prval [n1 : int] () = g1uint_get_static n1
+                prval [n1 : int] EQINT () = eqint_make_guint n1
                 prval @(pf_le, pf_pivot_and_ge) =
                   array_v_split {a} {..} {n1} {n1_le} pf_arr1
                 prval @(pf_pivot, pf_ge) =
