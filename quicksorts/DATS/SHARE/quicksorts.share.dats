@@ -96,38 +96,6 @@ discard_used_contents :
   {n : int}
   array_v (a?!, p, n) -<prf> array_v (a?, p, n)
 
-extern praxi
-array_ptr_gez :
-  {a : vt@ype}
-  {p : addr}
-  {n : pos}
-  (!array_v (a, p, n)) -<prf> [null < p] void
-
-extern praxi (* FIXME: WILL WE NEED THIS? *) (* FIXME: WILL WE NEED THIS? *) (* FIXME: WILL WE NEED THIS? *)
-scaled_comparison
-          {i, j : int}
-          {n    : pos}
-          ()
-    :<prf> [i * n == n * i;
-            j * n == n * j;
-            (i < j && i * n < j * n)
-              || (i == j && i * n == j * n)
-              || (i > j && i * n > j * n)]
-           void
-
-prfn (* FIXME: WILL WE NEED THIS? *) (* FIXME: WILL WE NEED THIS? *) (* FIXME: WILL WE NEED THIS? *)
-ptr_comparison
-          {a    : vt@ype | 0 < sizeof a}
-          {p    : addr}
-          {i, j : int}
-          (pi   : ptr (p + (i * sizeof a)),
-           pj   : ptr (p + (j * sizeof a)))
-    :<prf> [(i < j && p + (i * sizeof a) < p + (j * sizeof a))
-              || (i == j && p + (i * sizeof a) == p + (j * sizeof a))
-              || (i > j && p + (i * sizeof a) > p + (j * sizeof a))]
-           void =
-  scaled_comparison {i, j} {sizeof a} ()
-
 extern fn
 g1uint_mod_uint64 :
   {x, y : int}
@@ -144,106 +112,6 @@ ptr1_eq {a    : vt@ype}
         (pi   : ptr (p + (i * sizeof a)),
          pj   : ptr (p + (j * sizeof a)))
     :<> bool (i == j) = "mac#%"
-
-(* FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME
-fn {a : vt@ype}
-ptr1_ceiling_mean
-          {p    : addr | 0 < sizeof a}
-          {i, j : int | i < j}
-          (pi   : ptr (p + (i * sizeof a)),
-           pj   : ptr (p + (j * sizeof a)))
-    :<> ptr (p + (j - ((j - i) / 2)) * sizeof a) =
-  let
-    extern fn
-    ptr1_ceiling_mean__
-              {p      : addr}
-              {i, j   : int | i < j}
-              {elemsz : pos}
-              (pi     : ptr (p + (i * elemsz)),
-               pj     : ptr (p + (j * elemsz)),
-               elemsz : size_t elemsz)
-        :<> ptr (p + (j - ((j - i) / 2)) * sizeof a) = "mac#%"
-  in
-    ptr1_ceiling_mean__ {p} {i, j} {sizeof a}
-                        (pi, pj, sizeof<a>)
-  end
-*)
-
-(*
-typedef p3tr (a : vt@ype+, p : addr, i : int) =
-  p2tr (a, p + (i * sizeof a))
-
-fn {a  : vt@ype}
-   {tk : tkind}
-g1uint_p3tr_add {p : addr}
-                {i : int}
-                {j : int}
-                (p : p3tr (a, p, i),
-                 j : g1uint (tk, j))
-    :<> p3tr (a, p, i + j) =
-  $UN.cast (ptr_add<a> (p2tr2ptr p, j))
-
-fn {a  : vt@ype}
-   {tk : tkind}
-g1int_p3tr_add {p : addr}
-               {i : int}
-               {j : int}
-               (p : p3tr (a, p, i),
-                j : g1int (tk, j))
-    :<> p3tr (a, p, i + j) =
-  $UN.cast (ptr_add<a> (p2tr2ptr p, j))
-
-overload p3tr_add with g1uint_p3tr_add
-overload p3tr_add with g1int_p3tr_add
-
-fn {a  : vt@ype}
-   {tk : tkind}
-g1uint_p3tr_sub {p : addr}
-                {i : int}
-                {j : int}
-                (p : p3tr (a, p, i),
-                 j : g1uint (tk, j))
-    :<> p3tr (a, p, i + j) =
-  $UN.cast (ptr_sub<a> (p2tr2ptr p, j))
-
-fn {a  : vt@ype}
-   {tk : tkind}
-g1int_p3tr_sub {p : addr}
-               {i : int}
-               {j : int}
-               (p : p3tr (a, p, i),
-                j : g1int (tk, j))
-    :<> p3tr (a, p, i + j) =
-  $UN.cast (ptr_sub<a> (p2tr2ptr p, j))
-
-overload p3tr_sub with g1uint_p3tr_sub
-overload p3tr_sub with g1int_p3tr_sub
-
-fn {a : vt@ype}
-p3tr_ceiling_mean
-          {p    : addr | 0 < sizeof a}
-          {i, j : int | i < j}
-          (pi   : p3tr (a, p, i),
-           pj   : p3tr (a, p, j))
-    :<> p3tr (a, p, j - ((j - i) / 2)) =
-  let
-    extern fn
-    ptr1_ceiling_mean__
-              {p      : addr}
-              {i, j   : int | i < j}
-              {elemsz : pos}
-              (pi     : ptr (p + (i * elemsz)),
-               pj     : ptr (p + (j * elemsz)),
-               elemsz : size_t elemsz)
-        :<> ptr (p + ((j - ((j - i) / 2)) * sizeof a)) = "mac#%"
-
-    val ph =
-      ptr1_ceiling_mean__ {p} {i, j} {sizeof a}
-                          (p2tr2ptr pi, p2tr2ptr pj, sizeof<a>)
-  in
-    $UN.ptr2p2tr {a} {p + ((j - ((j - i) / 2)) * sizeof a)} ph
-  end
-*)
 
 extern fn
 copy_bytes :
@@ -380,7 +248,6 @@ stk_vt_push
     :<!wrt> void =
   let
     macdef storage = !(stk.p)
-    prval () = array_ptr_gez pf_entry
   in
     stk.depth := succ (stk.depth);
     storage[STK_MAX - stk.depth] := @(p_entry, size);

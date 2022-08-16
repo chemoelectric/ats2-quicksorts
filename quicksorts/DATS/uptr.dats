@@ -18,8 +18,8 @@
 
 #define ATS_DYNLOADFLAG 0
 
-#define ATS_PACKNAME "ats2-quicksorts"
-#define ATS_EXTERN_PREFIX "ats2_quicksorts_"
+#define ATS_PACKNAME "ats2-quicksorts-uptr"
+#define ATS_EXTERN_PREFIX "ats2_quicksorts_uptr_"
 
 #include "share/atspre_staload.hats"
 staload "quicksorts/SATS/uptr.sats"
@@ -94,12 +94,13 @@ uptr2ptr {p} {i} (anchor, up) =
   let
     extern fn
     uptr2ptr__ :
+      {a : vt@ype}
       {p : addr}
       {i : int}
       (uptr_anchor (a, p), uptr (a, p, i)) -<>
         ptr (p + (i * sizeof a)) = "mac#%"
   in
-    uptr2ptr__ {p} {i} (anchor, up)
+    uptr2ptr__ {a} {p} {i} (anchor, up)
   end
 
 implement {a} {tk}
@@ -275,3 +276,31 @@ subreverse_uptr_uptr {p} {n} {i, j} (pf_arr | anchor, up_i, up_j) =
   in
     loop (pf_arr | up_i, up_j)
   end
+
+implement {a}
+subcirculate_right_uptr_uptr {p} {n} {i, j}
+                             (pf_arr | anchor, up_i, up_j) =
+  if up_i <> up_j then
+    let
+      extern fn                 (* Unsafe memmove. *)
+      memmove : (Ptr, Ptr, Size_t) -< !wrt > void = "mac#%"
+
+      prval @(pf_i, pf_j, fpf) =
+        array_v_takeout2 {a} {p} {n} {i, j} pf_arr
+
+      val tmp = uptr_get<a> (pf_j | anchor, up_j)
+
+      prval () = lemma_sizeof {a} ()
+      prval () = mul_gte_gte_gte {j - i, sizeof a} ()
+      val () =
+        memmove (uptr2ptr (anchor, uptr_succ<a> up_i),
+                 uptr2ptr (anchor, up_i),
+                 uptr_diff_unsigned<a> (up_j, up_i) * sizeof<a>)
+
+      prval () = $UN.castview2void_at{a?}{a} pf_i
+      val () = uptr_set<a> (pf_i | anchor, up_i, tmp)
+
+      prval () = $UN.castview2void_at{a}{a?!} pf_j
+      prval () = pf_arr := fpf (pf_i, pf_j)
+    in
+    end

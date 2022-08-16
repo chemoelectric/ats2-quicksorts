@@ -236,7 +236,21 @@ subreverse_uptr_uptr :
    uptr (a, p, j)) -< !wrt >
     void
 
+(* Circular rotation right by one element. The value at the jth
+   position gets moved to the ith position. *)
+fn {a : vt@ype}
+subcirculate_right_uptr_uptr :
+  {p    : addr}
+  {n    : int}
+  {i, j : int | 0 <= i; i <= j; j <= n - 1}
+  (!array_v (a, p, n) |
+   uptr_anchor (a, p),
+   uptr (a, p, i),
+   uptr (a, p, j)) -< !wrt >
+    void
+
 overload interchange with interchange_uptr_uptr
 overload subreverse with subreverse_uptr_uptr
+overload subcirculate_right with subcirculate_right_uptr_uptr
 
 (*------------------------------------------------------------------*)

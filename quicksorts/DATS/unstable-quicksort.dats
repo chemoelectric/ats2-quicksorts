@@ -133,86 +133,8 @@ make_an_ordered_prefix
           {n      : int | 2 <= n}
           {p_arr  : addr}
           (pf_arr : !array_v (a, p_arr, n) |
-           p_arr  : ptr p_arr,
-           n      : size_t n)
-    :<!wrt> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
-            size_t pfx_len =
-  let
-    prval @(pf0, pf1, fpf) =
-      array_v_takeout2 {a} {p_arr} {n} {0, 1} pf_arr
-    val is_lt = lt<a> (pf1, pf0 | ptr1_succ<a> p_arr, p_arr)
-    prval () = pf_arr := fpf (pf0, pf1)
-  in
-    if ~is_lt then
-      let                       (* Non-decreasing order. *)
-        fun
-        loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
-             .<n - pfx_len>.
-             (pf_arr  : !array_v (a, p_arr, n) |
-              pfx_len : size_t pfx_len,
-              p       : ptr (p_arr + (pfx_len * sizeof a)))
-            :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
-                size_t pfx_len =
-          if pfx_len = n then
-            pfx_len
-          else
-            let
-              prval @(pf0, pf1, fpf) =
-                array_v_takeout2
-                  {a} {p_arr} {n} {pfx_len - 1, pfx_len} pf_arr
-              val is_lt = lt<a> (pf1, pf0 | p, ptr1_pred<a> p)
-              prval () = pf_arr := fpf (pf0, pf1)
-            in
-              if is_lt then
-                pfx_len
-              else
-                loop (pf_arr | succ pfx_len, ptr1_succ<a> p)
-            end
-
-        val pfx_len = loop (pf_arr | i2sz 2, ptr_add<a> (p_arr, 2))
-      in
-        pfx_len
-      end
-    else
-      let      (* Non-increasing order. This branch sorts unstably. *)
-        fun
-        loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
-             .<n - pfx_len>.
-             (pf_arr  : !array_v (a, p_arr, n) |
-              pfx_len : size_t pfx_len,
-              p       : ptr (p_arr + (pfx_len * sizeof a)))
-            :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
-                size_t pfx_len =
-          if pfx_len = n then
-            pfx_len
-          else
-            let
-              prval @(pf0, pf1, fpf) =
-                array_v_takeout2
-                  {a} {p_arr} {n} {pfx_len - 1, pfx_len} pf_arr
-              val is_lt = lt<a> (pf0, pf1 | ptr1_pred<a> p, p)
-              prval () = pf_arr := fpf (pf0, pf1)
-            in
-              if is_lt then
-                pfx_len
-              else
-                loop (pf_arr | succ pfx_len, ptr1_succ<a> p)
-            end
-
-        val pfx_len = loop (pf_arr | i2sz 2, ptr_add<a> (p_arr, 2))
-      in
-        array_subreverse<a> (!p_arr, i2sz 0, pfx_len);
-        pfx_len
-      end
-  end
-
-fn {a : vt@ype}
-make_an_ordered_prefix___FIXME___
-          {n      : int | 2 <= n}
-          {p_arr  : addr}
-          (pf_arr : !array_v (a, p_arr, n) |
            up_arr : uptr_anchor (a, p_arr),
-           n      : size_t n)
+           up_n   : uptr (a, p_arr, n))
     :<!wrt> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
             uptr (a, p_arr, pfx_len) =
   let
@@ -221,8 +143,6 @@ make_an_ordered_prefix___FIXME___
     val is_lt =
       lt<a> (pf1, pf0 | up_arr, uptr_succ<a> up_arr, up_arr)
     prval () = pf_arr := fpf (pf0, pf1)
-
-    val up_n = uptr_add<a> (up_arr, n)
   in
     if ~is_lt then
       let                       (* Non-decreasing order. *)
@@ -287,57 +207,6 @@ make_an_ordered_prefix___FIXME___
 
 fn {a  : vt@ype}
 insertion_position
-          {n      : int}
-          {i      : pos | i < n}
-          {p_arr  : addr}
-          (pf_arr : !array_v (a, p_arr, n) >> _ |
-           p_arr  : ptr p_arr,
-           i      : size_t i)
-    :<> [j : nat | j <= i]
-        size_t j =
-  (*
-    A binary search.
-
-    References:
-
-      * H. Bottenbruch, "Structure and use of ALGOL 60", Journal of
-        the ACM, Volume 9, Issue 2, April 1962, pp.161-221.
-        https://doi.org/10.1145/321119.321120
-
-        The general algorithm is described on pages 214 and 215.
-
-      * https://en.wikipedia.org/w/index.php?title=Binary_search_algorithm&oldid=1062988272#Alternative_procedure
-  *)
-  let
-    fun
-    loop {j, k : int | 0 <= j; j <= k; k < i}
-         .<k - j>.
-         (arr : &array (a, n),
-          j   : size_t j,
-          k   : size_t k)
-        :<> [j1 : nat | j1 <= i]
-            size_t j1 =
-      if j <> k then
-        let
-          val h = k - half (k - j) (* (j + k) ceildiv 2 *)
-         in
-          if array_element_lt<a> {n} (arr, i, h) then
-            loop (arr, j, pred h)
-          else
-            loop (arr, h, k)
-        end
-      else if j <> i2sz 0 then
-        succ j
-      else if array_element_lt<a> {n} (arr, i, i2sz 0) then
-        i2sz 0
-      else
-        i2sz 1
-  in
-    loop (!p_arr, i2sz 0, pred i)
-  end
-
-fn {a  : vt@ype}
-insertion_position___FIXME___
           {n      : int}
           {i      : pos | i < n}
           {p_arr  : addr}
@@ -410,70 +279,29 @@ array_insertion_sort
           {n       : nat}
           {p_arr   : addr}
           (pf_arr  : !array_v (a, p_arr, n) >> _ |
-           p_arr   : ptr p_arr,
-           n       : size_t n)
+           up_arr  : uptr_anchor (a, p_arr),
+           up_n    : uptr (a, p_arr, n))
     :<!wrt> void =
-  if n > 1 then
-    let
+  if uptr_diff_unsigned<a> (up_n, up_arr) > i2sz 1 then
+    let      
       fun
       loop {i : pos | i <= n}
            .<n - i>.
            (pf_arr : !array_v (a, p_arr, n) >> _ |
-            i      : size_t i)
+            up_i   : uptr (a, p_arr, i))
           :<!wrt> void =
-        if i <> n then
+        if up_i <> up_n then
           let
-            val j = insertion_position<a> {n} (pf_arr | p_arr, i)
+            val up_j = insertion_position<a> (pf_arr | up_arr, up_i)
           in
-            array_subcirculate_right<a> (!p_arr, j, i);
-            loop (pf_arr | succ i)
+            subcirculate_right<a> (pf_arr | up_arr, up_j, up_i);
+            loop (pf_arr | uptr_succ<a> up_i)
           end
 
-      val prefix_length =
-        make_an_ordered_prefix<a> (pf_arr | p_arr, n)
+      val up_i = make_an_ordered_prefix<a> (pf_arr | up_arr, up_n)
     in
-      loop (pf_arr | prefix_length)
+      loop (pf_arr | up_i)
     end
-
-(*
-fn {a : vt@ype}
-array_insertion_sort__FIXME_______POINTER_VERSION___
-          {n       : nat | 0 < sizeof a}
-          {p_arr   : addr}
-          (pf_arr  : !array_v (a, p_arr, n) >> _ |
-           p_arr   : ptr p_arr,
-           n       : size_t n)
-    :<!wrt> void =
-  if n > i2sz 1 then
-    let
-      fun
-      loop {i : pos | i <= n}
-           .<n - i>.
-           (pf_arr : !array_v (a, p_arr, n) >> _ |
-            i      : size_t i,
-            pi     : ptr (p_arr + (i * sizeof a)))
-          :<!wrt> void =
-        if i <> n then (* FIXME: USE A POINTER TO DETECT END. *)   (* FIXME: USE A POINTER TO DETECT END. *)
-          let
-            val pj = insertion_position__FIXME_______POINTER_VERSION___<a> {n} {i} {p_arr} (pf_arr | p_arr, pi)
-//            prval [j : int] () =
-//              ptr1_get_static_relative {a} {p_arr} (p_arr, pj)
-(*
-            prval () = ptr_comparison {a} {p_arr} {0, i} (p_arr, pi)
-            prval () = ptr_comparison {a} {p_arr} (pi, pj)
-*)
-          in
-//            circulate_right<a> {n} {p_arr} {j, i} (pf_arr | pj, pi);
-            circulate_right<a> {n} {p_arr} (pf_arr | pj, pi);
-            loop (pf_arr | succ i, ptr1_succ<a> pi)
-          end
-
-      val pfx_len = (* FIXME: GET A POINTER. *)(* FIXME: GET A POINTER. *)(* FIXME: GET A POINTER. *)
-        make_an_ordered_prefix<a> (pf_arr | p_arr, n)
-    in
-      loop (pf_arr | pfx_len, ptr_add<a> (p_arr, pfx_len))
-    end
-*)
 
 fn {a : vt@ype}
 move_i_rightwards
@@ -659,8 +487,11 @@ array_unstable_sort
          in
             if n1 <= array_unstable_quicksort$small<a> () then
               let
+                val up_arr1 = ptr2uptr_anchor p_arr1
+                val up_n1 = uptr_add<a> (up_arr1, n1)
                 val () =
-                  array_insertion_sort<a> (pf_arr1 | p_arr1, n1)
+                  array_insertion_sort (pf_arr1 | up_arr1, up_n1)
+
                 prval () = fpf_arr1 pf_arr1
               in
                 loop stk
