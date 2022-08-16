@@ -23,6 +23,8 @@
 
 #include "share/atspre_staload.hats"
 staload "quicksorts/SATS/unstable-quicksort.sats"
+staload "quicksorts/SATS/uptr.sats"
+staload _ = "quicksorts/DATS/uptr.dats"
 staload UN = "prelude/SATS/unsafe.sats"
 
 #define DEFAULT_ARRAY_INSERTION_SORT_THRESHOLD 80
@@ -42,13 +44,28 @@ staload UN = "prelude/SATS/unsafe.sats"
 #include "quicksorts/DATS/SHARE/quicksorts.share.dats"
 
 fn {a : vt@ype}
-lt {p, q : addr}
-   (pf_p : !a @ p,
-    pf_q : !a @ q |
-    p    : ptr p,
-    q    : ptr q)
+elem_lt_ptr1_ptr1
+          {p, q : addr}
+          (pf_p : !a @ p,
+           pf_q : !a @ q |
+           p    : ptr p,
+           q    : ptr q)
     :<> bool =
   array_unstable_quicksort$lt<a> (!p, !q)
+
+fn {a : vt@ype}
+elem_lt_uptr_uptr
+          {p    : addr}
+          {i, j : int}
+          (pf_i : !a @ (p + (i * sizeof a)),
+           pf_j : !a @ (p + (j * sizeof a)) |
+           up_i : uptr (a, p, i),
+           up_j : uptr (a, p, j))
+    :<> bool =
+  elem_lt_ptr1_ptr1<a> (pf_i, pf_j | uptr2ptr up_i, uptr2ptr up_j)
+
+overload lt with elem_lt_ptr1_ptr1
+overload lt with elem_lt_uptr_uptr
 
 fn {a : vt@ype}
 array_element_lt
@@ -192,14 +209,14 @@ make_an_ordered_prefix___FIXME___
           {n      : int | 2 <= n}
           {p_arr  : addr}
           (pf_arr : !array_v (a, p_arr, n) |
-           p_arr  : ptr p_arr,
+           up_arr : uptr_anchor (a, p_arr),
            n      : size_t n)
     :<!wrt> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
             size_t pfx_len =
   let
     prval @(pf0, pf1, fpf) =
       array_v_takeout2 {a} {p_arr} {n} {0, 1} pf_arr
-    val is_lt = lt<a> (pf1, pf0 | ptr1_succ<a> p_arr, p_arr)
+    val is_lt = lt<a> (pf1, pf0 | uptr_succ<a> up_arr, up_arr)
     prval () = pf_arr := fpf (pf0, pf1)
   in
     if ~is_lt then
@@ -209,7 +226,7 @@ make_an_ordered_prefix___FIXME___
              .<n - pfx_len>.
              (pf_arr  : !array_v (a, p_arr, n) |
               pfx_len : size_t pfx_len,
-              p       : ptr (p_arr + (pfx_len * sizeof a)))
+              up      : uptr (a, p_arr, pfx_len))
             :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
                 size_t pfx_len =
           if pfx_len = n then
@@ -219,16 +236,16 @@ make_an_ordered_prefix___FIXME___
               prval @(pf0, pf1, fpf) =
                 array_v_takeout2
                   {a} {p_arr} {n} {pfx_len - 1, pfx_len} pf_arr
-              val is_lt = lt<a> (pf1, pf0 | p, ptr1_pred<a> p)
+              val is_lt = lt<a> (pf1, pf0 | up, uptr_pred<a> up)
               prval () = pf_arr := fpf (pf0, pf1)
             in
               if is_lt then
                 pfx_len
               else
-                loop (pf_arr | succ pfx_len, ptr1_succ<a> p)
+                loop (pf_arr | succ pfx_len, uptr_succ<a> up)
             end
 
-        val pfx_len = loop (pf_arr | i2sz 2, ptr_add<a> (p_arr, 2))
+        val pfx_len = loop (pf_arr | i2sz 2, uptr_add<a> (up_arr, 2))
       in
         pfx_len
       end
@@ -239,7 +256,7 @@ make_an_ordered_prefix___FIXME___
              .<n - pfx_len>.
              (pf_arr  : !array_v (a, p_arr, n) |
               pfx_len : size_t pfx_len,
-              p       : ptr (p_arr + (pfx_len * sizeof a)))
+              up      : uptr (a, p_arr, pfx_len))
             :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
                 size_t pfx_len =
           if pfx_len = n then
@@ -249,16 +266,17 @@ make_an_ordered_prefix___FIXME___
               prval @(pf0, pf1, fpf) =
                 array_v_takeout2
                   {a} {p_arr} {n} {pfx_len - 1, pfx_len} pf_arr
-              val is_lt = lt<a> (pf0, pf1 | ptr1_pred<a> p, p)
+              val is_lt = lt<a> (pf0, pf1 | uptr_pred<a> up, up)
               prval () = pf_arr := fpf (pf0, pf1)
             in
               if is_lt then
                 pfx_len
               else
-                loop (pf_arr | succ pfx_len, ptr1_succ<a> p)
+                loop (pf_arr | succ pfx_len, uptr_succ<a> up)
             end
 
-        val pfx_len = loop (pf_arr | i2sz 2, ptr_add<a> (p_arr, 2))
+        val pfx_len = loop (pf_arr | i2sz 2, uptr_add<a> (up_arr, 2))
+        val p_arr = uptr_anchor2ptr {p_arr} up_arr
       in
         array_subreverse<a> (!p_arr, i2sz 0, pfx_len);
         pfx_len

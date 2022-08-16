@@ -25,12 +25,7 @@
 
 (*------------------------------------------------------------------*)
 
-stacst addr2uint : addr -> int
-
-typedef uptr (a : vt@ype+,
-              p : addr,
-              i : int) =
-  uintptr (addr2uint p + (i * sizeof a))
+abst@ype uptr (a : vt@ype+, p : addr, i : int) = uintptr
 
 typedef uptr_anchor (a : vt@ype+,
                      p : addr) =
