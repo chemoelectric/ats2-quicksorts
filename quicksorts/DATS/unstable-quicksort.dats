@@ -66,8 +66,29 @@ elem_lt_uptr_uptr
   elem_lt_ptr1_ptr1<a> (pf_i, pf_j | uptr2ptr (anchor, up_i),
                                      uptr2ptr (anchor, up_j))
 
+fn {a : vt@ype}
+elem_lt_array_uptr_uptr
+          {p_arr  : addr}
+          {n      : int}
+          {i, j   : nat | i <= n - 1; j <= n - 1; i != j}
+          (pf_arr : !array_v (a, p_arr, n) |
+           up_arr : uptr_anchor (a, p_arr),
+           up_i   : uptr (a, p_arr, i),
+           up_j   : uptr (a, p_arr, j))
+    :<> bool =
+  let
+    prval @(pf_i, pf_j, fpf) =
+      array_v_takeout2 {a} {p_arr} {n} {i, j} pf_arr
+    val is_lt =
+      elem_lt_uptr_uptr<a> (pf_i, pf_j | up_arr, up_i, up_j)
+    prval () = pf_arr := fpf (pf_i, pf_j)
+  in
+    is_lt
+  end
+
 overload lt with elem_lt_ptr1_ptr1
 overload lt with elem_lt_uptr_uptr
+overload lt with elem_lt_array_uptr_uptr
 
 fn {a : vt@ype}
 array_element_lt
@@ -130,86 +151,58 @@ array_unstable_quicksort_pivot_index_median_of_three {n} (arr, n) =
 
 fn {a : vt@ype}
 make_an_ordered_prefix
-          {n      : int | 2 <= n}
           {p_arr  : addr}
+          {n      : int | 2 <= n}
           (pf_arr : !array_v (a, p_arr, n) |
            up_arr : uptr_anchor (a, p_arr),
            up_n   : uptr (a, p_arr, n))
     :<!wrt> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
             uptr (a, p_arr, pfx_len) =
-  let
-    prval @(pf0, pf1, fpf) =
-      array_v_takeout2 {a} {p_arr} {n} {0, 1} pf_arr
-    val is_lt =
-      lt<a> (pf1, pf0 | up_arr, uptr_succ<a> up_arr, up_arr)
-    prval () = pf_arr := fpf (pf0, pf1)
-  in
-    if ~is_lt then
-      let                       (* Non-decreasing order. *)
-        fun
-        loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
-             .<n - pfx_len>.
-             (pf_arr  : !array_v (a, p_arr, n) |
-              up      : uptr (a, p_arr, pfx_len))
-            :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
-                uptr (a, p_arr, pfx_len) =
-          if up = up_n then
-            up
-          else
-            let
-              prval @(pf0, pf1, fpf) =
-                array_v_takeout2
-                  {a} {p_arr} {n} {pfx_len - 1, pfx_len} pf_arr
-              val is_lt =
-                lt<a> (pf1, pf0 | up_arr, up, uptr_pred<a> up)
-              prval () = pf_arr := fpf (pf0, pf1)
-            in
-              if is_lt then
-                up
-              else
-                loop (pf_arr | uptr_succ<a> up)
-            end
-      in
-        loop (pf_arr | uptr_add<a> (up_arr, 2))
-      end
-    else
-      let      (* Non-increasing order. This branch sorts unstably. *)
-        fun
-        loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
-             .<n - pfx_len>.
-             (pf_arr  : !array_v (a, p_arr, n) |
-              up      : uptr (a, p_arr, pfx_len))
-            :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
-                uptr (a, p_arr, pfx_len) =
-          if up = up_n then
-            up
-          else
-            let
-              prval @(pf0, pf1, fpf) =
-                array_v_takeout2
-                  {a} {p_arr} {n} {pfx_len - 1, pfx_len} pf_arr
-              val is_lt =
-                lt<a> (pf0, pf1 | up_arr, uptr_pred<a> up, up)
-              prval () = pf_arr := fpf (pf0, pf1)
-            in
-              if is_lt then
-                up
-              else
-                loop (pf_arr | uptr_succ<a> up)
-            end
+  if ~lt<a> (pf_arr | up_arr, uptr_succ<a> up_arr, up_arr) then
+    let                       (* Non-decreasing order. *)
+      fun
+      loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
+           .<n - pfx_len>.
+           (pf_arr  : !array_v (a, p_arr, n) |
+            up      : uptr (a, p_arr, pfx_len))
+          :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
+              uptr (a, p_arr, pfx_len) =
+        if up = up_n then
+          up
+        else if lt<a> (pf_arr | up_arr, up, uptr_pred<a> up) then
+          up
+        else
+          loop (pf_arr | uptr_succ<a> up)
+    in
+      loop (pf_arr | uptr_add<a> (up_arr, 2))
+    end
+  else
+    let      (* Non-increasing order. This branch sorts unstably. *)
+      fun
+      loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
+           .<n - pfx_len>.
+           (pf_arr  : !array_v (a, p_arr, n) |
+            up      : uptr (a, p_arr, pfx_len))
+          :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
+              uptr (a, p_arr, pfx_len) =
+        if up = up_n then
+          up
+        else if lt<a> (pf_arr | up_arr, uptr_pred<a> up, up) then
+          up
+        else
+          loop (pf_arr | uptr_succ<a> up)
 
-        val up = loop (pf_arr | uptr_add<a> (up_arr, 2))
-      in
-        subreverse<a> (pf_arr | up_arr, up_arr, up);
-        up
-      end
-  end
+      val up = loop (pf_arr | uptr_add<a> (up_arr, 2))
+    in
+      subreverse<a> (pf_arr | up_arr, up_arr, up);
+      up
+    end
 
 fn {a  : vt@ype}
 insertion_position
+          {p_arr  : addr}
           {n      : int}
           {i      : pos | i < n}
-          {p_arr  : addr}
           (pf_arr : !array_v (a, p_arr, n) |
            up_arr : uptr_anchor (a, p_arr),
            up_i   : uptr (a, p_arr, i))
@@ -245,39 +238,26 @@ insertion_position
           val up_h : uptr (a, p_arr, h) =
             uptr_sub<a>
               (up_k, half (uptr_diff_unsigned<a> (up_k, up_j)))
-
-          prval @(pf_i, pf_h, fpf) =
-            array_v_takeout2 {a} {p_arr} {n} {i, h} pf_arr
-          val is_lt = lt<a> (pf_i, pf_h | up_arr, up_i, up_h)
-          prval () = pf_arr := fpf (pf_i, pf_h)
         in
-          if is_lt then
+          if lt<a> (pf_arr | up_arr, up_i, up_h) then
             loop (pf_arr | up_j, uptr_pred<a> up_h)
           else
             loop (pf_arr | up_h, up_k)
         end
       else if up_j <> up_arr then
         uptr_succ<a> up_j
+      else if lt<a> (pf_arr | up_arr, up_i, up_arr) then
+        up_arr
       else
-        let
-          prval @(pf_i, pf_0, fpf) =
-            array_v_takeout2 {a} {p_arr} {n} {i, 0} pf_arr
-          val is_lt = lt<a> (pf_i, pf_0 | up_arr, up_i, up_arr)
-          prval () = pf_arr := fpf (pf_i, pf_0)
-        in
-          if is_lt then
-            up_arr
-          else
-            uptr_succ<a> up_arr
-        end
+        uptr_succ<a> up_arr
   in
     loop (pf_arr | up_arr, uptr_pred<a> up_i)
   end
 
 fn {a : vt@ype}
 array_insertion_sort
-          {n       : nat}
           {p_arr   : addr}
+          {n       : nat}
           (pf_arr  : !array_v (a, p_arr, n) >> _ |
            up_arr  : uptr_anchor (a, p_arr),
            up_n    : uptr (a, p_arr, n))
@@ -332,6 +312,39 @@ move_i_rightwards
         loop (arr, succ i)
   in
     loop (arr, i)
+  end
+
+fn {a : vt@ype}
+move_i_rightwards___FIXME___
+          {p_arr    : addr}
+          {n        : int}
+          {i, j     : nat | i <= j; j <= n - 1}
+          {i_pivot  : nat | i_pivot <= n - 1}
+          (pf_arr   : !array_v (a, p_arr, n) |
+           up_arr   : uptr_anchor (a, p_arr),
+           up_i     : uptr (a, p_arr, i),
+           up_j     : uptr (a, p_arr, j),
+           up_pivot : uptr (a, p_arr, i_pivot))
+    :<> [i1 : int | i <= i1; i1 <= j]
+        uptr (a, p_arr, i1) =
+  let
+    fun
+    loop {i : nat | i <= j}
+         .<j - i>.
+         (pf_arr : !array_v (a, p_arr, n) |
+          up_i   : uptr (a, p_arr, i))
+        :<> [i1 : int | i <= i1; i1 <= j]
+            uptr (a, p_arr, i1) =
+      if up_i = up_j then
+        up_i
+      else if up_i = up_pivot then
+        up_i
+      else if ~lt<a> (pf_arr | up_arr, up_i, up_pivot) then
+        up_i
+      else
+        loop (pf_arr | uptr_succ<a> up_i)
+  in
+    loop (pf_arr | up_i)
   end
 
 fn {a : vt@ype}
