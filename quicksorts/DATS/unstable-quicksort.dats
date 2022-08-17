@@ -305,13 +305,13 @@ partition {n     : pos}
             size_t i_pivot_final =
   let
     fun
-    outer_loop {i, j    : int | 0 <= i; i <= j; j <= n - 1}
-               {i_pivot : int | i <= i_pivot; i_pivot <= j}
-               .<j - i>.
-               (arr     : &array (a, n),
-                i       : size_t i,
-                j       : size_t j,
-                i_pivot : size_t i_pivot)
+    loop {i, j    : int | 0 <= i; i <= j; j <= n - 1}
+         {i_pivot : int | i <= i_pivot; i_pivot <= j}
+         .<j - i>.
+         (arr     : &array (a, n),
+          i       : size_t i,
+          j       : size_t j,
+          i_pivot : size_t i_pivot)
         :<!wrt> [i_final : nat | i_final <= n - 1]
                 size_t i_final =
       let
@@ -334,24 +334,24 @@ partition {n     : pos}
                 val i_pivot1 = j1 - half diff
               in
                 array_interchange<a> (arr, i_pivot1, j1);
-                outer_loop (arr, succ i1, j1, i_pivot1)
+                loop (arr, succ i1, j1, i_pivot1)
               end
             else if j1 = i_pivot then
               let               (* Keep the pivot between i and j. *)
                 val i_pivot1 = i1 + half diff
               in
                 array_interchange<a> (arr, i_pivot1, i1);
-                outer_loop (arr, i1, pred j1, i_pivot1)
+                loop (arr, i1, pred j1, i_pivot1)
               end
             else
-              outer_loop (arr, succ i1, pred j1, i_pivot)
+              loop (arr, succ i1, pred j1, i_pivot)
           end
       end
 
     val i_pivot_initial =
       array_unstable_quicksort$pivot_index<a> (arr, n)
   in
-    outer_loop (arr, i2sz 0, pred n, i_pivot_initial)
+    loop (arr, i2sz 0, pred n, i_pivot_initial)
   end
 
 fn {a : vt@ype}
