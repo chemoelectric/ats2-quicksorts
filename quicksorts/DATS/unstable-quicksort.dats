@@ -379,6 +379,39 @@ move_j_leftwards
   end
 
 fn {a : vt@ype}
+move_j_leftwards___FIXME___
+          {p_arr    : addr}
+          {n        : int}
+          {i, j     : nat | i <= j; j <= n - 1}
+          {i_pivot  : nat | i_pivot <= n - 1}
+          (pf_arr   : !array_v (a, p_arr, n) |
+           up_arr   : uptr_anchor (a, p_arr),
+           up_i     : uptr (a, p_arr, i),
+           up_j     : uptr (a, p_arr, j),
+           up_pivot : uptr (a, p_arr, i_pivot))
+    :<> [j1 : nat | i <= j1; j1 <= j]
+        uptr (a, p_arr, j1) =
+  let
+    fun
+    loop {j : nat | i <= j; j <= n - 1}
+         .<j - i>.
+         (pf_arr : !array_v (a, p_arr, n) |
+          up_j   : uptr (a, p_arr, j))
+        :<> [j1 : nat | i <= j1; j1 <= j]
+            uptr (a, p_arr, j1) =
+      if up_i = up_j then
+        up_j
+      else if up_j = up_pivot then
+        up_j
+      else if ~lt<a> (pf_arr | up_arr, up_pivot, up_j) then
+        up_j
+      else
+        loop (pf_arr | uptr_pred<a> up_j)
+  in
+    loop (pf_arr | up_j)
+  end
+
+fn {a : vt@ype}
 partition {n     : pos}
           (arr   : &array (a, n),
            n     : size_t n)
@@ -469,6 +502,117 @@ partition {n     : pos}
     val j = move_j_leftwards<a> (arr, i, pred n, i_pivot_middle)
   in
     loop (arr, i, j, i_pivot_middle)
+  end
+
+fn {a : vt@ype}
+partition___FIXME___ (* FIXME: WRITE A VERSION FOR THE OTHER PARTITION ALGORITHM, TOO. *)
+          {p_arr  : addr}
+          {n      : pos}
+          (pf_arr : !array_v (a, p_arr, n) |
+           up_arr : uptr_anchor (a, p_arr),
+           up_n   : uptr (a, p_arr, n))
+    :<!wrt> [i_pivot_final : nat | i_pivot_final < n]
+            uptr (a, p_arr, i_pivot_final) =
+  let
+    macdef andalso1 (p, q) =
+      if ,(p) then
+        ,(q)
+      else
+        false
+
+    fun
+    loop {i, j    : nat | i <= j; j <= n - 1}
+         {i_pivot : nat | i_pivot <= n - 1}
+         .<j - i>.
+         (pf_arr   : !array_v (a, p_arr, n) |
+          up_i     : uptr (a, p_arr, i),
+          up_j     : uptr (a, p_arr, j),
+          up_pivot : uptr (a, p_arr, i_pivot))
+        :<!wrt> [i_pivot_final : nat | i_pivot_final <= n - 1]
+                uptr (a, p_arr, i_pivot_final) =
+      if up_i <> up_j then
+        let
+          val () = interchange<a> (pf_arr | up_arr, up_i, up_j)
+
+          (* The interchange may have just moved the pivot. *)
+          val up_pivot =
+            (if up_pivot = up_i then
+               up_j
+             else if up_pivot = up_j then
+               up_i
+             else
+               up_pivot) : [k : nat | k <= n - 1] uptr (a, p_arr, k)
+
+          val up_i =
+            move_i_rightwards___FIXME___<a>
+              (pf_arr | up_arr, uptr_succ<a> up_i, up_j, up_pivot)
+        in
+          if up_i <> up_j then
+            let
+              val up_j =
+                move_j_leftwards___FIXME___<a>
+                  (pf_arr | up_arr, up_i, uptr_pred<a> up_j, up_pivot)
+            in
+              loop (pf_arr | up_i, up_j, up_pivot)
+            end
+          else
+            (* The following will be the last call to the top of the
+               loop. *)
+            loop (pf_arr | up_i, up_j, up_pivot)
+        end
+      else if (up_j <> up_pivot) \andalso1
+                lt<a> (pf_arr | up_arr, up_pivot, up_j) then
+        begin
+          (* Put the pivot between the two parts of the partition. *)
+          if (up_pivot < up_j) then
+            begin
+              interchange<a> (pf_arr | up_arr, up_pivot,
+                                       uptr_pred<a> up_j);
+              uptr_pred<a> up_j
+            end
+          else
+            begin
+              interchange<a> (pf_arr | up_arr, up_pivot, up_j);
+              up_j
+            end
+        end
+      else
+        begin
+          (* Put the pivot between the two parts of the partition. *)
+          if (up_j < up_pivot) then
+            begin
+              interchange<a> (pf_arr | up_arr, up_pivot,
+                                       uptr_succ<a> up_j);
+              uptr_succ<a> up_j
+            end
+          else
+            begin
+              interchange<a> (pf_arr | up_arr, up_pivot, up_j);
+              up_j
+            end
+        end
+
+    val p_arr = uptr_anchor2ptr up_arr
+    val n = uptr_diff_unsigned<a> (up_n, up_arr)
+    val i_pivot_initial =
+      array_unstable_quicksort$pivot_index<a> (!p_arr, n)    
+    val up_pivot_initial = uptr_add<a> (up_arr, i_pivot_initial)
+
+    (* Put the pivot in the middle, so it will be as near to other
+       elements as possible. *)
+    val i_pivot_middle = half n
+    val up_pivot_middle = uptr_add<a> (up_arr, i_pivot_middle)
+    val () = interchange<a> (pf_arr | up_arr, up_pivot_initial,
+                                      up_pivot_middle)
+
+    val up_i =
+      move_i_rightwards___FIXME___<a>
+        (pf_arr | up_arr, up_arr, uptr_pred<a> up_n, up_pivot_middle)
+    val up_j =
+      move_j_leftwards___FIXME___<a>
+        (pf_arr | up_arr, up_i, uptr_pred<a> up_n, up_pivot_middle)
+  in
+    loop (pf_arr | up_i, up_j, up_pivot_middle)
   end
 
 fn {a : vt@ype}
