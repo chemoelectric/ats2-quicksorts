@@ -285,37 +285,6 @@ array_insertion_sort
 
 fn {a : vt@ype}
 move_i_rightwards
-          {n       : int}
-          {i, j    : nat | i <= j; j <= n - 1}
-          {i_pivot : nat | i_pivot <= n - 1}
-          (arr     : &array (a, n),
-           i       : size_t i,
-           j       : size_t j,
-           i_pivot : size_t i_pivot)
-    :<> [i1 : int | i <= i1; i1 <= j]
-        size_t i1 =
-  let
-    fun
-    loop {i : nat | i <= j}
-         .<j - i>.
-         (arr : &array (a, n),
-          i   : size_t i)
-        :<> [i1 : int | i <= i1; i1 <= j]
-            size_t i1 =
-      if i = j then
-        i
-      else if i = i_pivot then
-        i
-      else if ~array_element_lt<a> (arr, i, i_pivot) then
-        i
-      else
-        loop (arr, succ i)
-  in
-    loop (arr, i)
-  end
-
-fn {a : vt@ype}
-move_i_rightwards___FIXME___
           {p_arr    : addr}
           {n        : int}
           {i, j     : nat | i <= j; j <= n - 1}
@@ -349,37 +318,6 @@ move_i_rightwards___FIXME___
 
 fn {a : vt@ype}
 move_j_leftwards
-          {n       : int}
-          {i, j    : nat | i <= j; j <= n - 1}
-          {i_pivot : nat | i_pivot <= n - 1}
-          (arr     : &array (a, n),
-           i       : size_t i,
-           j       : size_t j,
-           i_pivot : size_t i_pivot)
-    :<> [j1 : nat | i <= j1; j1 <= j]
-        size_t j1 =
-  let
-    fun
-    loop {j : nat | i <= j; j <= n - 1}
-         .<j - i>.
-         (arr : &array (a, n),
-          j   : size_t j)
-        :<> [j1 : nat | i <= j1; j1 <= j]
-            size_t j1 =
-      if i = j then
-        j
-      else if j = i_pivot then
-        j
-      else if ~array_element_lt<a> (arr, i_pivot, j) then
-        j
-      else
-        loop (arr, pred j)
-  in
-    loop (arr, j)
-  end
-
-fn {a : vt@ype}
-move_j_leftwards___FIXME___
           {p_arr    : addr}
           {n        : int}
           {i, j     : nat | i <= j; j <= n - 1}
@@ -412,107 +350,13 @@ move_j_leftwards___FIXME___
   end
 
 fn {a : vt@ype}
-partition {n     : pos}
-          (arr   : &array (a, n),
-           n     : size_t n)
-    :<!wrt> [i_pivot_final : nat | i_pivot_final < n]
-            size_t i_pivot_final =
-  let
-    macdef lt (arr, p, q) =
-      if ,(p) = ,(q) then
-        false
-      else
-        array_element_lt<a> (,(arr), ,(p), ,(q))
-
-    fun
-    loop {i, j    : nat | i <= j; j <= n - 1}
-         {i_pivot : nat | i_pivot <= n - 1}
-         .<j - i>.
-         (arr     : &array (a, n),
-          i       : size_t i,
-          j       : size_t j,
-          i_pivot : size_t i_pivot)
-        :<!wrt> [i_pivot_final : nat | i_pivot_final <= n - 1]
-                size_t i_pivot_final =
-      if i <> j then
-        let
-          val () = array_interchange<a> (arr, i, j)
-
-          (* array_interchange may have just moved the pivot. *)
-          val i_pivot =
-            (if i_pivot = i then
-               j
-             else if i_pivot = j then
-               i
-             else
-               i_pivot) : [k : nat | k <= n - 1] size_t k
-
-          val i = move_i_rightwards<a> (arr, succ i, j, i_pivot)
-        in
-          if i <> j then
-            let
-              val j = move_j_leftwards<a> (arr, i, pred j, i_pivot)
-            in
-              loop (arr, i, j, i_pivot)
-            end
-          else
-            (* The following will be the last call to the top of the
-               loop. *)
-            loop (arr, i, j, i_pivot)
-        end
-      else if lt (arr, i_pivot, j) then
-        begin
-          (* Put the pivot between the two parts of the partition. *)
-          if (i_pivot < j) then
-            begin
-              array_interchange<a> (arr, i_pivot, pred j);
-              pred j
-            end
-          else
-            begin
-              array_interchange<a> (arr, i_pivot, j);
-              j
-            end
-        end
-      else
-        begin
-          (* Put the pivot between the two parts of the partition. *)
-          if (j < i_pivot) then
-            begin
-              array_interchange<a> (arr, i_pivot, succ j);
-              succ j
-            end
-          else
-            begin
-              array_interchange<a> (arr, i_pivot, j);
-              j
-            end
-        end
-
-    val i_pivot_initial =
-      array_unstable_quicksort$pivot_index<a> (arr, n)
-
-    (* Put the pivot in the middle, so it will be as near to other
-       elements as possible. *)
-    val i_pivot_middle = half n
-    val () = array_interchange<a> (arr, i_pivot_initial,
-                                   i_pivot_middle)
-
-    val i = move_i_rightwards<a> (arr, i2sz 0, pred n, i_pivot_middle)
-    val j = move_j_leftwards<a> (arr, i, pred n, i_pivot_middle)
-  in
-    loop (arr, i, j, i_pivot_middle)
-  end
-
-fn {a : vt@ype}
-partition___FIXME___ (* FIXME: WRITE A VERSION FOR THE OTHER PARTITION ALGORITHM, TOO. *)
-          {p_arr  : addr}
+partition {p_arr  : addr}
           {n      : pos}
           (pf_arr : !array_v (a, p_arr, n) |
            up_arr : uptr_anchor (a, p_arr),
            up_n   : uptr (a, p_arr, n))
     :<!wrt> [i_pivot_final : nat | i_pivot_final < n]
-            uptr (a, p_arr, i_pivot_final) =
+            size_t i_pivot_final =
   let
     macdef andalso1 (p, q) =
       if ,(p) then
@@ -544,13 +388,13 @@ partition___FIXME___ (* FIXME: WRITE A VERSION FOR THE OTHER PARTITION ALGORITHM
                up_pivot) : [k : nat | k <= n - 1] uptr (a, p_arr, k)
 
           val up_i =
-            move_i_rightwards___FIXME___<a>
+            move_i_rightwards<a>
               (pf_arr | up_arr, uptr_succ<a> up_i, up_j, up_pivot)
         in
           if up_i <> up_j then
             let
               val up_j =
-                move_j_leftwards___FIXME___<a>
+                move_j_leftwards<a>
                   (pf_arr | up_arr, up_i, uptr_pred<a> up_j, up_pivot)
             in
               loop (pf_arr | up_i, up_j, up_pivot)
@@ -606,22 +450,26 @@ partition___FIXME___ (* FIXME: WRITE A VERSION FOR THE OTHER PARTITION ALGORITHM
                                       up_pivot_middle)
 
     val up_i =
-      move_i_rightwards___FIXME___<a>
+      move_i_rightwards<a>
         (pf_arr | up_arr, up_arr, uptr_pred<a> up_n, up_pivot_middle)
     val up_j =
-      move_j_leftwards___FIXME___<a>
+      move_j_leftwards<a>
         (pf_arr | up_arr, up_i, uptr_pred<a> up_n, up_pivot_middle)
+
+    val up_pivot_final = loop (pf_arr | up_i, up_j, up_pivot_middle)
   in
-    loop (pf_arr | up_i, up_j, up_pivot_middle)
+    uptr_diff_unsigned<a> (up_pivot_final, up_arr)
   end
 
 fn {a : vt@ype}
 array_unstable_sort
-          {n         : int}
-          (arr       : &array (a, n),
-           n         : size_t n)
+          {p_arr  : addr}
+          {n      : nat}
+          (pf_arr : !array_v (a, p_arr, n) |
+           up_arr : uptr_anchor (a, p_arr),
+           up_n   : uptr (a, p_arr, n))
     :<!wrt> void =
-  if n <= 1 then
+  if uptr_diff_unsigned<a> (up_n, up_arr) <= i2sz 1 then
     ()
   else
     let
@@ -641,21 +489,21 @@ array_unstable_sort
             val @(p2tr_arr1, n1) = stk_vt_pop<a> stk
             val @(pf_arr1, fpf_arr1 | p_arr1) =
               $UN.p2tr_vtake p2tr_arr1
+            val up_arr1 = ptr2uptr_anchor p_arr1
+            val up_n1 = uptr_add<a> (up_arr1, n1)
          in
             if n1 <= array_unstable_quicksort$small<a> () then
               let
-                val up_arr1 = ptr2uptr_anchor p_arr1
-                val up_n1 = uptr_add<a> (up_arr1, n1)
                 val () =
                   array_insertion_sort (pf_arr1 | up_arr1, up_n1)
-
                 prval () = fpf_arr1 pf_arr1
               in
                 loop stk
               end
             else
               let
-                val [n1_le : int] n1_le = partition<a> (!p_arr1, n1)
+                val [n1_le : int] n1_le =
+                  partition<a> (pf_arr1 | up_arr1, up_n1)
 
                 val p_le = p_arr1
                 and p_ge = ptr_add<a> (p_arr1, succ n1_le)
@@ -726,13 +574,14 @@ array_unstable_sort
               end
           end
 
-      prval () = lemma_array_param arr
-
       var stk_storage =
-        @[stk_entry_vt][STK_MAX] (@(the_null_ptr, i2sz 0))
+        @[stk_entry_t][STK_MAX] (@(the_null_ptr, i2sz 0))
       var stk = stk_vt_make (view@ stk_storage | addr@ stk_storage)
 
-      val () = stk_vt_push<a> (view@ arr | addr@ arr, n, stk)
+      val () =
+        stk_vt_push<a> (pf_arr | uptr_anchor2ptr up_arr,
+                                 uptr_diff_unsigned<a> (up_n, up_arr),
+                                 stk)
       val () = loop stk
       prval () = view@ stk_storage := stk.pf
     in
@@ -752,7 +601,9 @@ array_unstable_quicksort {n} {m1} (arr, n) =
 
       prval @(pf_arr1, pf_arr2) =
         array_v_split {a} {..} {m1} {n} (view@ arr)
-      val () = array_unstable_sort<a> {n} (!(addr@ arr), n)
+      val up_arr = ptr2uptr_anchor (addr@ arr)
+      val up_n = uptr_add<a> (up_arr, n)
+      val () = array_unstable_sort<a> (pf_arr1 | up_arr, up_n)
       prval () = view@ arr := array_v_unsplit (pf_arr1, pf_arr2)
     in
     end

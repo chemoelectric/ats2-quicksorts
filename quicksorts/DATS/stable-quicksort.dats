@@ -727,7 +727,7 @@ array_stable_sort
       prval () = lemma_array_param arr
 
       var stk_storage =
-        @[stk_entry_vt][STK_MAX] (@(the_null_ptr, i2sz 0))
+        @[stk_entry_t][STK_MAX] (@(the_null_ptr, i2sz 0))
       var stk = stk_vt_make (view@ stk_storage | addr@ stk_storage)
 
       (* Put the pivot physically near the stack. Maybe that will make
