@@ -172,18 +172,18 @@ overload randint with g1uint_randint
 (*------------------------------------------------------------------*)
 (* A stack for non-recursive implementation of quicksort.           *)
 
-typedef stk_entry_vt (p : addr, n : int) =
+typedef stk_entry_t (p : addr, n : int) =
   [p == null || 0 < n] @(ptr p, size_t n)
-typedef stk_entry_vt (n : int) =
-  [p : addr] stk_entry_vt (p, n)
-typedef stk_entry_vt =
-  [n : int] stk_entry_vt n
+typedef stk_entry_t (n : int) =
+  [p : addr] stk_entry_t (p, n)
+typedef stk_entry_t =
+  [n : int] stk_entry_t n
 
 vtypedef stk_vt (p        : addr,
                  depth    : int,
                  size_sum : int) =
   @{
-    pf       = array_v (stk_entry_vt, p, STK_MAX) |
+    pf       = array_v (stk_entry_t, p, STK_MAX) |
     p        = ptr p,
     depth    = int depth,
     size_sum = size_t size_sum
@@ -192,7 +192,7 @@ vtypedef stk_vt (p        : addr,
 fn {}
 stk_vt_make
           {p  : addr}
-          (pf : array_v (stk_entry_vt, p, STK_MAX) |
+          (pf : array_v (stk_entry_t, p, STK_MAX) |
            p  : ptr p)
     :<> stk_vt (p, 0, 0) =
   @{
