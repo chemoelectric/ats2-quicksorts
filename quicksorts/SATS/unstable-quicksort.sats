@@ -45,32 +45,66 @@ fn {a : vt@ype}
 array_unstable_quicksort$cmp :
   (&a, &a) -<> int
 
+(*------------------------------------------------------------------*)
+(* Customization of the sorting of ‘small’ subarrays.               *)
+
 (* When should we switch over to a ‘small’ sort? *)
 fn {a : vt@ype}
 array_unstable_quicksort$small :
   () -<> [n : pos] size_t n
+
+(*------------------------------------------------------------------*)
+(* Customization of pivoting.                                       *)
 
 typedef array_unstable_quicksort_pivot_index_t (a : vt@ype) =
   {n : pos}
   (&array (a, n), size_t n) -<>
     [i : int | 0 <= i; i < n]
     size_t i
+
 fn {a : vt@ype}
 array_unstable_quicksort$pivot_index :
   array_unstable_quicksort_pivot_index_t a
 
-(* Some pivot strategies. *)
+(* Some pivot strategies: *)
+
 fn {a : vt@ype}   (* Some method, chosen for its supposed goodness. *)
 array_unstable_quicksort_pivot_index_default :
   array_unstable_quicksort_pivot_index_t a
+
 fn {a : vt@ype}
 array_unstable_quicksort_pivot_index_random :
   array_unstable_quicksort_pivot_index_t a
+
 fn {a : vt@ype}
 array_unstable_quicksort_pivot_index_middle :
   array_unstable_quicksort_pivot_index_t a
+
 fn {a : vt@ype}
 array_unstable_quicksort_pivot_index_median_of_three :
   array_unstable_quicksort_pivot_index_t a
+
+(*------------------------------------------------------------------*)
+(* Customization of partitioning.                                   *)
+
+typedef array_unstable_quicksort_partition_t (a : vt@ype) =
+  {n : pos}
+  (&array (a, n), size_t n) -< !wrt >
+    [i_pivot_final : nat | i_pivot_final < n]
+    size_t i_pivot_final
+
+fn {a : vt@ype}
+array_unstable_quicksort$partition :
+  array_unstable_quicksort_partition_t a
+
+(* Some partitioning strategies: *)
+
+fn {a : vt@ype}   (* Some method, chosen for its supposed goodness. *)
+array_unstable_quicksort_partition_default :
+  array_unstable_quicksort_partition_t a
+
+fn {a : vt@ype}
+array_unstable_quicksort_partition_method_2 :
+  array_unstable_quicksort_partition_t a
 
 (*------------------------------------------------------------------*)

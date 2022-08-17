@@ -256,14 +256,18 @@ insertion_position
 
 fn {a : vt@ype}
 array_insertion_sort
-          {p_arr   : addr}
-          {n       : nat}
-          (pf_arr  : !array_v (a, p_arr, n) >> _ |
-           up_arr  : uptr_anchor (a, p_arr),
-           up_n    : uptr (a, p_arr, n))
+          {p_arr  : addr}
+          {n      : nat}
+          (pf_arr : !array_v (a, p_arr, n) >> _ |
+           p_arr  : ptr p_arr,
+           n      : size_t n)
     :<!wrt> void =
-  if uptr_diff_unsigned<a> (up_n, up_arr) > i2sz 1 then
-    let      
+  if i2sz 2 <= n then
+    let
+      val up_arr = ptr2uptr_anchor p_arr
+      val up_n = uptr_add<a> (up_arr, n)
+      val up_i = make_an_ordered_prefix<a> (pf_arr | up_arr, up_n)
+
       fun
       loop {i : pos | i <= n}
            .<n - i>.
@@ -277,8 +281,6 @@ array_insertion_sort
             subcirculate_right<a> (pf_arr | up_arr, up_j, up_i);
             loop (pf_arr | uptr_succ<a> up_i)
           end
-
-      val up_i = make_an_ordered_prefix<a> (pf_arr | up_arr, up_n)
     in
       loop (pf_arr | up_i)
     end
@@ -349,20 +351,29 @@ move_j_leftwards
     loop (pf_arr | up_j)
   end
 
-fn {a : vt@ype}
-partition {p_arr  : addr}
-          {n      : pos}
-          (pf_arr : !array_v (a, p_arr, n) |
-           up_arr : uptr_anchor (a, p_arr),
-           up_n   : uptr (a, p_arr, n))
-    :<!wrt> [i_pivot_final : nat | i_pivot_final < n]
-            size_t i_pivot_final =
+implement {a}
+array_unstable_quicksort$partition (arr, n) =
+  array_unstable_quicksort_partition_default<a> (arr, n)
+
+implement {a}
+array_unstable_quicksort_partition_default (arr, n) =
+  (* FIXME: PICK A METHOD. *)
+  array_unstable_quicksort_partition_method_2<a> (arr, n)
+
+implement {a}
+array_unstable_quicksort_partition_method_2 {n} (arr, n) =
   let
     macdef andalso1 (p, q) =
       if ,(p) then
         ,(q)
       else
         false
+
+    prval pf_arr = view@ arr
+    val p_arr = addr@ arr
+    prval [p_arr : addr] EQADDR () = eqaddr_make_ptr p_arr
+    val up_arr = ptr2uptr_anchor p_arr
+    val up_n = uptr_add<a> (up_arr, n)
 
     fun
     loop {i, j    : nat | i <= j; j <= n - 1}
@@ -436,8 +447,6 @@ partition {p_arr  : addr}
             end
         end
 
-    val p_arr = uptr_anchor2ptr up_arr
-    val n = uptr_diff_unsigned<a> (up_n, up_arr)
     val i_pivot_initial =
       array_unstable_quicksort$pivot_index<a> (!p_arr, n)    
     val up_pivot_initial = uptr_add<a> (up_arr, i_pivot_initial)
@@ -457,6 +466,8 @@ partition {p_arr  : addr}
         (pf_arr | up_arr, up_i, uptr_pred<a> up_n, up_pivot_middle)
 
     val up_pivot_final = loop (pf_arr | up_i, up_j, up_pivot_middle)
+
+    prval () = view@ arr := pf_arr
   in
     uptr_diff_unsigned<a> (up_pivot_final, up_arr)
   end
@@ -466,10 +477,10 @@ array_unstable_sort
           {p_arr  : addr}
           {n      : nat}
           (pf_arr : !array_v (a, p_arr, n) |
-           up_arr : uptr_anchor (a, p_arr),
-           up_n   : uptr (a, p_arr, n))
+           p_arr  : ptr p_arr,
+           n      : size_t n)
     :<!wrt> void =
-  if uptr_diff_unsigned<a> (up_n, up_arr) <= i2sz 1 then
+  if n <= i2sz 1 then
     ()
   else
     let
@@ -489,13 +500,10 @@ array_unstable_sort
             val @(p2tr_arr1, n1) = stk_vt_pop<a> stk
             val @(pf_arr1, fpf_arr1 | p_arr1) =
               $UN.p2tr_vtake p2tr_arr1
-            val up_arr1 = ptr2uptr_anchor p_arr1
-            val up_n1 = uptr_add<a> (up_arr1, n1)
          in
             if n1 <= array_unstable_quicksort$small<a> () then
               let
-                val () =
-                  array_insertion_sort (pf_arr1 | up_arr1, up_n1)
+                val () = array_insertion_sort (pf_arr1 | p_arr1, n1)
                 prval () = fpf_arr1 pf_arr1
               in
                 loop stk
@@ -503,7 +511,7 @@ array_unstable_sort
             else
               let
                 val [n1_le : int] n1_le =
-                  partition<a> (pf_arr1 | up_arr1, up_n1)
+                  array_unstable_quicksort$partition<a> (!p_arr1, n1)
 
                 val p_le = p_arr1
                 and p_ge = ptr_add<a> (p_arr1, succ n1_le)
@@ -578,10 +586,7 @@ array_unstable_sort
         @[stk_entry_t][STK_MAX] (@(the_null_ptr, i2sz 0))
       var stk = stk_vt_make (view@ stk_storage | addr@ stk_storage)
 
-      val () =
-        stk_vt_push<a> (pf_arr | uptr_anchor2ptr up_arr,
-                                 uptr_diff_unsigned<a> (up_n, up_arr),
-                                 stk)
+      val () = stk_vt_push<a> (pf_arr | p_arr, n, stk)
       val () = loop stk
       prval () = view@ stk_storage := stk.pf
     in
@@ -601,9 +606,7 @@ array_unstable_quicksort {n} {m1} (arr, n) =
 
       prval @(pf_arr1, pf_arr2) =
         array_v_split {a} {..} {m1} {n} (view@ arr)
-      val up_arr = ptr2uptr_anchor (addr@ arr)
-      val up_n = uptr_add<a> (up_arr, n)
-      val () = array_unstable_sort<a> (pf_arr1 | up_arr, up_n)
+      val () = array_unstable_sort<a> (pf_arr1 | addr@ arr, n)
       prval () = view@ arr := array_v_unsplit (pf_arr1, pf_arr2)
     in
     end
