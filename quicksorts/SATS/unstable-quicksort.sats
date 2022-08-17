@@ -104,6 +104,10 @@ array_unstable_quicksort_partition_default :
   array_unstable_quicksort_partition_t a
 
 fn {a : vt@ype}
+array_unstable_quicksort_partition_method_1 :
+  array_unstable_quicksort_partition_t a
+
+fn {a : vt@ype}
 array_unstable_quicksort_partition_method_2 :
   array_unstable_quicksort_partition_t a
 
