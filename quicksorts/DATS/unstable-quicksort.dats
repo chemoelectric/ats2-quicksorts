@@ -23,8 +23,8 @@
 
 #include "share/atspre_staload.hats"
 staload "quicksorts/SATS/unstable-quicksort.sats"
-staload "quicksorts/SATS/uptr.sats"
-staload _ = "quicksorts/DATS/uptr.dats"
+staload "quicksorts/SATS/bptr.sats"
+staload _ = "quicksorts/DATS/bptr.dats"
 staload UN = "prelude/SATS/unsafe.sats"
 
 #define DEFAULT_ARRAY_INSERTION_SORT_THRESHOLD 80
@@ -54,41 +54,41 @@ elem_lt_ptr1_ptr1
   array_unstable_quicksort$lt<a> (!p, !q)
 
 fn {a : vt@ype}
-elem_lt_uptr_uptr
+elem_lt_bptr_bptr
           {p      : addr}
           {i, j   : int}
           (pf_i   : !a @ (p + (i * sizeof a)),
            pf_j   : !a @ (p + (j * sizeof a)) |
-           anchor : uptr_anchor (a, p),
-           up_i   : uptr (a, p, i),
-           up_j   : uptr (a, p, j))
+           anchor : bptr_anchor (a, p),
+           bp_i   : bptr (a, p, i),
+           bp_j   : bptr (a, p, j))
     :<> bool =
-  elem_lt_ptr1_ptr1<a> (pf_i, pf_j | uptr2ptr (anchor, up_i),
-                                     uptr2ptr (anchor, up_j))
+  elem_lt_ptr1_ptr1<a> (pf_i, pf_j | bptr2ptr (anchor, bp_i),
+                                     bptr2ptr (anchor, bp_j))
 
 fn {a : vt@ype}
-elem_lt_array_uptr_uptr
+elem_lt_array_bptr_bptr
           {p_arr  : addr}
           {n      : int}
           {i, j   : nat | i <= n - 1; j <= n - 1; i != j}
           (pf_arr : !array_v (a, p_arr, n) |
-           up_arr : uptr_anchor (a, p_arr),
-           up_i   : uptr (a, p_arr, i),
-           up_j   : uptr (a, p_arr, j))
+           bp_arr : bptr_anchor (a, p_arr),
+           bp_i   : bptr (a, p_arr, i),
+           bp_j   : bptr (a, p_arr, j))
     :<> bool =
   let
     prval @(pf_i, pf_j, fpf) =
       array_v_takeout2 {a} {p_arr} {n} {i, j} pf_arr
     val is_lt =
-      elem_lt_uptr_uptr<a> (pf_i, pf_j | up_arr, up_i, up_j)
+      elem_lt_bptr_bptr<a> (pf_i, pf_j | bp_arr, bp_i, bp_j)
     prval () = pf_arr := fpf (pf_i, pf_j)
   in
     is_lt
   end
 
 overload lt with elem_lt_ptr1_ptr1
-overload lt with elem_lt_uptr_uptr
-overload lt with elem_lt_array_uptr_uptr
+overload lt with elem_lt_bptr_bptr
+overload lt with elem_lt_array_bptr_bptr
 
 fn {a : vt@ype}
 array_element_lt
@@ -154,27 +154,27 @@ make_an_ordered_prefix
           {p_arr  : addr}
           {n      : int | 2 <= n}
           (pf_arr : !array_v (a, p_arr, n) |
-           up_arr : uptr_anchor (a, p_arr),
-           up_n   : uptr (a, p_arr, n))
+           bp_arr : bptr_anchor (a, p_arr),
+           bp_n   : bptr (a, p_arr, n))
     :<!wrt> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
-            uptr (a, p_arr, pfx_len) =
-  if ~lt<a> (pf_arr | up_arr, uptr_succ<a> up_arr, up_arr) then
+            bptr (a, p_arr, pfx_len) =
+  if ~lt<a> (pf_arr | bp_arr, bptr_succ<a> bp_arr, bp_arr) then
     let                       (* Non-decreasing order. *)
       fun
       loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
            .<n - pfx_len>.
            (pf_arr  : !array_v (a, p_arr, n) |
-            up      : uptr (a, p_arr, pfx_len))
+            bp      : bptr (a, p_arr, pfx_len))
           :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
-              uptr (a, p_arr, pfx_len) =
-        if up = up_n then
-          up
-        else if lt<a> (pf_arr | up_arr, up, uptr_pred<a> up) then
-          up
+              bptr (a, p_arr, pfx_len) =
+        if bp = bp_n then
+          bp
+        else if lt<a> (pf_arr | bp_arr, bp, bptr_pred<a> bp) then
+          bp
         else
-          loop (pf_arr | uptr_succ<a> up)
+          loop (pf_arr | bptr_succ<a> bp)
     in
-      loop (pf_arr | uptr_add<a> (up_arr, 2))
+      loop (pf_arr | bptr_add<a> (bp_arr, 2))
     end
   else
     let      (* Non-increasing order. This branch sorts unstably. *)
@@ -182,20 +182,20 @@ make_an_ordered_prefix
       loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
            .<n - pfx_len>.
            (pf_arr  : !array_v (a, p_arr, n) |
-            up      : uptr (a, p_arr, pfx_len))
+            bp      : bptr (a, p_arr, pfx_len))
           :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
-              uptr (a, p_arr, pfx_len) =
-        if up = up_n then
-          up
-        else if lt<a> (pf_arr | up_arr, uptr_pred<a> up, up) then
-          up
+              bptr (a, p_arr, pfx_len) =
+        if bp = bp_n then
+          bp
+        else if lt<a> (pf_arr | bp_arr, bptr_pred<a> bp, bp) then
+          bp
         else
-          loop (pf_arr | uptr_succ<a> up)
+          loop (pf_arr | bptr_succ<a> bp)
 
-      val up = loop (pf_arr | uptr_add<a> (up_arr, 2))
+      val bp = loop (pf_arr | bptr_add<a> (bp_arr, 2))
     in
-      subreverse<a> (pf_arr | up_arr, up_arr, up);
-      up
+      subreverse<a> (pf_arr | bp_arr, bp_arr, bp);
+      bp
     end
 
 fn {a  : vt@ype}
@@ -204,10 +204,10 @@ insertion_position
           {n      : int}
           {i      : pos | i < n}
           (pf_arr : !array_v (a, p_arr, n) |
-           up_arr : uptr_anchor (a, p_arr),
-           up_i   : uptr (a, p_arr, i))
+           bp_arr : bptr_anchor (a, p_arr),
+           bp_i   : bptr (a, p_arr, i))
     :<> [j : nat | j <= i]
-        uptr (a, p_arr, j) =
+        bptr (a, p_arr, j) =
   (*
     A binary search.
 
@@ -226,32 +226,32 @@ insertion_position
     loop {j, k : int | 0 <= j; j <= k; k < i}
          .<k - j>.
          (pf_arr : !array_v (a, p_arr, n) |
-          up_j   : uptr (a, p_arr, j),
-          up_k   : uptr (a, p_arr, k))
+          bp_j   : bptr (a, p_arr, j),
+          bp_k   : bptr (a, p_arr, k))
         :<> [j1 : nat | j1 <= i]
-            uptr (a, p_arr, j1) =
-      if up_j <> up_k then
+            bptr (a, p_arr, j1) =
+      if bp_j <> bp_k then
         let
-          (* Find the point that is halfway between up_j and up_k,
-             rounding towards up_k. *)
+          (* Find the point that is halfway between bp_j and bp_k,
+             rounding towards bp_k. *)
           stadef h = k - ((k - j) / 2)
-          val up_h : uptr (a, p_arr, h) =
-            uptr_sub<a>
-              (up_k, half (uptr_diff_unsigned<a> (up_k, up_j)))
+          val bp_h : bptr (a, p_arr, h) =
+            bptr_sub<a>
+              (bp_k, half (bptr_diff_unsigned<a> (bp_k, bp_j)))
         in
-          if lt<a> (pf_arr | up_arr, up_i, up_h) then
-            loop (pf_arr | up_j, uptr_pred<a> up_h)
+          if lt<a> (pf_arr | bp_arr, bp_i, bp_h) then
+            loop (pf_arr | bp_j, bptr_pred<a> bp_h)
           else
-            loop (pf_arr | up_h, up_k)
+            loop (pf_arr | bp_h, bp_k)
         end
-      else if up_j <> up_arr then
-        uptr_succ<a> up_j
-      else if lt<a> (pf_arr | up_arr, up_i, up_arr) then
-        up_arr
+      else if bp_j <> bp_arr then
+        bptr_succ<a> bp_j
+      else if lt<a> (pf_arr | bp_arr, bp_i, bp_arr) then
+        bp_arr
       else
-        uptr_succ<a> up_arr
+        bptr_succ<a> bp_arr
   in
-    loop (pf_arr | up_arr, uptr_pred<a> up_i)
+    loop (pf_arr | bp_arr, bptr_pred<a> bp_i)
   end
 
 fn {a : vt@ype}
@@ -264,25 +264,25 @@ array_insertion_sort
     :<!wrt> void =
   if i2sz 2 <= n then
     let
-      val up_arr = ptr2uptr_anchor p_arr
-      val up_n = uptr_add<a> (up_arr, n)
-      val up_i = make_an_ordered_prefix<a> (pf_arr | up_arr, up_n)
+      val bp_arr = ptr2bptr_anchor p_arr
+      val bp_n = bptr_add<a> (bp_arr, n)
+      val bp_i = make_an_ordered_prefix<a> (pf_arr | bp_arr, bp_n)
 
       fun
       loop {i : pos | i <= n}
            .<n - i>.
            (pf_arr : !array_v (a, p_arr, n) >> _ |
-            up_i   : uptr (a, p_arr, i))
+            bp_i   : bptr (a, p_arr, i))
           :<!wrt> void =
-        if up_i <> up_n then
+        if bp_i <> bp_n then
           let
-            val up_j = insertion_position<a> (pf_arr | up_arr, up_i)
+            val bp_j = insertion_position<a> (pf_arr | bp_arr, bp_i)
           in
-            subcirculate_right<a> (pf_arr | up_arr, up_j, up_i);
-            loop (pf_arr | uptr_succ<a> up_i)
+            subcirculate_right<a> (pf_arr | bp_arr, bp_j, bp_i);
+            loop (pf_arr | bptr_succ<a> bp_i)
           end
     in
-      loop (pf_arr | up_i)
+      loop (pf_arr | bp_i)
     end
 
 implement {a}
@@ -299,8 +299,8 @@ array_unstable_quicksort_partition_method_1 {n} (arr, n) =
     prval pf_arr = view@ arr
     val p_arr = addr@ arr
     prval [p_arr : addr] EQADDR () = eqaddr_make_ptr p_arr
-    val up_arr = ptr2uptr_anchor p_arr
-    val up_n = uptr_add<a> (up_arr, n)
+    val bp_arr = ptr2bptr_anchor p_arr
+    val bp_n = bptr_add<a> (bp_arr, n)
 
     fn {}
     move_i_rightwards
@@ -308,26 +308,26 @@ array_unstable_quicksort_partition_method_1 {n} (arr, n) =
                                   i <= i_pivot;
                                   i_pivot <= n - 1}
               (pf_arr   : !array_v (a, p_arr, n) |
-               up_i     : uptr (a, p_arr, i),
-               up_pivot : uptr (a, p_arr, i_pivot))
+               bp_i     : bptr (a, p_arr, i),
+               bp_pivot : bptr (a, p_arr, i_pivot))
         :<> [i1 : int | i <= i1; i1 <= i_pivot]
-            uptr (a, p_arr, i1) =
+            bptr (a, p_arr, i1) =
       let
         fun
         loop {i : int | 0 <= i; i <= i_pivot}
              .<i_pivot - i>.
              (pf_arr : !array_v (a, p_arr, n) |
-              up_i   : uptr (a, p_arr, i))
+              bp_i   : bptr (a, p_arr, i))
             :<> [i1 : int | i <= i1; i1 <= i_pivot]
-                uptr (a, p_arr, i1) =
-          if up_i = up_pivot then
-            up_i
-          else if ~lt<a> (pf_arr | up_arr, up_i, up_pivot) then
-            up_i
+                bptr (a, p_arr, i1) =
+          if bp_i = bp_pivot then
+            bp_i
+          else if ~lt<a> (pf_arr | bp_arr, bp_i, bp_pivot) then
+            bp_i
           else
-            loop (pf_arr | uptr_succ<a> up_i)
+            loop (pf_arr | bptr_succ<a> bp_i)
       in
-        loop (pf_arr | up_i)
+        loop (pf_arr | bp_i)
       end
 
     fn {}
@@ -336,26 +336,26 @@ array_unstable_quicksort_partition_method_1 {n} (arr, n) =
                                   i_pivot <= j;
                                   j <= n - 1}
               (pf_arr   : !array_v (a, p_arr, n) |
-               up_j     : uptr (a, p_arr, j),
-               up_pivot : uptr (a, p_arr, i_pivot))
+               bp_j     : bptr (a, p_arr, j),
+               bp_pivot : bptr (a, p_arr, i_pivot))
         :<> [j1 : nat | i_pivot <= j1; j1 <= j]
-            uptr (a, p_arr, j1) =
+            bptr (a, p_arr, j1) =
       let
         fun
         loop {j : int | i_pivot <= j; j <= n - 1}
              .<j - i_pivot>.
              (pf_arr : !array_v (a, p_arr, n) |
-              up_j   : uptr (a, p_arr, j))
+              bp_j   : bptr (a, p_arr, j))
             :<> [j1 : nat | i_pivot <= j1; j1 <= j]
-                uptr (a, p_arr, j1) =
-          if up_j = up_pivot then
-            up_j
-          else if ~lt<a> (pf_arr | up_arr, up_pivot, up_j) then
-            up_j
+                bptr (a, p_arr, j1) =
+          if bp_j = bp_pivot then
+            bp_j
+          else if ~lt<a> (pf_arr | bp_arr, bp_pivot, bp_j) then
+            bp_j
           else
-            loop (pf_arr | uptr_pred<a> up_j)
+            loop (pf_arr | bptr_pred<a> bp_j)
       in
-        loop (pf_arr | up_j)
+        loop (pf_arr | bp_j)
       end
 
     fun
@@ -363,57 +363,57 @@ array_unstable_quicksort_partition_method_1 {n} (arr, n) =
          {i_pivot : int | i <= i_pivot; i_pivot <= j}
          .<j - i>.
          (pf_arr   : !array_v (a, p_arr, n) |
-          up_i     : uptr (a, p_arr, i),
-          up_j     : uptr (a, p_arr, j),
-          up_pivot : uptr (a, p_arr, i_pivot))
+          bp_i     : bptr (a, p_arr, i),
+          bp_j     : bptr (a, p_arr, j),
+          bp_pivot : bptr (a, p_arr, i_pivot))
         :<!wrt> [i_final : nat | i_final <= n - 1]
-                uptr (a, p_arr, i_final) =
+                bptr (a, p_arr, i_final) =
       let
-        val [i1 : int] up_i1 =
-          move_i_rightwards<> (pf_arr | up_i, up_pivot)
-        and [j1 : int] up_j1 =
-          move_j_leftwards<> (pf_arr | up_j, up_pivot)
+        val [i1 : int] bp_i1 =
+          move_i_rightwards<> (pf_arr | bp_i, bp_pivot)
+        and [j1 : int] bp_j1 =
+          move_j_leftwards<> (pf_arr | bp_j, bp_pivot)
 
         prval () = prop_verify {i1 <= j1} ()
 
-        val diff = uptr_diff_unsigned<a> (up_j1, up_i1)
+        val diff = bptr_diff_unsigned<a> (bp_j1, bp_i1)
       in
         if diff = i2sz 0 then
-          up_pivot
+          bp_pivot
         else
           let
             prval () = prop_verify {i1 < j1} ()
           in
-            interchange<a> (pf_arr | up_arr, up_i1, up_j1);
-            if up_i1 = up_pivot then
+            interchange<a> (pf_arr | bp_arr, bp_i1, bp_j1);
+            if bp_i1 = bp_pivot then
               let               (* Keep the pivot between i and j. *)
-                val up_pivot1 = uptr_sub<a> (up_j1, half diff)
+                val bp_pivot1 = bptr_sub<a> (bp_j1, half diff)
               in
-                interchange<a> (pf_arr | up_arr, up_pivot1, up_j1);
-                loop (pf_arr | uptr_succ<a> up_i1, up_j1, up_pivot1)
+                interchange<a> (pf_arr | bp_arr, bp_pivot1, bp_j1);
+                loop (pf_arr | bptr_succ<a> bp_i1, bp_j1, bp_pivot1)
               end
-            else if up_j1 = up_pivot then
+            else if bp_j1 = bp_pivot then
               let               (* Keep the pivot between i and j. *)
-                val up_pivot1 = uptr_add<a> (up_i1, half diff)
+                val bp_pivot1 = bptr_add<a> (bp_i1, half diff)
               in
-                interchange<a> (pf_arr | up_arr, up_pivot1, up_i1);
-                loop (pf_arr | up_i1, uptr_pred<a> up_j1, up_pivot1)
+                interchange<a> (pf_arr | bp_arr, bp_pivot1, bp_i1);
+                loop (pf_arr | bp_i1, bptr_pred<a> bp_j1, bp_pivot1)
               end
             else
-              loop (pf_arr | uptr_succ<a> up_i1, uptr_pred<a> up_j1,
-                             up_pivot)
+              loop (pf_arr | bptr_succ<a> bp_i1, bptr_pred<a> bp_j1,
+                             bp_pivot)
           end
       end
 
     val i_pivot_initial =
       array_unstable_quicksort$pivot_index<a> (arr, n)
-    val up_pivot_final =
-      loop (pf_arr | up_arr, uptr_pred<a> up_n,
-                     uptr_add<a> (up_arr, i_pivot_initial))
+    val bp_pivot_final =
+      loop (pf_arr | bp_arr, bptr_pred<a> bp_n,
+                     bptr_add<a> (bp_arr, i_pivot_initial))
 
     prval () = view@ arr := pf_arr
   in
-    uptr_diff_unsigned<a> (up_pivot_final, up_arr)
+    bptr_diff_unsigned<a> (bp_pivot_final, bp_arr)
   end
 
 implement {a}
@@ -428,37 +428,37 @@ array_unstable_quicksort_partition_method_2 {n} (arr, n) =
     prval pf_arr = view@ arr
     val p_arr = addr@ arr
     prval [p_arr : addr] EQADDR () = eqaddr_make_ptr p_arr
-    val up_arr = ptr2uptr_anchor p_arr
-    val up_n = uptr_add<a> (up_arr, n)
+    val bp_arr = ptr2bptr_anchor p_arr
+    val bp_n = bptr_add<a> (bp_arr, n)
 
     fn {}
     move_i_rightwards
               {i, j     : nat | i <= j; j <= n - 1}
               {i_pivot  : nat | i_pivot <= n - 1}
               (pf_arr   : !array_v (a, p_arr, n) |
-               up_i     : uptr (a, p_arr, i),
-               up_j     : uptr (a, p_arr, j),
-               up_pivot : uptr (a, p_arr, i_pivot))
+               bp_i     : bptr (a, p_arr, i),
+               bp_j     : bptr (a, p_arr, j),
+               bp_pivot : bptr (a, p_arr, i_pivot))
         :<> [i1 : int | i <= i1; i1 <= j]
-            uptr (a, p_arr, i1) =
+            bptr (a, p_arr, i1) =
       let
         fun
         loop {i : nat | i <= j}
              .<j - i>.
              (pf_arr : !array_v (a, p_arr, n) |
-              up_i   : uptr (a, p_arr, i))
+              bp_i   : bptr (a, p_arr, i))
             :<> [i1 : int | i <= i1; i1 <= j]
-                uptr (a, p_arr, i1) =
-          if up_i = up_j then
-            up_i
-          else if up_i = up_pivot then
-            up_i
-          else if ~lt<a> (pf_arr | up_arr, up_i, up_pivot) then
-            up_i
+                bptr (a, p_arr, i1) =
+          if bp_i = bp_j then
+            bp_i
+          else if bp_i = bp_pivot then
+            bp_i
+          else if ~lt<a> (pf_arr | bp_arr, bp_i, bp_pivot) then
+            bp_i
           else
-            loop (pf_arr | uptr_succ<a> up_i)
+            loop (pf_arr | bptr_succ<a> bp_i)
       in
-        loop (pf_arr | up_i)
+        loop (pf_arr | bp_i)
       end
 
     fn {}
@@ -466,29 +466,29 @@ array_unstable_quicksort_partition_method_2 {n} (arr, n) =
               {i, j     : nat | i <= j; j <= n - 1}
               {i_pivot  : nat | i_pivot <= n - 1}
               (pf_arr   : !array_v (a, p_arr, n) |
-               up_i     : uptr (a, p_arr, i),
-               up_j     : uptr (a, p_arr, j),
-               up_pivot : uptr (a, p_arr, i_pivot))
+               bp_i     : bptr (a, p_arr, i),
+               bp_j     : bptr (a, p_arr, j),
+               bp_pivot : bptr (a, p_arr, i_pivot))
         :<> [j1 : nat | i <= j1; j1 <= j]
-            uptr (a, p_arr, j1) =
+            bptr (a, p_arr, j1) =
       let
         fun
         loop {j : nat | i <= j; j <= n - 1}
              .<j - i>.
              (pf_arr : !array_v (a, p_arr, n) |
-              up_j   : uptr (a, p_arr, j))
+              bp_j   : bptr (a, p_arr, j))
             :<> [j1 : nat | i <= j1; j1 <= j]
-                uptr (a, p_arr, j1) =
-          if up_i = up_j then
-            up_j
-          else if up_j = up_pivot then
-            up_j
-          else if ~lt<a> (pf_arr | up_arr, up_pivot, up_j) then
-            up_j
+                bptr (a, p_arr, j1) =
+          if bp_i = bp_j then
+            bp_j
+          else if bp_j = bp_pivot then
+            bp_j
+          else if ~lt<a> (pf_arr | bp_arr, bp_pivot, bp_j) then
+            bp_j
           else
-            loop (pf_arr | uptr_pred<a> up_j)
+            loop (pf_arr | bptr_pred<a> bp_j)
       in
-        loop (pf_arr | up_j)
+        loop (pf_arr | bp_j)
       end
 
     fun
@@ -496,96 +496,96 @@ array_unstable_quicksort_partition_method_2 {n} (arr, n) =
          {i_pivot : nat | i_pivot <= n - 1}
          .<j - i>.
          (pf_arr   : !array_v (a, p_arr, n) |
-          up_i     : uptr (a, p_arr, i),
-          up_j     : uptr (a, p_arr, j),
-          up_pivot : uptr (a, p_arr, i_pivot))
+          bp_i     : bptr (a, p_arr, i),
+          bp_j     : bptr (a, p_arr, j),
+          bp_pivot : bptr (a, p_arr, i_pivot))
         :<!wrt> [i_pivot_final : nat | i_pivot_final <= n - 1]
-                uptr (a, p_arr, i_pivot_final) =
-      if up_i <> up_j then
+                bptr (a, p_arr, i_pivot_final) =
+      if bp_i <> bp_j then
         let
-          val () = interchange<a> (pf_arr | up_arr, up_i, up_j)
+          val () = interchange<a> (pf_arr | bp_arr, bp_i, bp_j)
 
           (* The interchange may have just moved the pivot. *)
-          val up_pivot =
-            (if up_pivot = up_i then
-               up_j
-             else if up_pivot = up_j then
-               up_i
+          val bp_pivot =
+            (if bp_pivot = bp_i then
+               bp_j
+             else if bp_pivot = bp_j then
+               bp_i
              else
-               up_pivot) : [k : nat | k <= n - 1] uptr (a, p_arr, k)
+               bp_pivot) : [k : nat | k <= n - 1] bptr (a, p_arr, k)
 
-          val up_i =
+          val bp_i =
             move_i_rightwards<>
-              (pf_arr | uptr_succ<a> up_i, up_j, up_pivot)
+              (pf_arr | bptr_succ<a> bp_i, bp_j, bp_pivot)
         in
-          if up_i <> up_j then
+          if bp_i <> bp_j then
             let
-              val up_j =
+              val bp_j =
                 move_j_leftwards<>
-                  (pf_arr | up_i, uptr_pred<a> up_j, up_pivot)
+                  (pf_arr | bp_i, bptr_pred<a> bp_j, bp_pivot)
             in
-              loop (pf_arr | up_i, up_j, up_pivot)
+              loop (pf_arr | bp_i, bp_j, bp_pivot)
             end
           else
             (* The following will be the last call to the top of the
                loop. *)
-            loop (pf_arr | up_i, up_j, up_pivot)
+            loop (pf_arr | bp_i, bp_j, bp_pivot)
         end
-      else if (up_j <> up_pivot) \andalso1
-                lt<a> (pf_arr | up_arr, up_pivot, up_j) then
+      else if (bp_j <> bp_pivot) \andalso1
+                lt<a> (pf_arr | bp_arr, bp_pivot, bp_j) then
         begin
           (* Put the pivot between the two parts of the partition. *)
-          if (up_pivot < up_j) then
+          if (bp_pivot < bp_j) then
             begin
-              interchange<a> (pf_arr | up_arr, up_pivot,
-                                       uptr_pred<a> up_j);
-              uptr_pred<a> up_j
+              interchange<a> (pf_arr | bp_arr, bp_pivot,
+                                       bptr_pred<a> bp_j);
+              bptr_pred<a> bp_j
             end
           else
             begin
-              interchange<a> (pf_arr | up_arr, up_pivot, up_j);
-              up_j
+              interchange<a> (pf_arr | bp_arr, bp_pivot, bp_j);
+              bp_j
             end
         end
       else
         begin
           (* Put the pivot between the two parts of the partition. *)
-          if (up_j < up_pivot) then
+          if (bp_j < bp_pivot) then
             begin
-              interchange<a> (pf_arr | up_arr, up_pivot,
-                                       uptr_succ<a> up_j);
-              uptr_succ<a> up_j
+              interchange<a> (pf_arr | bp_arr, bp_pivot,
+                                       bptr_succ<a> bp_j);
+              bptr_succ<a> bp_j
             end
           else
             begin
-              interchange<a> (pf_arr | up_arr, up_pivot, up_j);
-              up_j
+              interchange<a> (pf_arr | bp_arr, bp_pivot, bp_j);
+              bp_j
             end
         end
 
     val i_pivot_initial =
       array_unstable_quicksort$pivot_index<a> (!p_arr, n)    
-    val up_pivot_initial = uptr_add<a> (up_arr, i_pivot_initial)
+    val bp_pivot_initial = bptr_add<a> (bp_arr, i_pivot_initial)
 
     (* Put the pivot in the middle, so it will be as near to other
        elements as possible. *)
     val i_pivot_middle = half n
-    val up_pivot_middle = uptr_add<a> (up_arr, i_pivot_middle)
-    val () = interchange<a> (pf_arr | up_arr, up_pivot_initial,
-                                      up_pivot_middle)
+    val bp_pivot_middle = bptr_add<a> (bp_arr, i_pivot_middle)
+    val () = interchange<a> (pf_arr | bp_arr, bp_pivot_initial,
+                                      bp_pivot_middle)
 
-    val up_i =
+    val bp_i =
       move_i_rightwards<>
-        (pf_arr | up_arr, uptr_pred<a> up_n, up_pivot_middle)
-    val up_j =
+        (pf_arr | bp_arr, bptr_pred<a> bp_n, bp_pivot_middle)
+    val bp_j =
       move_j_leftwards<>
-        (pf_arr | up_i, uptr_pred<a> up_n, up_pivot_middle)
+        (pf_arr | bp_i, bptr_pred<a> bp_n, bp_pivot_middle)
 
-    val up_pivot_final = loop (pf_arr | up_i, up_j, up_pivot_middle)
+    val bp_pivot_final = loop (pf_arr | bp_i, bp_j, bp_pivot_middle)
 
     prval () = view@ arr := pf_arr
   in
-    uptr_diff_unsigned<a> (up_pivot_final, up_arr)
+    bptr_diff_unsigned<a> (bp_pivot_final, bp_arr)
   end
 
 fn {a : vt@ype}

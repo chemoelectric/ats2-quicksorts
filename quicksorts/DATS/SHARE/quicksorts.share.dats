@@ -16,9 +16,6 @@
   <https://www.gnu.org/licenses/>.
 *)
 
-staload "quicksorts/SATS/uptr.sats"
-staload _ = "quicksorts/DATS/uptr.dats"
-
 staload UN = "prelude/SATS/unsafe.sats"
 
 (*------------------------------------------------------------------*)

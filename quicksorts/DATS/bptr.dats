@@ -18,11 +18,11 @@
 
 #define ATS_DYNLOADFLAG 0
 
-#define ATS_PACKNAME "ats2-quicksorts-uptr"
-#define ATS_EXTERN_PREFIX "ats2_quicksorts_uptr_"
+#define ATS_PACKNAME "ats2-quicksorts-bptr"
+#define ATS_EXTERN_PREFIX "ats2_quicksorts_bptr_"
 
 #include "share/atspre_staload.hats"
-staload "quicksorts/SATS/uptr.sats"
+staload "quicksorts/SATS/bptr.sats"
 staload UN = "prelude/SATS/unsafe.sats"
 
 extern prfn
@@ -78,209 +78,209 @@ array_v_takeout2 {a} {p} {n} {i, j} pf_arr =
     end
 
 implement {a}
-ptr2uptr_anchor {p} p =
+ptr2bptr_anchor {p} p =
   let
     extern fn
-    ptr2uptr_anchor__ :
+    ptr2bptr_anchor__ :
       {a : vt@ype}
       {p : addr}
-      ptr p -<> uptr (a, p, 0) = "mac#%"
+      ptr p -<> bptr (a, p, 0) = "mac#%"
   in
-    ptr2uptr_anchor__ {a} {p} p
+    ptr2bptr_anchor__ {a} {p} p
   end
 
 implement {a}
-uptr2ptr {p} {i} (anchor, up) =
+bptr2ptr {p} {i} (anchor, bp) =
   let
     extern fn
-    uptr2ptr__ :
+    bptr2ptr__ :
       {a : vt@ype}
       {p : addr}
       {i : int}
-      (uptr_anchor (a, p), uptr (a, p, i)) -<>
+      (bptr_anchor (a, p), bptr (a, p, i)) -<>
         ptr (p + (i * sizeof a)) = "mac#%"
   in
-    uptr2ptr__ {a} {p} {i} (anchor, up)
+    bptr2ptr__ {a} {p} {i} (anchor, bp)
   end
 
 implement {a} {tk}
-uptr_add_g1uint {p} {i} {j} (up, j) =
+bptr_add_g1uint {p} {i} {j} (bp, j) =
   let
     extern fn
-    uptr_add_size__ :
+    bptr_add_size__ :
       {a : vt@ype}
       {p : addr}
       {i : int}
       {j : int}
-      (uptr (a, p, i), size_t j, size_t (sizeof a)) -<>
-        uptr (a, p, i + j) = "mac#%"
+      (bptr (a, p, i), size_t j, size_t (sizeof a)) -<>
+        bptr (a, p, i + j) = "mac#%"
   in
-    uptr_add_size__ {a} {p} {i} {j} (up, g1u2u j, sizeof<a>)
+    bptr_add_size__ {a} {p} {i} {j} (bp, g1u2u j, sizeof<a>)
   end
 
 implement {a} {tk}
-uptr_add_g1int {p} {i} {j} (up, j) =
+bptr_add_g1int {p} {i} {j} (bp, j) =
   let
     extern fn
-    uptr_add_ssize__ :
+    bptr_add_ssize__ :
       {a : vt@ype}
       {p : addr}
       {i : int}
       {j : int}
-      (uptr (a, p, i), ssize_t j, size_t (sizeof a)) -<>
-        uptr (a, p, i + j) = "mac#%"
+      (bptr (a, p, i), ssize_t j, size_t (sizeof a)) -<>
+        bptr (a, p, i + j) = "mac#%"
   in
-    uptr_add_ssize__ {a} {p} {i} {j} (up, g1i2i j, sizeof<a>)
+    bptr_add_ssize__ {a} {p} {i} {j} (bp, g1i2i j, sizeof<a>)
   end
 
 implement {a} {tk}
-uptr_sub_g1uint {p} {i} {j} (up, j) =
+bptr_sub_g1uint {p} {i} {j} (bp, j) =
   let
     extern fn
-    uptr_sub_size__ :
+    bptr_sub_size__ :
       {a : vt@ype}
       {p : addr}
       {i : int}
       {j : int}
-      (uptr (a, p, i), size_t j, size_t (sizeof a)) -<>
-        uptr (a, p, i - j) = "mac#%"
+      (bptr (a, p, i), size_t j, size_t (sizeof a)) -<>
+        bptr (a, p, i - j) = "mac#%"
   in
-    uptr_sub_size__ {a} {p} {i} {j} (up, g1u2u j, sizeof<a>)
+    bptr_sub_size__ {a} {p} {i} {j} (bp, g1u2u j, sizeof<a>)
   end
 
 implement {a} {tk}
-uptr_sub_g1int {p} {i} {j} (up, j) =
+bptr_sub_g1int {p} {i} {j} (bp, j) =
   let
     extern fn
-    uptr_ssize_sub__ :
+    bptr_ssize_sub__ :
       {a : vt@ype}
       {p : addr}
       {i : int}
       {j : int}
-      (uptr (a, p, i), ssize_t j, size_t (sizeof a)) -<>
-        uptr (a, p, i - j) = "mac#%"
+      (bptr (a, p, i), ssize_t j, size_t (sizeof a)) -<>
+        bptr (a, p, i - j) = "mac#%"
   in
-    uptr_ssize_sub__ {a} {p} {i} {j} (up, g1i2i j, sizeof<a>)
+    bptr_ssize_sub__ {a} {p} {i} {j} (bp, g1i2i j, sizeof<a>)
   end
 
 implement {a}
-uptr_succ {p} {i} up =
+bptr_succ {p} {i} bp =
   let
     extern fn
-    uptr_succ__ :
+    bptr_succ__ :
       {a : vt@ype}
       {p : addr}
       {i : int}
-      (uptr (a, p, i), size_t (sizeof a)) -<>
-        uptr (a, p, i + 1) = "mac#%"
+      (bptr (a, p, i), size_t (sizeof a)) -<>
+        bptr (a, p, i + 1) = "mac#%"
   in
-    uptr_succ__ {a} {p} {i} (up, sizeof<a>)
+    bptr_succ__ {a} {p} {i} (bp, sizeof<a>)
   end
 
 implement {a}
-uptr_pred {p} {i} up =
+bptr_pred {p} {i} bp =
   let
     extern fn
-    uptr_pred__ :
+    bptr_pred__ :
       {a : vt@ype}
       {p : addr}
       {i : int}
-      (uptr (a, p, i), size_t (sizeof a)) -<>
-        uptr (a, p, i - 1) = "mac#%"
+      (bptr (a, p, i), size_t (sizeof a)) -<>
+        bptr (a, p, i - 1) = "mac#%"
   in
-    uptr_pred__ {a} {p} {i} (up, sizeof<a>)
+    bptr_pred__ {a} {p} {i} (bp, sizeof<a>)
   end
 
 implement {a}
-uptr_diff {p} {i, j} (up_i, up_j) =
+bptr_diff {p} {i, j} (bp_i, bp_j) =
   let
     extern fn
-    uptr_diff__ :
+    bptr_diff__ :
       {a    : vt@ype}
       {p    : addr}
       {i, j : int}
-      (uptr (a, p, i), uptr (a, p, j), size_t (sizeof a)) -<>
+      (bptr (a, p, i), bptr (a, p, j), size_t (sizeof a)) -<>
         ssize_t (i - j) = "mac#%"
   in
-    uptr_diff__ {a} {p} {i, j} (up_i, up_j, sizeof<a>)
+    bptr_diff__ {a} {p} {i, j} (bp_i, bp_j, sizeof<a>)
   end
 
 implement {a}
-uptr_diff_unsigned {p} {i, j} (up_i, up_j) =
+bptr_diff_unsigned {p} {i, j} (bp_i, bp_j) =
   let
     extern fn
-    uptr_diff_unsigned__ :
+    bptr_diff_unsigned__ :
       {a    : vt@ype}
       {p    : addr}
       {i, j : int}
-      (uptr (a, p, i), uptr (a, p, j), size_t (sizeof a)) -<>
+      (bptr (a, p, i), bptr (a, p, j), size_t (sizeof a)) -<>
         size_t (i - j) = "mac#%"
   in
-    uptr_diff_unsigned__ {a} {p} {i, j} (up_i, up_j, sizeof<a>)
+    bptr_diff_unsigned__ {a} {p} {i, j} (bp_i, bp_j, sizeof<a>)
   end
 
 implement {a}
-uptr_get (pf_view | anchor, up) =
-  ptr_get<a> (pf_view | uptr2ptr (anchor, up))
+bptr_get (pf_view | anchor, bp) =
+  ptr_get<a> (pf_view | bptr2ptr (anchor, bp))
 
 implement {a}
-uptr_set (pf_view | anchor, up, x) =
-  ptr_set<a> (pf_view | uptr2ptr (anchor, up), x)
+bptr_set (pf_view | anchor, bp, x) =
+  ptr_set<a> (pf_view | bptr2ptr (anchor, bp), x)
 
 implement {a}
-uptr_exch (pf_view | anchor, up, x) =
-  ptr_exch<a> (pf_view | uptr2ptr (anchor, up), x)
+bptr_exch (pf_view | anchor, bp, x) =
+  ptr_exch<a> (pf_view | bptr2ptr (anchor, bp), x)
 
 implement {a}
-interchange_uptr_uptr {p} {n} {i, j} (pf_arr | anchor, up_i, up_j) =
-  if up_i <> up_j then
+interchange_bptr_bptr {p} {n} {i, j} (pf_arr | anchor, bp_i, bp_j) =
+  if bp_i <> bp_j then
     let
       fn {}
       exch (pf_i   : !a @ (p + (i * sizeof a)),
             pf_j   : !a @ (p + (j * sizeof a)) |
-            anchor : uptr_anchor (a, p),
-            up_i   : uptr (a, p, i),
+            anchor : bptr_anchor (a, p),
+            bp_i   : bptr (a, p, i),
             p_j    : ptr (p + (j * sizeof a)))
           :<!wrt> void =
-        uptr_exch<a> (pf_i | anchor, up_i, !p_j)
+        bptr_exch<a> (pf_i | anchor, bp_i, !p_j)
 
       prval @(pf_i, pf_j, fpf) =
         array_v_takeout2 {a} {p} {n} {i, j} pf_arr
-      val p_j = uptr2ptr (anchor, up_j)
-      val () = exch (pf_i, pf_j | anchor, up_i, p_j)
+      val p_j = bptr2ptr (anchor, bp_j)
+      val () = exch (pf_i, pf_j | anchor, bp_i, p_j)
       prval () = pf_arr := fpf (pf_i, pf_j)
     in
     end
 
 implement {a}
-subreverse_uptr_uptr {p} {n} {i, j} (pf_arr | anchor, up_i, up_j) =
+subreverse_bptr_bptr {p} {n} {i, j} (pf_arr | anchor, bp_i, bp_j) =
   let
     fun
     loop {i, j : int | 0 <= i; i <= j; j <= n}
          .<j - i>.
          (pf_arr : !array_v (a, p, n) |
-          up_i   : uptr (a, p, i),
-          up_j   : uptr (a, p, j))
+          bp_i   : bptr (a, p, i),
+          bp_j   : bptr (a, p, j))
         :<!wrt> void =
       let
-        val up_i1 = uptr_succ<a> up_i
+        val bp_i1 = bptr_succ<a> bp_i
       in
-        if up_i1 < up_j then
+        if bp_i1 < bp_j then
           let
-            val up_j1 = uptr_pred<a> up_j
+            val bp_j1 = bptr_pred<a> bp_j
           in
-            interchange_uptr_uptr<a> (pf_arr | anchor, up_i, up_j1);
-            loop (pf_arr | up_i1, up_j1)
+            interchange_bptr_bptr<a> (pf_arr | anchor, bp_i, bp_j1);
+            loop (pf_arr | bp_i1, bp_j1)
           end
       end
   in
-    loop (pf_arr | up_i, up_j)
+    loop (pf_arr | bp_i, bp_j)
   end
 
 implement {a}
-subcirculate_right_uptr_uptr {p} {n} {i, j}
-                             (pf_arr | anchor, up_i, up_j) =
-  if up_i <> up_j then
+subcirculate_right_bptr_bptr {p} {n} {i, j}
+                             (pf_arr | anchor, bp_i, bp_j) =
+  if bp_i <> bp_j then
     let
       extern fn                 (* Unsafe memmove. *)
       memmove : (Ptr, Ptr, Size_t) -< !wrt > void = "mac#%"
@@ -288,17 +288,17 @@ subcirculate_right_uptr_uptr {p} {n} {i, j}
       prval @(pf_i, pf_j, fpf) =
         array_v_takeout2 {a} {p} {n} {i, j} pf_arr
 
-      val tmp = uptr_get<a> (pf_j | anchor, up_j)
+      val tmp = bptr_get<a> (pf_j | anchor, bp_j)
 
       prval () = lemma_sizeof {a} ()
       prval () = mul_gte_gte_gte {j - i, sizeof a} ()
       val () =
-        memmove (uptr2ptr (anchor, uptr_succ<a> up_i),
-                 uptr2ptr (anchor, up_i),
-                 uptr_diff_unsigned<a> (up_j, up_i) * sizeof<a>)
+        memmove (bptr2ptr (anchor, bptr_succ<a> bp_i),
+                 bptr2ptr (anchor, bp_i),
+                 bptr_diff_unsigned<a> (bp_j, bp_i) * sizeof<a>)
 
       prval () = $UN.castview2void_at{a?}{a} pf_i
-      val () = uptr_set<a> (pf_i | anchor, up_i, tmp)
+      val () = bptr_set<a> (pf_i | anchor, bp_i, tmp)
 
       prval () = $UN.castview2void_at{a}{a?!} pf_j
       prval () = pf_arr := fpf (pf_i, pf_j)

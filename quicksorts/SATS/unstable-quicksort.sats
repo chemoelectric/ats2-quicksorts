@@ -21,7 +21,7 @@
 
 %{#
 #include <quicksorts/CATS/quicksorts.cats>
-#include <quicksorts/CATS/uptr.cats>
+#include <quicksorts/CATS/bptr.cats>
 %}
 
 (*------------------------------------------------------------------*)

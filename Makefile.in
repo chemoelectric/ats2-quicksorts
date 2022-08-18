@@ -179,8 +179,8 @@ am__uninstall_files_from_dir = { \
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libats2_quicksorts_la_LIBADD =
 am__dirstamp = $(am__leading_dot)dirstamp
-am__objects_1 = quicksorts/SATS/uptr_sats.lo
-am__objects_2 = quicksorts/DATS/uptr_dats.lo
+am__objects_1 = quicksorts/SATS/bptr_sats.lo
+am__objects_2 = quicksorts/DATS/bptr_dats.lo
 am__objects_3 = quicksorts/SATS/stable-quicksort_sats.lo
 am__objects_4 = quicksorts/DATS/stable-quicksort_dats.lo
 am__objects_5 = quicksorts/SATS/unstable-quicksort_sats.lo
@@ -224,12 +224,12 @@ depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/list_ats_dependencies-list-ats-dependencies_depsprog.Po \
 	./$(DEPDIR)/quicksorts-lcg-seed_dats.Plo \
+	quicksorts/DATS/$(DEPDIR)/bptr_dats.Plo \
 	quicksorts/DATS/$(DEPDIR)/stable-quicksort_dats.Plo \
 	quicksorts/DATS/$(DEPDIR)/unstable-quicksort_dats.Plo \
-	quicksorts/DATS/$(DEPDIR)/uptr_dats.Plo \
+	quicksorts/SATS/$(DEPDIR)/bptr_sats.Plo \
 	quicksorts/SATS/$(DEPDIR)/stable-quicksort_sats.Plo \
 	quicksorts/SATS/$(DEPDIR)/unstable-quicksort_sats.Plo \
-	quicksorts/SATS/$(DEPDIR)/uptr_sats.Plo \
 	tests/$(DEPDIR)/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.Po \
 	tests/$(DEPDIR)/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.Po \
 	tests/$(DEPDIR)/test_arrays_stability-test-arrays-stability_tests.Po
@@ -670,7 +670,7 @@ EXTRA_DIST = $(srcdir)/silent-rules.mk COPYING INSTALL README AUTHORS \
 	tests/test-arrays-patterns-unstable.dats \
 	list-ats-dependencies.dats
 MOSTLYCLEANFILES = 
-CLEANFILES = $(UPTR_SATS_C) $(UPTR_DATS_C) $(STABLE_QUICKSORT_SATS_C) \
+CLEANFILES = $(BPTR_SATS_C) $(BPTR_DATS_C) $(STABLE_QUICKSORT_SATS_C) \
 	$(STABLE_QUICKSORT_DATS_C) $(UNSTABLE_QUICKSORT_SATS_C) \
 	$(UNSTABLE_QUICKSORT_DATS_C) $(QUICKSORTS_LCG_SEED_DATS_C) \
 	tests/test-arrays-patterns-stable \
@@ -708,11 +708,11 @@ AM_PATSOPTFLAGS = -IATS $(builddir) -IATS $(srcdir) -IATS \
 TOTAL_PATSOPTFLAGS = $(AM_PATSOPTFLAGS) $(PATSOPTFLAGS) \
 	$(XPATSOPTFLAGS)
 TESTS_PATSOPTFLAGS = -IATS $(builddir)/tests -IATS $(srcdir)/tests
-UPTR_SATS = quicksorts/SATS/uptr.sats
-UPTR_SATS_C = quicksorts/SATS/uptr_sats.c
-UPTR_DATS = quicksorts/DATS/uptr.dats
-UPTR_DATS_C = quicksorts/DATS/uptr_dats.c
-UPTR_CATS = quicksorts/CATS/uptr.cats
+BPTR_SATS = quicksorts/SATS/bptr.sats
+BPTR_SATS_C = quicksorts/SATS/bptr_sats.c
+BPTR_DATS = quicksorts/DATS/bptr.dats
+BPTR_DATS_C = quicksorts/DATS/bptr_dats.c
+BPTR_CATS = quicksorts/CATS/bptr.cats
 STABLE_QUICKSORT_SATS = quicksorts/SATS/stable-quicksort.sats
 STABLE_QUICKSORT_SATS_C = quicksorts/SATS/stable-quicksort_sats.c
 STABLE_QUICKSORT_DATS = quicksorts/DATS/stable-quicksort.dats
@@ -727,17 +727,17 @@ QUICKSORTS_SHARE_DATS = quicksorts/DATS/SHARE/quicksorts.share.dats
 QUICKSORTS_CATS = quicksorts/CATS/quicksorts.cats
 QUICKSORTS_LCG_SEED_DATS = quicksorts-lcg-seed.dats
 QUICKSORTS_LCG_SEED_DATS_C = quicksorts-lcg-seed_dats.c
-nobase_dist_pkginclude_HEADERS = $(UPTR_SATS) $(UPTR_DATS) \
-	$(UPTR_HATS) $(STABLE_QUICKSORT_SATS) $(STABLE_QUICKSORT_DATS) \
+nobase_dist_pkginclude_HEADERS = $(BPTR_SATS) $(BPTR_DATS) \
+	$(BPTR_HATS) $(STABLE_QUICKSORT_SATS) $(STABLE_QUICKSORT_DATS) \
 	$(STABLE_QUICKSORT_HATS) $(UNSTABLE_QUICKSORT_SATS) \
 	$(UNSTABLE_QUICKSORT_DATS) $(UNSTABLE_QUICKSORT_HATS) \
 	$(QUICKSORTS_CATS) $(QUICKSORTS_SHARE_DATS)
-nodist_libats2_quicksorts_la_SOURCES = $(UPTR_SATS_C) $(UPTR_DATS_C) \
+nodist_libats2_quicksorts_la_SOURCES = $(BPTR_SATS_C) $(BPTR_DATS_C) \
 	$(STABLE_QUICKSORT_SATS_C) $(STABLE_QUICKSORT_DATS_C) \
 	$(UNSTABLE_QUICKSORT_SATS_C) $(UNSTABLE_QUICKSORT_DATS_C) \
 	$(QUICKSORTS_LCG_SEED_DATS_C)
 libats2_quicksorts_la_DEPENDENCIES = $(QUICKSORTS_SHARE_DATS) \
-	$(QUICKSORTS_CATS) $(UPTR_CATS)
+	$(QUICKSORTS_CATS) $(BPTR_CATS)
 tests_test_arrays_patterns_stable_SOURCES =  \
 	tests/test-arrays-patterns-stable_tests.c
 tests_test_arrays_patterns_stable_DEPENDENCIES =  \
@@ -901,7 +901,7 @@ quicksorts/SATS/$(am__dirstamp):
 quicksorts/SATS/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) quicksorts/SATS/$(DEPDIR)
 	@: > quicksorts/SATS/$(DEPDIR)/$(am__dirstamp)
-quicksorts/SATS/uptr_sats.lo: quicksorts/SATS/$(am__dirstamp) \
+quicksorts/SATS/bptr_sats.lo: quicksorts/SATS/$(am__dirstamp) \
 	quicksorts/SATS/$(DEPDIR)/$(am__dirstamp)
 quicksorts/DATS/$(am__dirstamp):
 	@$(MKDIR_P) quicksorts/DATS
@@ -909,7 +909,7 @@ quicksorts/DATS/$(am__dirstamp):
 quicksorts/DATS/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) quicksorts/DATS/$(DEPDIR)
 	@: > quicksorts/DATS/$(DEPDIR)/$(am__dirstamp)
-quicksorts/DATS/uptr_dats.lo: quicksorts/DATS/$(am__dirstamp) \
+quicksorts/DATS/bptr_dats.lo: quicksorts/DATS/$(am__dirstamp) \
 	quicksorts/DATS/$(DEPDIR)/$(am__dirstamp)
 quicksorts/SATS/stable-quicksort_sats.lo:  \
 	quicksorts/SATS/$(am__dirstamp) \
@@ -968,12 +968,12 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/list_ats_dependencies-list-ats-dependencies_depsprog.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quicksorts-lcg-seed_dats.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quicksorts/DATS/$(DEPDIR)/bptr_dats.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quicksorts/DATS/$(DEPDIR)/stable-quicksort_dats.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quicksorts/DATS/$(DEPDIR)/unstable-quicksort_dats.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@quicksorts/DATS/$(DEPDIR)/uptr_dats.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quicksorts/SATS/$(DEPDIR)/bptr_sats.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quicksorts/SATS/$(DEPDIR)/stable-quicksort_sats.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quicksorts/SATS/$(DEPDIR)/unstable-quicksort_sats.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@quicksorts/SATS/$(DEPDIR)/uptr_sats.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/test_arrays_stability-test-arrays-stability_tests.Po@am__quote@ # am--include-marker
@@ -1619,12 +1619,12 @@ distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 		-rm -f ./$(DEPDIR)/list_ats_dependencies-list-ats-dependencies_depsprog.Po
 	-rm -f ./$(DEPDIR)/quicksorts-lcg-seed_dats.Plo
+	-rm -f quicksorts/DATS/$(DEPDIR)/bptr_dats.Plo
 	-rm -f quicksorts/DATS/$(DEPDIR)/stable-quicksort_dats.Plo
 	-rm -f quicksorts/DATS/$(DEPDIR)/unstable-quicksort_dats.Plo
-	-rm -f quicksorts/DATS/$(DEPDIR)/uptr_dats.Plo
+	-rm -f quicksorts/SATS/$(DEPDIR)/bptr_sats.Plo
 	-rm -f quicksorts/SATS/$(DEPDIR)/stable-quicksort_sats.Plo
 	-rm -f quicksorts/SATS/$(DEPDIR)/unstable-quicksort_sats.Plo
-	-rm -f quicksorts/SATS/$(DEPDIR)/uptr_sats.Plo
 	-rm -f tests/$(DEPDIR)/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.Po
 	-rm -f tests/$(DEPDIR)/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.Po
 	-rm -f tests/$(DEPDIR)/test_arrays_stability-test-arrays-stability_tests.Po
@@ -1679,12 +1679,12 @@ maintainer-clean: maintainer-clean-am
 	-rm -rf $(top_srcdir)/autom4te.cache
 		-rm -f ./$(DEPDIR)/list_ats_dependencies-list-ats-dependencies_depsprog.Po
 	-rm -f ./$(DEPDIR)/quicksorts-lcg-seed_dats.Plo
+	-rm -f quicksorts/DATS/$(DEPDIR)/bptr_dats.Plo
 	-rm -f quicksorts/DATS/$(DEPDIR)/stable-quicksort_dats.Plo
 	-rm -f quicksorts/DATS/$(DEPDIR)/unstable-quicksort_dats.Plo
-	-rm -f quicksorts/DATS/$(DEPDIR)/uptr_dats.Plo
+	-rm -f quicksorts/SATS/$(DEPDIR)/bptr_sats.Plo
 	-rm -f quicksorts/SATS/$(DEPDIR)/stable-quicksort_sats.Plo
 	-rm -f quicksorts/SATS/$(DEPDIR)/unstable-quicksort_sats.Plo
-	-rm -f quicksorts/SATS/$(DEPDIR)/uptr_sats.Plo
 	-rm -f tests/$(DEPDIR)/test_arrays_patterns_stable-test-arrays-patterns-stable_tests.Po
 	-rm -f tests/$(DEPDIR)/test_arrays_patterns_unstable-test-arrays-patterns-unstable_tests.Po
 	-rm -f tests/$(DEPDIR)/test_arrays_stability-test-arrays-stability_tests.Po

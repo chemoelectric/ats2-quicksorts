@@ -16,241 +16,243 @@
   <https://www.gnu.org/licenses/>.
 *)
 
-#define ATS_PACKNAME "ats2-quicksorts-uptr"
-#define ATS_EXTERN_PREFIX "ats2_quicksorts_uptr_"
+#define ATS_PACKNAME "ats2-quicksorts-bptr"
+#define ATS_EXTERN_PREFIX "ats2_quicksorts_bptr_"
 
 %{#
-#include <quicksorts/CATS/uptr.cats>
+#include <quicksorts/CATS/bptr.cats>
 %}
 
 (*------------------------------------------------------------------*)
+(* A bptr is similar to an aptr, but is specially suited for        *)
+(* accessing the elements of arrays.                                *)
 
-abst@ype uptr (a : vt@ype+, p : addr, i : int) = uintptr
+abst@ype bptr (a : vt@ype+, p : addr, i : int) = ptr
 
-typedef uptr_anchor (a : vt@ype+, p : addr) =
-  uptr (a, p, 0)
+typedef bptr_anchor (a : vt@ype+, p : addr) =
+  bptr (a, p, 0)
 
 fn {a : vt@ype}
-ptr2uptr_anchor :
+ptr2bptr_anchor :
   {p : addr}
-  ptr p -<> uptr_anchor (a, p)
+  ptr p -<> bptr_anchor (a, p)
 
 fn
-uptr_anchor2ptr :
+bptr_anchor2ptr :
   {a : vt@ype}
   {p : addr}
-  uptr_anchor (a, p) -<> ptr p = "mac#%"
+  bptr_anchor (a, p) -<> ptr p = "mac#%"
 
 fn {a : vt@ype}
-uptr2ptr :
+bptr2ptr :
   {p : addr}
   {i : int}
-  (uptr_anchor (a, p), uptr (a, p, i)) -<>
+  (bptr_anchor (a, p), bptr (a, p, i)) -<>
     ptr (p + (i * sizeof a))
 
 (*------------------------------------------------------------------*)
 
 fn {a  : vt@ype}
    {tk : tkind}
-uptr_add_g1uint :
+bptr_add_g1uint :
   {p : addr}
   {i : int}
   {j : int}
-  (uptr (a, p, i), g1uint (tk, j)) -<> uptr (a, p, i + j)
+  (bptr (a, p, i), g1uint (tk, j)) -<> bptr (a, p, i + j)
 
 fn {a  : vt@ype}
    {tk : tkind}
-uptr_add_g1int :
+bptr_add_g1int :
   {p : addr}
   {i : int}
   {j : int}
-  (uptr (a, p, i), g1int (tk, j)) -<> uptr (a, p, i + j)
+  (bptr (a, p, i), g1int (tk, j)) -<> bptr (a, p, i + j)
 
-overload uptr_add with uptr_add_g1uint
-overload uptr_add with uptr_add_g1int
+overload bptr_add with bptr_add_g1uint
+overload bptr_add with bptr_add_g1int
 
 (*------------------------------------------------------------------*)
 
 fn {a  : vt@ype}
    {tk : tkind}
-uptr_sub_g1uint :
+bptr_sub_g1uint :
   {p : addr}
   {i : int}
   {j : int}
-  (uptr (a, p, i), g1uint (tk, j)) -<> uptr (a, p, i - j)
+  (bptr (a, p, i), g1uint (tk, j)) -<> bptr (a, p, i - j)
 
 fn {a  : vt@ype}
    {tk : tkind}
-uptr_sub_g1int :
+bptr_sub_g1int :
   {p : addr}
   {i : int}
   {j : int}
-  (uptr (a, p, i), g1int (tk, j)) -<> uptr (a, p, i - j)
+  (bptr (a, p, i), g1int (tk, j)) -<> bptr (a, p, i - j)
 
-overload uptr_sub with uptr_sub_g1uint
-overload uptr_sub with uptr_sub_g1int
-
-(*------------------------------------------------------------------*)
-
-fn {a : vt@ype}
-uptr_succ :
-  {p : addr}
-  {i : int}
-  uptr (a, p, i) -<> uptr (a, p, i + 1)
-
-fn {a : vt@ype}
-uptr_pred :
-  {p : addr}
-  {i : int}
-  uptr (a, p, i) -<> uptr (a, p, i - 1)
+overload bptr_sub with bptr_sub_g1uint
+overload bptr_sub with bptr_sub_g1int
 
 (*------------------------------------------------------------------*)
 
 fn {a : vt@ype}
-uptr_diff :
+bptr_succ :
+  {p : addr}
+  {i : int}
+  bptr (a, p, i) -<> bptr (a, p, i + 1)
+
+fn {a : vt@ype}
+bptr_pred :
+  {p : addr}
+  {i : int}
+  bptr (a, p, i) -<> bptr (a, p, i - 1)
+
+(*------------------------------------------------------------------*)
+
+fn {a : vt@ype}
+bptr_diff :
   {p    : addr}
   {i, j : int}
-  (uptr (a, p, i), uptr (a, p, j)) -<> ssize_t (i - j)
+  (bptr (a, p, i), bptr (a, p, j)) -<> ssize_t (i - j)
 
 fn {a : vt@ype}
-uptr_diff_unsigned :
+bptr_diff_unsigned :
   {p    : addr}
   {i, j : int | i >= j}
-  (uptr (a, p, i), uptr (a, p, j)) -<> size_t (i - j)
+  (bptr (a, p, i), bptr (a, p, j)) -<> size_t (i - j)
 
 (*------------------------------------------------------------------*)
 
 fn
-lt_uptr_uptr :
+lt_bptr_bptr :
   {a : vt@ype}
   {p    : addr}
   {i, j : int}
-  (uptr (a, p, i), uptr (a, p, j)) -<> bool (i < j) = "mac#%"
+  (bptr (a, p, i), bptr (a, p, j)) -<> bool (i < j) = "mac#%"
 
 fn
-lte_uptr_uptr :
+lte_bptr_bptr :
   {a : vt@ype}
   {p    : addr}
   {i, j : int}
-  (uptr (a, p, i), uptr (a, p, j)) -<> bool (i <= j) = "mac#%"
+  (bptr (a, p, i), bptr (a, p, j)) -<> bool (i <= j) = "mac#%"
 
 fn
-gt_uptr_uptr :
+gt_bptr_bptr :
   {a    : vt@ype}
   {p    : addr}
   {i, j : int}
-  (uptr (a, p, i), uptr (a, p, j)) -<> bool (i > j) = "mac#%"
+  (bptr (a, p, i), bptr (a, p, j)) -<> bool (i > j) = "mac#%"
 
 fn
-gte_uptr_uptr :
+gte_bptr_bptr :
   {a    : vt@ype}
   {p    : addr}
   {i, j : int}
-  (uptr (a, p, i), uptr (a, p, j)) -<> bool (i >= j) = "mac#%"
+  (bptr (a, p, i), bptr (a, p, j)) -<> bool (i >= j) = "mac#%"
 
 fn
-eq_uptr_uptr :
+eq_bptr_bptr :
   {a    : vt@ype}
   {p    : addr}
   {i, j : int}
-  (uptr (a, p, i), uptr (a, p, j)) -<> bool (i == j) = "mac#%"
+  (bptr (a, p, i), bptr (a, p, j)) -<> bool (i == j) = "mac#%"
 
 fn
-neq_uptr_uptr :
+neq_bptr_bptr :
   {a    : vt@ype}
   {p    : addr}
   {i, j : int}
-  (uptr (a, p, i), uptr (a, p, j)) -<> bool (i != j) = "mac#%"
+  (bptr (a, p, i), bptr (a, p, j)) -<> bool (i != j) = "mac#%"
 
 fn
-compare_uptr_uptr :
+compare_bptr_bptr :
   {a    : vt@ype}
   {p    : addr}
   {i, j : int}
-  (uptr (a, p, i), uptr (a, p, j)) -<> int (sgn (i - j)) = "mac#%"
+  (bptr (a, p, i), bptr (a, p, j)) -<> int (sgn (i - j)) = "mac#%"
 
-overload < with lt_uptr_uptr of 30
-overload <= with lte_uptr_uptr of 30
-overload > with gt_uptr_uptr of 30
-overload >= with gte_uptr_uptr of 30
-overload = with eq_uptr_uptr of 30
-overload <> with neq_uptr_uptr of 30
-overload != with neq_uptr_uptr of 30
-overload compare with compare_uptr_uptr of 30
+overload < with lt_bptr_bptr of 30
+overload <= with lte_bptr_bptr of 30
+overload > with gt_bptr_bptr of 30
+overload >= with gte_bptr_bptr of 30
+overload = with eq_bptr_bptr of 30
+overload <> with neq_bptr_bptr of 30
+overload != with neq_bptr_bptr of 30
+overload compare with compare_bptr_bptr of 30
 
 (*------------------------------------------------------------------*)
 
 fn {a : vt@ype}
-uptr_get :
+bptr_get :
   {p : addr}
   {i : int}
   (!a @ (p + (i * sizeof a)) >> a?! @ (p + (i * sizeof a)) |
-   uptr_anchor (a, p),
-   uptr (a, p, i)) -<>
+   bptr_anchor (a, p),
+   bptr (a, p, i)) -<>
     a
 
 fn {a : vt@ype}
-uptr_set :
+bptr_set :
   {p : addr}
   {i : int}
   (!a? @ (p + (i * sizeof a)) >> a @ (p + (i * sizeof a)) |
-   uptr_anchor (a, p),
-   uptr (a, p, i),
+   bptr_anchor (a, p),
+   bptr (a, p, i),
    a) -< !wrt >
     void
 
 fn {a : vt@ype}
-uptr_exch :
+bptr_exch :
   {p : addr}
   {i : int}
   (!a @ (p + (i * sizeof a)) |
-   uptr_anchor (a, p),
-   uptr (a, p, i),
+   bptr_anchor (a, p),
+   bptr (a, p, i),
    &a >> a) -< !wrt >
     void
 
 (* Interchange two elements of an array. *)
 fn {a : vt@ype}
-interchange_uptr_uptr :
+interchange_bptr_bptr :
   {p : addr}
   {n : int}
   {i, j : nat | i <= n - 1; j <= n - 1}
   (!array_v (a, p, n) |
-   uptr_anchor (a, p),
-   uptr (a, p, i),
-   uptr (a, p, j)) -< !wrt >
+   bptr_anchor (a, p),
+   bptr (a, p, i),
+   bptr (a, p, j)) -< !wrt >
     void
 
-(* Reverse a subarray. The first uptr points at the first element. The
-   second uptr points at one position past the last element. (These
+(* Reverse a subarray. The first bptr points at the first element. The
+   second bptr points at one position past the last element. (These
    arguments are chosen for consistency with the prelude’s
    array_subreverse.) *)
 fn {a : vt@ype}
-subreverse_uptr_uptr :
+subreverse_bptr_bptr :
   {p    : addr}
   {n    : int}
   {i, j : int | 0 <= i; i < j; j <= n}
   (!array_v (a, p, n) |
-   uptr_anchor (a, p),
-   uptr (a, p, i),
-   uptr (a, p, j)) -< !wrt >
+   bptr_anchor (a, p),
+   bptr (a, p, i),
+   bptr (a, p, j)) -< !wrt >
     void
 
 (* Circular rotation right by one element. The value at the jth
    position gets moved to the ith position. *)
 fn {a : vt@ype}
-subcirculate_right_uptr_uptr :
+subcirculate_right_bptr_bptr :
   {p    : addr}
   {n    : int}
   {i, j : int | 0 <= i; i <= j; j <= n - 1}
   (!array_v (a, p, n) |
-   uptr_anchor (a, p),
-   uptr (a, p, i),
-   uptr (a, p, j)) -< !wrt >
+   bptr_anchor (a, p),
+   bptr (a, p, i),
+   bptr (a, p, j)) -< !wrt >
     void
 
-overload interchange with interchange_uptr_uptr
-overload subreverse with subreverse_uptr_uptr
-overload subcirculate_right with subcirculate_right_uptr_uptr
+overload interchange with interchange_bptr_bptr
+overload subreverse with subreverse_bptr_bptr
+overload subcirculate_right with subcirculate_right_bptr_bptr
 
 (*------------------------------------------------------------------*)
