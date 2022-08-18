@@ -30,9 +30,9 @@ for an already-ordered prefix.
 This is an array quicksort of the move usual, unstable kind. It uses
 O(1) workspace and seems to perform well, even on large arrays.
 
-The current default is to use a random pivot, via a built-in linear
-congruential generator. I have implemented other choices of pivot,
-should you prefer one of them: median-of-three, and middle-element.
+The current default is to use a median-of-three pivot. I have
+implemented other choices of pivot, should you prefer one of them:
+random pivot, and middle-element.
 
 The current ‘small’ sort is a binary insertion sort that first checks
 for an already-ordered prefix.

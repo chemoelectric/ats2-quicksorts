@@ -143,6 +143,16 @@ endif !DEPENDENCY_TRACKING
 
 lib_LTLIBRARIES += libats2-quicksorts.la
 
+BPTR_SATS = quicksorts/SATS/bptr.sats
+BPTR_SATS_C = quicksorts/SATS/bptr_sats.c
+CLEANFILES += $(BPTR_SATS_C)
+
+BPTR_DATS = quicksorts/DATS/bptr.dats
+BPTR_DATS_C = quicksorts/DATS/bptr_dats.c
+CLEANFILES += $(BPTR_DATS_C)
+
+BPTR_CATS = quicksorts/CATS/bptr.cats
+
 STABLE_QUICKSORT_SATS = quicksorts/SATS/stable-quicksort.sats
 STABLE_QUICKSORT_SATS_C = quicksorts/SATS/stable-quicksort_sats.c
 CLEANFILES += $(STABLE_QUICKSORT_SATS_C)
@@ -172,6 +182,9 @@ CLEANFILES += $(QUICKSORTS_LCG_SEED_DATS_C)
 EXTRA_DIST += $(QUICKSORTS_LCG_SEED_DATS)
 
 nobase_dist_pkginclude_HEADERS =
+nobase_dist_pkginclude_HEADERS += $(BPTR_SATS)
+nobase_dist_pkginclude_HEADERS += $(BPTR_DATS)
+nobase_dist_pkginclude_HEADERS += $(BPTR_CATS)
 nobase_dist_pkginclude_HEADERS += $(STABLE_QUICKSORT_SATS)
 nobase_dist_pkginclude_HEADERS += $(STABLE_QUICKSORT_DATS)
 nobase_dist_pkginclude_HEADERS += $(STABLE_QUICKSORT_HATS)
@@ -182,6 +195,8 @@ nobase_dist_pkginclude_HEADERS += $(QUICKSORTS_CATS)
 nobase_dist_pkginclude_HEADERS += $(QUICKSORTS_SHARE_DATS)
 
 nodist_libats2_quicksorts_la_SOURCES =
+nodist_libats2_quicksorts_la_SOURCES += $(BPTR_SATS_C)
+nodist_libats2_quicksorts_la_SOURCES += $(BPTR_DATS_C)
 nodist_libats2_quicksorts_la_SOURCES += $(STABLE_QUICKSORT_SATS_C)
 nodist_libats2_quicksorts_la_SOURCES += $(STABLE_QUICKSORT_DATS_C)
 nodist_libats2_quicksorts_la_SOURCES += $(UNSTABLE_QUICKSORT_SATS_C)
@@ -190,7 +205,7 @@ nodist_libats2_quicksorts_la_SOURCES += $(QUICKSORTS_LCG_SEED_DATS_C)
 libats2_quicksorts_la_DEPENDENCIES =
 libats2_quicksorts_la_DEPENDENCIES += $(QUICKSORTS_SHARE_DATS)
 libats2_quicksorts_la_DEPENDENCIES += $(QUICKSORTS_CATS)
-
+libats2_quicksorts_la_DEPENDENCIES += $(BPTR_CATS)
 
 #--------------------------------------------------------------------------
 

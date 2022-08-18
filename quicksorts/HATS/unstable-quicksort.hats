@@ -18,3 +18,4 @@
 
 staload "quicksorts/SATS/unstable-quicksort.sats"
 staload _ = "quicksorts/DATS/unstable-quicksort.dats"
+staload _ = "quicksorts/DATS/bptr.dats"
