@@ -47,8 +47,7 @@ fn {a : vt@ype}
 bptr2ptr :
   {p : addr}
   {i : int}
-  (bptr_anchor (a, p), bptr (a, p, i)) -<>
-    ptr (p + (i * sizeof a))
+  (bptr (a, p, i)) -<> ptr (p + (i * sizeof a))
 
 (*------------------------------------------------------------------*)
 
@@ -187,7 +186,6 @@ bptr_get :
   {p : addr}
   {i : int}
   (!a @ (p + (i * sizeof a)) >> a?! @ (p + (i * sizeof a)) |
-   bptr_anchor (a, p),
    bptr (a, p, i)) -<>
     a
 
@@ -196,7 +194,6 @@ bptr_set :
   {p : addr}
   {i : int}
   (!a? @ (p + (i * sizeof a)) >> a @ (p + (i * sizeof a)) |
-   bptr_anchor (a, p),
    bptr (a, p, i),
    a) -< !wrt >
     void
@@ -206,7 +203,6 @@ bptr_exch :
   {p : addr}
   {i : int}
   (!a @ (p + (i * sizeof a)) |
-   bptr_anchor (a, p),
    bptr (a, p, i),
    &a >> a) -< !wrt >
     void
@@ -218,7 +214,6 @@ interchange_bptr_bptr :
   {n : int}
   {i, j : nat | i <= n - 1; j <= n - 1}
   (!array_v (a, p, n) |
-   bptr_anchor (a, p),
    bptr (a, p, i),
    bptr (a, p, j)) -< !wrt >
     void
@@ -233,7 +228,6 @@ subreverse_bptr_bptr :
   {n    : int}
   {i, j : int | 0 <= i; i < j; j <= n}
   (!array_v (a, p, n) |
-   bptr_anchor (a, p),
    bptr (a, p, i),
    bptr (a, p, j)) -< !wrt >
     void
@@ -246,7 +240,6 @@ subcirculate_right_bptr_bptr :
   {n    : int}
   {i, j : int | 0 <= i; i <= j; j <= n - 1}
   (!array_v (a, p, n) |
-   bptr_anchor (a, p),
    bptr (a, p, i),
    bptr (a, p, j)) -< !wrt >
     void

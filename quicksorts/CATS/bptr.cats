@@ -19,9 +19,6 @@
 #ifndef QUICKSORTS__CATS__BPTR_CATS__HEADER_GUARD__
 #define QUICKSORTS__CATS__BPTR_CATS__HEADER_GUARD__
 
-#include <stdint.h>
-#include <inttypes.h>
-
 #define ats2_quicksorts_bptr_inline ATSinline ()
 
 #if defined __GNUC__
@@ -43,8 +40,7 @@ ats2_quicksorts_bptr_bptr_anchor2ptr (atstype_ptr bp)
 }
 
 ats2_quicksorts_bptr_inline atstype_ptr
-ats2_quicksorts_bptr_bptr2ptr__ (atstype_ptr anchor,
-                                 atstype_ptr bp)
+ats2_quicksorts_bptr_bptr2ptr__ (atstype_ptr bp)
 {
   return bp;
 }

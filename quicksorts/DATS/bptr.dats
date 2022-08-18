@@ -90,17 +90,17 @@ ptr2bptr_anchor {p} p =
   end
 
 implement {a}
-bptr2ptr {p} {i} (anchor, bp) =
+bptr2ptr {p} {i} bp =
   let
     extern fn
     bptr2ptr__ :
       {a : vt@ype}
       {p : addr}
       {i : int}
-      (bptr_anchor (a, p), bptr (a, p, i)) -<>
+      (bptr (a, p, i)) -<>
         ptr (p + (i * sizeof a)) = "mac#%"
   in
-    bptr2ptr__ {a} {p} {i} (anchor, bp)
+    bptr2ptr__ {a} {p} {i} bp
   end
 
 implement {a} {tk}
@@ -220,40 +220,39 @@ bptr_diff_unsigned {p} {i, j} (bp_i, bp_j) =
   end
 
 implement {a}
-bptr_get (pf_view | anchor, bp) =
-  ptr_get<a> (pf_view | bptr2ptr (anchor, bp))
+bptr_get (pf_view | bp) =
+  ptr_get<a> (pf_view | bptr2ptr bp)
 
 implement {a}
-bptr_set (pf_view | anchor, bp, x) =
-  ptr_set<a> (pf_view | bptr2ptr (anchor, bp), x)
+bptr_set (pf_view | bp, x) =
+  ptr_set<a> (pf_view | bptr2ptr bp, x)
 
 implement {a}
-bptr_exch (pf_view | anchor, bp, x) =
-  ptr_exch<a> (pf_view | bptr2ptr (anchor, bp), x)
+bptr_exch (pf_view | bp, x) =
+  ptr_exch<a> (pf_view | bptr2ptr bp, x)
 
 implement {a}
-interchange_bptr_bptr {p} {n} {i, j} (pf_arr | anchor, bp_i, bp_j) =
+interchange_bptr_bptr {p} {n} {i, j} (pf_arr | bp_i, bp_j) =
   if bp_i <> bp_j then
     let
       fn {}
       exch (pf_i   : !a @ (p + (i * sizeof a)),
             pf_j   : !a @ (p + (j * sizeof a)) |
-            anchor : bptr_anchor (a, p),
             bp_i   : bptr (a, p, i),
             p_j    : ptr (p + (j * sizeof a)))
           :<!wrt> void =
-        bptr_exch<a> (pf_i | anchor, bp_i, !p_j)
+        bptr_exch<a> (pf_i | bp_i, !p_j)
 
       prval @(pf_i, pf_j, fpf) =
         array_v_takeout2 {a} {p} {n} {i, j} pf_arr
-      val p_j = bptr2ptr (anchor, bp_j)
-      val () = exch (pf_i, pf_j | anchor, bp_i, p_j)
+      val p_j = bptr2ptr bp_j
+      val () = exch (pf_i, pf_j | bp_i, p_j)
       prval () = pf_arr := fpf (pf_i, pf_j)
     in
     end
 
 implement {a}
-subreverse_bptr_bptr {p} {n} {i, j} (pf_arr | anchor, bp_i, bp_j) =
+subreverse_bptr_bptr {p} {n} {i, j} (pf_arr | bp_i, bp_j) =
   let
     fun
     loop {i, j : int | 0 <= i; i <= j; j <= n}
@@ -269,7 +268,7 @@ subreverse_bptr_bptr {p} {n} {i, j} (pf_arr | anchor, bp_i, bp_j) =
           let
             val bp_j1 = bptr_pred<a> bp_j
           in
-            interchange_bptr_bptr<a> (pf_arr | anchor, bp_i, bp_j1);
+            interchange_bptr_bptr<a> (pf_arr | bp_i, bp_j1);
             loop (pf_arr | bp_i1, bp_j1)
           end
       end
@@ -279,7 +278,7 @@ subreverse_bptr_bptr {p} {n} {i, j} (pf_arr | anchor, bp_i, bp_j) =
 
 implement {a}
 subcirculate_right_bptr_bptr {p} {n} {i, j}
-                             (pf_arr | anchor, bp_i, bp_j) =
+                             (pf_arr | bp_i, bp_j) =
   if bp_i <> bp_j then
     let
       extern fn                 (* Unsafe memmove. *)
@@ -288,17 +287,17 @@ subcirculate_right_bptr_bptr {p} {n} {i, j}
       prval @(pf_i, pf_j, fpf) =
         array_v_takeout2 {a} {p} {n} {i, j} pf_arr
 
-      val tmp = bptr_get<a> (pf_j | anchor, bp_j)
+      val tmp = bptr_get<a> (pf_j | bp_j)
 
       prval () = lemma_sizeof {a} ()
       prval () = mul_gte_gte_gte {j - i, sizeof a} ()
       val () =
-        memmove (bptr2ptr (anchor, bptr_succ<a> bp_i),
-                 bptr2ptr (anchor, bp_i),
+        memmove (bptr2ptr (bptr_succ<a> bp_i),
+                 bptr2ptr bp_i,
                  bptr_diff_unsigned<a> (bp_j, bp_i) * sizeof<a>)
 
       prval () = $UN.castview2void_at{a?}{a} pf_i
-      val () = bptr_set<a> (pf_i | anchor, bp_i, tmp)
+      val () = bptr_set<a> (pf_i | bp_i, tmp)
 
       prval () = $UN.castview2void_at{a}{a?!} pf_j
       prval () = pf_arr := fpf (pf_i, pf_j)

@@ -63,8 +63,7 @@ elem_lt_bptr_bptr
            bp_i   : bptr (a, p, i),
            bp_j   : bptr (a, p, j))
     :<> bool =
-  elem_lt_ptr1_ptr1<a> (pf_i, pf_j | bptr2ptr (anchor, bp_i),
-                                     bptr2ptr (anchor, bp_j))
+  elem_lt_ptr1_ptr1<a> (pf_i, pf_j | bptr2ptr bp_i, bptr2ptr bp_j)
 
 fn {a : vt@ype}
 elem_lt_array_bptr_bptr
@@ -194,7 +193,7 @@ make_an_ordered_prefix
 
       val bp = loop (pf_arr | bptr_add<a> (bp_arr, 2))
     in
-      subreverse<a> (pf_arr | bp_arr, bp_arr, bp);
+      subreverse<a> (pf_arr | bp_arr, bp);
       bp
     end
 
@@ -278,7 +277,7 @@ array_insertion_sort
           let
             val bp_j = insertion_position<a> (pf_arr | bp_arr, bp_i)
           in
-            subcirculate_right<a> (pf_arr | bp_arr, bp_j, bp_i);
+            subcirculate_right<a> (pf_arr | bp_j, bp_i);
             loop (pf_arr | bptr_succ<a> bp_i)
           end
     in
@@ -384,19 +383,19 @@ array_unstable_quicksort_partition_method_1 {n} (arr, n) =
           let
             prval () = prop_verify {i1 < j1} ()
           in
-            interchange<a> (pf_arr | bp_arr, bp_i1, bp_j1);
+            interchange<a> (pf_arr | bp_i1, bp_j1);
             if bp_i1 = bp_pivot then
               let               (* Keep the pivot between i and j. *)
                 val bp_pivot1 = bptr_sub<a> (bp_j1, half diff)
               in
-                interchange<a> (pf_arr | bp_arr, bp_pivot1, bp_j1);
+                interchange<a> (pf_arr | bp_pivot1, bp_j1);
                 loop (pf_arr | bptr_succ<a> bp_i1, bp_j1, bp_pivot1)
               end
             else if bp_j1 = bp_pivot then
               let               (* Keep the pivot between i and j. *)
                 val bp_pivot1 = bptr_add<a> (bp_i1, half diff)
               in
-                interchange<a> (pf_arr | bp_arr, bp_pivot1, bp_i1);
+                interchange<a> (pf_arr | bp_pivot1, bp_i1);
                 loop (pf_arr | bp_i1, bptr_pred<a> bp_j1, bp_pivot1)
               end
             else
@@ -503,7 +502,7 @@ array_unstable_quicksort_partition_method_2 {n} (arr, n) =
                 bptr (a, p_arr, i_pivot_final) =
       if bp_i <> bp_j then
         let
-          val () = interchange<a> (pf_arr | bp_arr, bp_i, bp_j)
+          val () = interchange<a> (pf_arr | bp_i, bp_j)
 
           (* The interchange may have just moved the pivot. *)
           val bp_pivot =
@@ -537,13 +536,12 @@ array_unstable_quicksort_partition_method_2 {n} (arr, n) =
           (* Put the pivot between the two parts of the partition. *)
           if (bp_pivot < bp_j) then
             begin
-              interchange<a> (pf_arr | bp_arr, bp_pivot,
-                                       bptr_pred<a> bp_j);
+              interchange<a> (pf_arr | bp_pivot, bptr_pred<a> bp_j);
               bptr_pred<a> bp_j
             end
           else
             begin
-              interchange<a> (pf_arr | bp_arr, bp_pivot, bp_j);
+              interchange<a> (pf_arr | bp_pivot, bp_j);
               bp_j
             end
         end
@@ -552,13 +550,12 @@ array_unstable_quicksort_partition_method_2 {n} (arr, n) =
           (* Put the pivot between the two parts of the partition. *)
           if (bp_j < bp_pivot) then
             begin
-              interchange<a> (pf_arr | bp_arr, bp_pivot,
-                                       bptr_succ<a> bp_j);
+              interchange<a> (pf_arr | bp_pivot, bptr_succ<a> bp_j);
               bptr_succ<a> bp_j
             end
           else
             begin
-              interchange<a> (pf_arr | bp_arr, bp_pivot, bp_j);
+              interchange<a> (pf_arr | bp_pivot, bp_j);
               bp_j
             end
         end
@@ -571,7 +568,7 @@ array_unstable_quicksort_partition_method_2 {n} (arr, n) =
        elements as possible. *)
     val i_pivot_middle = half n
     val bp_pivot_middle = bptr_add<a> (bp_arr, i_pivot_middle)
-    val () = interchange<a> (pf_arr | bp_arr, bp_pivot_initial,
+    val () = interchange<a> (pf_arr | bp_pivot_initial,
                                       bp_pivot_middle)
 
     val bp_i =
