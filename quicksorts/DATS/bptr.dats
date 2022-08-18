@@ -25,6 +25,33 @@
 staload "quicksorts/SATS/bptr.sats"
 staload UN = "prelude/SATS/unsafe.sats"
 
+prfn
+lemma_mul_isfun
+          {m1, n1 : int}
+          {m2, n2 : int | m1 == m2; n1 == n2}
+          ()
+    :<prf> [m1 * n1 == m2 * n2]
+           void =
+  let
+    prval pf1 = mul_make {m1, n1} ()
+    prval pf2 = mul_make {m2, n2} ()
+    prval () = mul_isfun {m1, n1} {m1 * n1, m2 * n2} (pf1, pf2)
+  in
+  end
+
+prfn
+pos_mul_pos_pos
+          {m, n : int | 0 < n}
+          {p    : int | 0 < p; m * n == p}
+          ()
+    :<prf> [0 < m] void =
+  (* Proof by reductio ad absurdum. *)
+  sif m <= 0 then
+    case+ 0 of
+      | _ =/=> mul_lte_gte_lte {m, n} ()
+  else
+    ()
+
 extern prfn
 array_v_takeout2 :     (* Get views for two distinct array elements.*)
   {a     : vt@ype}
@@ -301,5 +328,81 @@ subcirculate_right_bptr_bptr {p} {n} {i, j}
 
       prval () = $UN.castview2void_at{a}{a?!} pf_j
       prval () = pf_arr := fpf (pf_i, pf_j)
+    in
+    end
+
+implement {a}
+subcirculate_right_with_gap_bptr_bptr {p} {n} {i, m, gap}
+                                      (pf_arr | bp_i, bp_j, gap) =
+  if bp_i <> bp_j then
+    let
+      stadef j = i + (m * gap)
+
+      prval () = mul_gte_gte_gte {m, gap} ()
+      prval () = prop_verify {i <= j} ()
+
+      prval @(pf_before_i, pf) =
+        array_v_split {a} {p} {n} {i} pf_arr
+      prval @(pf_ij, pf_after_j) =
+        array_v_split {a} {p + (i * sizeof a)} {n - i} {j - i + 1} pf
+
+      prval @(pf_arr1, pf_j) = array_v_unextend pf_ij
+      val jth_element = bptr_get<a> (pf_j | bp_j)
+
+      fun
+      loop {r, k : int | 0 <= r; i <= k; k <= j; k == i + (r * gap)}
+           .<k - i>.
+           (pf_arr1 : array_v (a, p + (i * sizeof a), k - i),
+            pf_k    : a?! @ (p + (k * sizeof a)),
+            pf_arr2 : array_v (a, p + (k * sizeof a) + sizeof a,
+                               j - k) |
+            bp_k    : bptr (a, p, k))
+          :<!wrt> @(a?! @ (p + (i * sizeof a)),
+                    array_v (a, p + (i * sizeof a) + sizeof a,
+                             j - i) | ) =
+        if bp_i = bp_k then
+          let
+            prval () = array_v_unnil pf_arr1
+            prval () = lemma_mul_isfun {i, sizeof a} {k, sizeof a} ()
+          in
+            @(pf_k, pf_arr2 | )
+          end
+        else
+          let
+            prval () = prop_verify {1 <= k - i} ()
+            prval () = prop_verify {k - i == r * gap} ()
+
+            prval () = pos_mul_pos_pos {r, gap} {r * gap} ()
+            prval () = prop_verify {1 <= r} ()
+
+            prval () = mul_pos_pos_pos (mul_make {r, gap} ())
+            prval () = prop_verify {gap <= k - i} ()
+
+            val bp_k1 = bptr_sub<a> (bp_k, gap)
+            prval @(pf_arr1, pf_gap) =
+              array_v_split {a} {p + (i * sizeof a)} {k - i}
+                            {k - i - gap}
+                            pf_arr1
+            prval @(pf_k1, pf_gap) = array_v_uncons pf_gap
+            val tmp = bptr_get<a> (pf_k1 | bp_k1)
+            val () = bptr_set<a> (pf_k | bp_k, tmp)
+            prval pf_arr2 = array_v_cons (pf_k, pf_arr2)
+            prval pf_arr2 = array_v_unsplit (pf_gap, pf_arr2)
+          in
+            loop {r - 1, k - gap} (pf_arr1, pf_k1, pf_arr2 | bp_k1)
+          end
+
+      prval () = lemma_sizeof {a} ()
+
+      prval pf_arr2 =
+        array_v_nil {a} {p + (j * sizeof a) + sizeof a} ()
+      val @(pf_i, pf_arr2 | ) =
+        loop {m, j} (pf_arr1, pf_j, pf_arr2 | bp_j)
+
+      val () = bptr_set<a> (pf_i | bp_i, jth_element)
+
+      prval pf_ij = array_v_cons (pf_i, pf_arr2)
+      prval pf = array_v_unsplit (pf_ij, pf_after_j)
+      prval () = pf_arr := array_v_unsplit (pf_before_i, pf)
     in
     end

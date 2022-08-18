@@ -244,8 +244,25 @@ subcirculate_right_bptr_bptr :
    bptr (a, p, j)) -< !wrt >
     void
 
+(* Circular rotation right by one element, with a ‘gap’ (a positive
+   stride). The value at the (i + (m * gap))th position gets moved to
+   the ith position. *)
+fn {a : vt@ype}
+subcirculate_right_with_gap_bptr_bptr :
+  {p         : addr}
+  {n         : int}
+  {i, m, gap : int | 0 <= i; 1 <= m; 1 <= gap;
+                     i + (m * gap) <= n - 1}
+  (!array_v (a, p, n) |
+   bptr (a, p, i),
+   bptr (a, p, i + (m * gap)),
+   size_t gap) -< !wrt >
+    void
+
 overload interchange with interchange_bptr_bptr
 overload subreverse with subreverse_bptr_bptr
 overload subcirculate_right with subcirculate_right_bptr_bptr
+overload subcirculate_right_with_gap with
+  subcirculate_right_with_gap_bptr_bptr
 
 (*------------------------------------------------------------------*)
