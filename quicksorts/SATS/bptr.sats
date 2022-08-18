@@ -251,7 +251,7 @@ fn {a : vt@ype}
 subcirculate_right_with_gap_bptr_bptr :
   {p         : addr}
   {n         : int}
-  {i, m, gap : int | 0 <= i; 1 <= m; 1 <= gap;
+  {i, m, gap : int | 0 <= i; 0 <= m; 1 <= gap;
                      i + (m * gap) <= n - 1}
   (!array_v (a, p, n) |
    bptr (a, p, i),

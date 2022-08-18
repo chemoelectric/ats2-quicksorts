@@ -57,7 +57,6 @@ elem_lt_bptr_bptr
           {i, j   : int}
           (pf_i   : !a @ (p + (i * sizeof a)),
            pf_j   : !a @ (p + (j * sizeof a)) |
-           anchor : bptr_anchor (a, p),
            bp_i   : bptr (a, p, i),
            bp_j   : bptr (a, p, j))
     :<> bool =
@@ -69,7 +68,6 @@ elem_lt_array_bptr_bptr
           {n      : int}
           {i, j   : nat | i <= n - 1; j <= n - 1; i != j}
           (pf_arr : !array_v (a, p_arr, n) |
-           bp_arr : bptr_anchor (a, p_arr),
            bp_i   : bptr (a, p_arr, i),
            bp_j   : bptr (a, p_arr, j))
     :<> bool =
@@ -77,7 +75,7 @@ elem_lt_array_bptr_bptr
     prval @(pf_i, pf_j, fpf) =
       array_v_takeout2 {a} {p_arr} {n} {i, j} pf_arr
     val is_lt =
-      elem_lt_bptr_bptr<a> (pf_i, pf_j | bp_arr, bp_i, bp_j)
+      elem_lt_bptr_bptr<a> (pf_i, pf_j | bp_i, bp_j)
     prval () = pf_arr := fpf (pf_i, pf_j)
   in
     is_lt
@@ -165,7 +163,7 @@ make_an_ordered_prefix
            bp_n   : bptr (a, p_arr, n))
     :<!wrt> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
             bptr (a, p_arr, pfx_len) =
-  if ~lt<a> (pf_arr | bp_arr, bptr_succ<a> bp_arr, bp_arr) then
+  if ~lt<a> (pf_arr | bptr_succ<a> bp_arr, bp_arr) then
     let                       (* Non-decreasing order. *)
       fun
       loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
@@ -176,7 +174,7 @@ make_an_ordered_prefix
               bptr (a, p_arr, pfx_len) =
         if bp = bp_n then
           bp
-        else if lt<a> (pf_arr | bp_arr, bp, bptr_pred<a> bp) then
+        else if lt<a> (pf_arr | bp, bptr_pred<a> bp) then
           bp
         else
           loop (pf_arr | bptr_succ<a> bp)
@@ -194,7 +192,7 @@ make_an_ordered_prefix
               bptr (a, p_arr, pfx_len) =
         if bp = bp_n then
           bp
-        else if lt<a> (pf_arr | bp_arr, bptr_pred<a> bp, bp) then
+        else if lt<a> (pf_arr | bptr_pred<a> bp, bp) then
           bp
         else
           loop (pf_arr | bptr_succ<a> bp)
@@ -246,14 +244,14 @@ insertion_position
             bptr_sub<a>
               (bp_k, half (bptr_diff_unsigned<a> (bp_k, bp_j)))
         in
-          if lt<a> (pf_arr | bp_arr, bp_i, bp_h) then
+          if lt<a> (pf_arr | bp_i, bp_h) then
             loop (pf_arr | bp_j, bptr_pred<a> bp_h)
           else
             loop (pf_arr | bp_h, bp_k)
         end
       else if bp_j <> bp_arr then
         bptr_succ<a> bp_j
-      else if lt<a> (pf_arr | bp_arr, bp_i, bp_arr) then
+      else if lt<a> (pf_arr | bp_i, bp_arr) then
         bp_arr
       else
         bptr_succ<a> bp_arr
@@ -292,6 +290,65 @@ array_unstable_quicksort_small_sort_insertion {n} (arr, n) =
     in
     end
 
+fn {a : vt@ype}
+shell_sort_gap_pass
+          {p_arr  : addr}
+          {n      : int}
+          {gap    : pos | gap <= n}
+          (pf_arr : !array_v (a, p_arr, n) |
+           bp_arr : bptr_anchor (a, p_arr),
+           bp_n   : bptr (a, p_arr, n),
+           gap    : size_t gap)
+    :<!wrt> void =
+  let
+    val bp_lstop = bptr_add<a> (bp_arr, gap)
+    and bp_rstop = bp_n
+
+    fun
+    loop {i : int | gap <= i; i <= n}
+         .<n - i>.
+         (pf_arr : !array_v (a, p_arr, n) |
+          bp_i   : bptr (a, p_arr, i))
+        :<!wrt> void =
+      if bp_i <> bp_rstop then
+        let
+          fun
+          inner_loop {m : int | 0 <= m}
+                     {j : int | gap <= j; j <= i}
+                     .<j - gap>.
+                     (pf_arr : !array_v (a, p_arr, n),
+                      pf_m   : MUL (m, gap, i - j) |
+                      bp_j   : bptr (a, p_arr, j))
+              :<> [m1 : int | 0 <= m1]
+                  [k  : int | 0 <= k]
+                  @(MUL (m1, gap, i - k) | bptr (a, p_arr, k)) =
+            if bptr_diff_unsigned<a> (bp_j, bp_lstop) < gap then
+              @(pf_m | bp_j)
+            else
+              let
+                val bp_j1 = bptr_sub<a> (bp_j, gap)
+              in
+                if lt<a> (pf_arr | bp_i, bp_j1) then
+                  @(pf_m | bp_j)
+                else
+                  inner_loop (pf_arr, MULind pf_m | bp_j1)
+              end
+
+          val [m : int]
+              [k : int]
+              @(pf_m | bp_k) =
+                inner_loop (pf_arr, mul_make {0, gap} () | bp_i)
+          prval () = mul_elim pf_m
+          prval () = prop_verify {k + (m * gap) == i} ()
+          val () =
+            subcirculate_right_with_gap
+              {p_arr} {n} {k, m, gap} (pf_arr | bp_k, bp_i, gap)
+        in
+        end
+  in
+    loop (pf_arr | bp_lstop)
+  end
+
 implement {a}
 array_unstable_quicksort$partition (arr, n) =
   array_unstable_quicksort_partition_default<a> (arr, n)
@@ -329,7 +386,7 @@ array_unstable_quicksort_partition_method_1 {n} (arr, n) =
                 bptr (a, p_arr, i1) =
           if bp_i = bp_pivot then
             bp_i
-          else if ~lt<a> (pf_arr | bp_arr, bp_i, bp_pivot) then
+          else if ~lt<a> (pf_arr | bp_i, bp_pivot) then
             bp_i
           else
             loop (pf_arr | bptr_succ<a> bp_i)
@@ -357,7 +414,7 @@ array_unstable_quicksort_partition_method_1 {n} (arr, n) =
                 bptr (a, p_arr, j1) =
           if bp_j = bp_pivot then
             bp_j
-          else if ~lt<a> (pf_arr | bp_arr, bp_pivot, bp_j) then
+          else if ~lt<a> (pf_arr | bp_pivot, bp_j) then
             bp_j
           else
             loop (pf_arr | bptr_pred<a> bp_j)
@@ -460,7 +517,7 @@ array_unstable_quicksort_partition_method_2 {n} (arr, n) =
             bp_i
           else if bp_i = bp_pivot then
             bp_i
-          else if ~lt<a> (pf_arr | bp_arr, bp_i, bp_pivot) then
+          else if ~lt<a> (pf_arr | bp_i, bp_pivot) then
             bp_i
           else
             loop (pf_arr | bptr_succ<a> bp_i)
@@ -490,7 +547,7 @@ array_unstable_quicksort_partition_method_2 {n} (arr, n) =
             bp_j
           else if bp_j = bp_pivot then
             bp_j
-          else if ~lt<a> (pf_arr | bp_arr, bp_pivot, bp_j) then
+          else if ~lt<a> (pf_arr | bp_pivot, bp_j) then
             bp_j
           else
             loop (pf_arr | bptr_pred<a> bp_j)
@@ -539,7 +596,7 @@ array_unstable_quicksort_partition_method_2 {n} (arr, n) =
             loop (pf_arr | bp_i, bp_j, bp_pivot)
         end
       else if (bp_j <> bp_pivot) \andalso1
-                lt<a> (pf_arr | bp_arr, bp_pivot, bp_j) then
+                lt<a> (pf_arr | bp_pivot, bp_j) then
         begin
           (* Put the pivot between the two parts of the partition. *)
           if (bp_pivot < bp_j) then
