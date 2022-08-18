@@ -27,8 +27,6 @@ staload "quicksorts/SATS/bptr.sats"
 staload _ = "quicksorts/DATS/bptr.dats"
 staload UN = "prelude/SATS/unsafe.sats"
 
-#define DEFAULT_ARRAY_INSERTION_SORT_THRESHOLD 80
-
 #ifdef ATS2_QUICKSORTS_CHAR_BIT #then
   #define CHAR_BIT ATS2_QUICKSORTS_CHAR_BIT
 #else
@@ -118,9 +116,19 @@ array_unstable_quicksort$cmp (x, y) =
      prelude. *)
   gcompare_ref_ref<a> (x, y)
 
+#define DEFAULT_SMALL_SORT_THRESHOLD 80
+
 implement {a}
 array_unstable_quicksort$small () =
-  i2sz DEFAULT_ARRAY_INSERTION_SORT_THRESHOLD
+  i2sz DEFAULT_SMALL_SORT_THRESHOLD
+
+implement {a}
+array_unstable_quicksort$small_sort (arr, n) =
+  array_unstable_quicksort_small_sort_default (arr, n)
+
+implement {a}
+array_unstable_quicksort_small_sort_default (arr, n) =
+  array_unstable_quicksort_small_sort_insertion (arr, n)
 
 implement {a}
 array_unstable_quicksort$pivot_index {n} (arr, n) =
@@ -253,16 +261,13 @@ insertion_position
     loop (pf_arr | bp_arr, bptr_pred<a> bp_i)
   end
 
-fn {a : vt@ype}
-array_insertion_sort
-          {p_arr  : addr}
-          {n      : nat}
-          (pf_arr : !array_v (a, p_arr, n) >> _ |
-           p_arr  : ptr p_arr,
-           n      : size_t n)
-    :<!wrt> void =
+implement {a}
+array_unstable_quicksort_small_sort_insertion {n} (arr, n) =
   if i2sz 2 <= n then
     let
+      prval pf_arr = view@ arr
+      val p_arr = addr@ arr
+      prval [p_arr : addr] EQADDR () = eqaddr_make_ptr p_arr
       val bp_arr = ptr2bptr_anchor p_arr
       val bp_n = bptr_add<a> (bp_arr, n)
       val bp_i = make_an_ordered_prefix<a> (pf_arr | bp_arr, bp_n)
@@ -280,8 +285,11 @@ array_insertion_sort
             subcirculate_right<a> (pf_arr | bp_j, bp_i);
             loop (pf_arr | bptr_succ<a> bp_i)
           end
+
+      val () = loop (pf_arr | bp_i)
+
+      prval () = view@ arr := pf_arr
     in
-      loop (pf_arr | bp_i)
     end
 
 implement {a}
@@ -616,7 +624,8 @@ array_unstable_sort
          in
             if n1 <= array_unstable_quicksort$small<a> () then
               let
-                val () = array_insertion_sort (pf_arr1 | p_arr1, n1)
+                val () =
+                  array_unstable_quicksort$small_sort (!p_arr1, n1)
                 prval () = fpf_arr1 pf_arr1
               in
                 loop stk

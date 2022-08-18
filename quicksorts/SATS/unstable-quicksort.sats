@@ -48,10 +48,29 @@ array_unstable_quicksort$cmp :
 (*------------------------------------------------------------------*)
 (* Customization of the sorting of ‘small’ subarrays.               *)
 
-(* When should we switch over to a ‘small’ sort? *)
+typedef array_unstable_quicksort_small_sort_t (a : vt@ype) =
+  {n      : nat}
+  (&array (a, n), size_t n) -< !wrt > void
+
+(* What ‘small’ sort should we use? *)
+fn {a : vt@ype}
+array_unstable_quicksort$small_sort :
+  array_unstable_quicksort_small_sort_t a
+
+(* When should we switch over to the ‘small’ sort? *)
 fn {a : vt@ype}
 array_unstable_quicksort$small :
   () -<> [n : pos] size_t n
+
+(* Some ‘small’ sort choices: *)
+
+fn {a : vt@ype}   (* Some method, chosen for its supposed goodness. *)
+array_unstable_quicksort_small_sort_default :
+  array_unstable_quicksort_small_sort_t a
+
+fn {a : vt@ype}
+array_unstable_quicksort_small_sort_insertion :
+  array_unstable_quicksort_small_sort_t a
 
 (*------------------------------------------------------------------*)
 (* Customization of pivoting.                                       *)
