@@ -68,8 +68,12 @@ fn {a : vt@ype}   (* Some method, chosen for its supposed goodness. *)
 array_unstable_quicksort_small_sort_default :
   array_unstable_quicksort_small_sort_t a
 
-fn {a : vt@ype}
+fn {a : vt@ype}                 (* A binary insertion sort. *)
 array_unstable_quicksort_small_sort_insertion :
+  array_unstable_quicksort_small_sort_t a
+
+fn {a : vt@ype}                 (* A Shell sort. *)
+array_unstable_quicksort_small_sort_shell :
   array_unstable_quicksort_small_sort_t a
 
 (*------------------------------------------------------------------*)

@@ -350,6 +350,40 @@ shell_sort_gap_pass
   end
 
 implement {a}
+array_unstable_quicksort_small_sort_shell {n} (arr, n) =
+  if i2sz 2 <= n then
+    let
+      prval pf_arr = view@ arr
+      val p_arr = addr@ arr
+      prval [p_arr : addr] EQADDR () = eqaddr_make_ptr p_arr
+      val bp_arr = ptr2bptr_anchor p_arr
+      val bp_n = bptr_add<a> (bp_arr, n)
+
+      macdef pass (gap) =
+        if array_unstable_quicksort$small () >= i2sz ,(gap) then
+          if n >= i2sz ,(gap) then
+            shell_sort_gap_pass<a>
+              (pf_arr | bp_arr, bp_n, i2sz ,(gap))
+    in
+      (* See https://oeis.org/A102549 for the gap sequence,
+         which is thanks to Marcin Ciura and Roman Dovgopol. *)
+      pass 1750;
+      pass 701;
+      pass 301;
+      pass 132;
+      pass 57;
+      pass 23;
+      pass 10;
+      pass 4;
+      shell_sort_gap_pass<a> (pf_arr | bp_arr, bp_n, i2sz 1);
+
+      let
+        prval () = view@ arr := pf_arr
+      in
+      end
+    end
+
+implement {a}
 array_unstable_quicksort$partition (arr, n) =
   array_unstable_quicksort_partition_default<a> (arr, n)
 
