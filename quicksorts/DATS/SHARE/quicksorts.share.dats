@@ -103,14 +103,6 @@ g1uint_mod<uint64_kind> (x, y) =
   g1uint_mod_uint64 (x, y)
 
 extern fn
-ptr1_eq {a    : vt@ype}
-        {p    : addr}
-        {i, j : int}
-        (pi   : ptr (p + (i * sizeof a)),
-         pj   : ptr (p + (j * sizeof a)))
-    :<> bool (i == j) = "mac#%"
-
-extern fn
 copy_bytes :
   {n : int}
   (ptr, ptr, size_t n) -< !wrt > void = "mac#%"
@@ -154,26 +146,6 @@ array_subcirculate_right
       move_bytes_right (pi, (j - i) * sizeof<a>, sizeof<a>);
       $UN.ptr0_set<a> (pi, tmp)
     end
-
-(*
-fn {a : vt@ype}
-circulate_right
-          {n      : int | 0 < sizeof a}
-          {p      : addr}
-          {i, j   : int | 0 <= i; i <= j; j <= n - 1}
-          (pf_arr : !array_v (a, p, n) |
-           pi     : ptr (p + (i * sizeof a)),
-           pj     : ptr (p + (j * sizeof a)))
-    :<!wrt> void =
-  if pi <> pj then
-    let
-      val tmp = $UN.ptr0_get<a> pj
-      prval () = ptr_comparison {a} {p} {i, j} (pi, pj)
-    in
-      move_bytes_right (pi, g1i2u (pj - pi), sizeof<a>);
-      $UN.ptr0_set<a> (pi, tmp)
-    end
-*)
 
 (*------------------------------------------------------------------*)
 (* A simple linear congruential generator.                          *)

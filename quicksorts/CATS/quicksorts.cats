@@ -72,23 +72,6 @@ ats2_quicksorts_g1uint_mod_uint64 (atstype_uint64 x,
   return (x % y);
 }
 
-ats2_quicksorts_inline atstype_bool
-ats2_quicksorts_ptr1_eq (atstype_ptr p,
-                         atstype_ptr q)
-{
-  return (p == q);
-}
-
-ats2_quicksorts_inline atstype_ptr
-ats2_quicksorts_ptr1_ceiling_mean__ (atstype_ptr p,
-                                     atstype_ptr q,
-                                     atstype_size elemsz)
-{
-  const char *p1 = (const char *) p;
-  const char *q1 = (const char *) q;
-  return (atstype_ptr) (p1 - (elemsz * (((p1 - q1) / elemsz) >> 1)));
-}
-
 /*------------------------------------------------------------------*/
 /* Spinlocks for random number generator seeds.                     */
 

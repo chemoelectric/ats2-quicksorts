@@ -210,10 +210,12 @@ libats2_quicksorts_la_DEPENDENCIES += $(BPTR_CATS)
 #--------------------------------------------------------------------------
 
 TESTS =
-TESTS += tests/test-arrays-patterns-stable
-TESTS += tests/test-arrays-stability
-TESTS += tests/test-arrays-patterns-unstable
 
+EXTRA_DIST += tests/test-arrays-patterns-stable.dats
+EXTRA_DIST += tests/test-arrays-stability.dats
+EXTRA_DIST += tests/test-arrays-patterns-unstable.common.dats
+
+TESTS += tests/test-arrays-patterns-stable
 EXTRA_PROGRAMS += tests/test-arrays-patterns-stable
 CLEANFILES += tests/test-arrays-patterns-stable
 CLEANFILES += tests/test-arrays-patterns-stable_tests.c
@@ -228,9 +230,9 @@ tests_test_arrays_patterns_stable_CPPFLAGS += $(AM_CPPFLAGS)
 tests_test_arrays_patterns_stable_CPPFLAGS += -DATS_MEMALLOC_LIBC
 tests_test_arrays_patterns_stable_LDADD =
 tests_test_arrays_patterns_stable_LDADD += libats2-quicksorts.la
-EXTRA_DIST += tests/test-arrays-patterns-stable.dats
 tests/test-arrays-patterns-stable_tests.c: tests/test-arrays-patterns-stable.dats
 
+TESTS += tests/test-arrays-stability
 EXTRA_PROGRAMS += tests/test-arrays-stability
 CLEANFILES += tests/test-arrays-stability
 CLEANFILES += tests/test-arrays-stability_tests.c
@@ -245,25 +247,9 @@ tests_test_arrays_stability_CPPFLAGS += $(AM_CPPFLAGS)
 tests_test_arrays_stability_CPPFLAGS += -DATS_MEMALLOC_LIBC
 tests_test_arrays_stability_LDADD =
 tests_test_arrays_stability_LDADD += libats2-quicksorts.la
-EXTRA_DIST += tests/test-arrays-stability.dats
 tests/test-arrays-stability_tests.c: tests/test-arrays-stability.dats
 
-EXTRA_PROGRAMS += tests/test-arrays-patterns-unstable
-CLEANFILES += tests/test-arrays-patterns-unstable
-CLEANFILES += tests/test-arrays-patterns-unstable_tests.c
-tests_test_arrays_patterns_unstable_SOURCES =
-tests_test_arrays_patterns_unstable_SOURCES += tests/test-arrays-patterns-unstable_tests.c
-tests_test_arrays_patterns_unstable_DEPENDENCIES =
-tests_test_arrays_patterns_unstable_DEPENDENCIES += tests/test-arrays-patterns-unstable.dats
-tests_test_arrays_patterns_unstable_DEPENDENCIES += libats2-quicksorts.la
-tests_test_arrays_patterns_unstable_DEPENDENCIES += $(UNSTABLE_QUICKSORT_HATS)
-tests_test_arrays_patterns_unstable_CPPFLAGS =
-tests_test_arrays_patterns_unstable_CPPFLAGS += $(AM_CPPFLAGS)
-tests_test_arrays_patterns_unstable_CPPFLAGS += -DATS_MEMALLOC_LIBC
-tests_test_arrays_patterns_unstable_LDADD =
-tests_test_arrays_patterns_unstable_LDADD += libats2-quicksorts.la
-EXTRA_DIST += tests/test-arrays-patterns-unstable.dats
-tests/test-arrays-patterns-unstable_tests.c: tests/test-arrays-patterns-unstable.dats
+include $(top_srcdir)/test-arrays-patterns-unstable.am
 
 tests-clean:
 	-rm -f tests/*.$(OBJEXT)

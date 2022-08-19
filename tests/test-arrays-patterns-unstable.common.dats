@@ -93,35 +93,100 @@ random_int (m : int, n : int)
 
 #define MAX_SZ 10000000
 
+implement
+array_unstable_quicksort$lt<int> (x, y) =
+  x < y
+
+#define DEFAULT   0
+
+#define RANDOM    110
+#define MIDDLE    120
+#define MEDIAN3   130
+
+#define INSERTION 210
+#define SHELL     220
+
+#define METHOD1   310
+#define METHOD2   320
+
+#ifndef PIVOT_METHOD #then
+  #error "No pivot method is specified.\n"
+#else
+  #if PIVOT_METHOD = DEFAULT #then
+    (* Nothing. *)
+  #elif PIVOT_METHOD = RANDOM #then
+    implement
+    array_unstable_quicksort$pivot_index<int> (arr, n) =
+      array_unstable_quicksort_pivot_index_random<int> (arr, n)
+  #elif PIVOT_METHOD = MIDDLE #then
+    implement
+    array_unstable_quicksort$pivot_index<int> (arr, n) =
+      array_unstable_quicksort_pivot_index_middle<int> (arr, n)
+  #elif PIVOT_METHOD = MEDIAN3 #then
+    implement
+    array_unstable_quicksort$pivot_index<int> (arr, n) =
+      array_unstable_quicksort_pivot_index_median_of_three<int>
+        (arr, n)
+  #else
+    #error "Unrecognized pivot method.\n"
+  #endif
+#endif
+
+#ifndef SMALL_SORT #then
+  #error "No small sort is specified.\n"
+#else
+  #if SMALL_SORT = DEFAULT #then
+    (* Nothing. *)
+  #elif SMALL_SORT = INSERTION #then
+    implement
+    array_unstable_quicksort$small_sort<int> (arr, n) =
+      array_unstable_quicksort_small_sort_insertion<int> (arr, n)
+  #elif SMALL_SORT = SHELL #then
+    implement
+    array_unstable_quicksort$small_sort<int> (arr, n) =
+      array_unstable_quicksort_small_sort_shell<int> (arr, n)
+  #else
+    #error "Unrecognized small sort.\n"
+  #endif
+#endif
+
+#ifndef SMALL_SIZE #then
+  #error "No small size is specified.\n"
+#else
+  #if SMALL_SIZE = DEFAULT #then
+    (* Nothing. *)
+  #else
+    implement
+    array_unstable_quicksort$small<int> () =
+      i2sz (SMALL_SIZE)
+  #endif
+#endif
+
+#ifndef PARTITION_METHOD #then
+  #error "No small sort is specified.\n"
+#else
+  #if PARTITION_METHOD = DEFAULT #then
+    (* Nothing. *)
+  #elif PARTITION_METHOD = METHOD1 #then
+    implement
+    array_unstable_quicksort$partition<int> (arr, n) =
+      array_unstable_quicksort_partition_method_1<int> (arr, n)
+  #elif PARTITION_METHOD = METHOD2 #then
+    implement
+    array_unstable_quicksort$partition<int> (arr, n) =
+      array_unstable_quicksort_partition_method_2<int> (arr, n)
+  #else
+    #error "Unrecognized partition method.\n"
+  #endif
+#endif
+
 fn
 array_unstable_quicksort_int
             {n   : int}
             (arr : &array (int, n),
              n   : size_t n)
-    :<!wrt> void =
-  let
-    implement
-    array_unstable_quicksort$lt<int> (x, y) =
-      x < y
-
-    (* implement *)
-    (* array_unstable_quicksort$pivot_index<int> (arr, n) = *)
-    (*   array_unstable_quicksort_pivot_index_middle<int> (arr, n) *)
-
-    (* implement *)
-    (* array_unstable_quicksort$pivot_index<int> (arr, n) = *)
-    (*   array_unstable_quicksort_pivot_index_median_of_three<int> (arr, n) *)
-
-    (* implement *)
-    (* array_unstable_quicksort$small_sort<int> (arr, n) = *)
-    (*   array_unstable_quicksort_small_sort_insertion<int> (arr, n) *)
-
-    implement
-    array_unstable_quicksort$small_sort<int> (arr, n) =
-      array_unstable_quicksort_small_sort_shell<int> (arr, n)
-  in
-    array_unstable_quicksort<int> {n} (arr, n)
-  end
+    :<cloref1> void =
+  array_unstable_quicksort<int> {n} (arr, n)
 
 fn {}
 test_arrays_with_int_keys () : void =
@@ -151,7 +216,7 @@ test_arrays_with_int_keys () : void =
         val t22 = get_clock ()
         val t2 = t22 - t21
         val lst3 = list_vt2t (array2list (!p3, sz))
-        #if 1 #then
+        #if 0 #then
           val () = println! lst3
         #endif
       in
@@ -241,10 +306,8 @@ test_sign_reversal_constant_arrays_with_int_keys () : void =
     test_arrays_with_int_keys<> ()
   end
 
-(*------------------------------------------------------------------*)
-
-implement
-main0 () =
+fn
+do_all_the_tests () : void =
   begin
     test_random_arrays_with_int_keys ();
     test_presorted_arrays_with_int_keys ();
@@ -253,5 +316,11 @@ main0 () =
     test_constant_arrays_with_int_keys ();
     test_sign_reversal_constant_arrays_with_int_keys ()
   end
+
+(*------------------------------------------------------------------*)
+
+implement
+main0 () =
+  do_all_the_tests ()
 
 (*------------------------------------------------------------------*)

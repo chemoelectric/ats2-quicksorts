@@ -189,6 +189,9 @@ run_autoreconf() {
 (
     cd "${srcdir}"
 
+    echo "sh make-test-arrays-patterns-unstable-am.sh > test-arrays-patterns-unstable.am"
+    sh make-test-arrays-patterns-unstable-am.sh > test-arrays-patterns-unstable.am
+
     need_sortsmill_tig && require_sortsmill_tig
     need_pkg_config && require_pkg_config
     need_gnulib_tool && require_gnulib_tool
