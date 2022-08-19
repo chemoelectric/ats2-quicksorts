@@ -334,7 +334,17 @@ subcirculate_right_bptr_bptr {p} {n} {i, j}
 implement {a}
 subcirculate_right_with_gap_bptr_bptr {p} {n} {i, m, gap}
                                       (pf_arr | bp_i, bp_j, gap) =
-  if bp_i <> bp_j then
+  if bp_i = bp_j then
+    ()
+  else if gap = i2sz 1 then
+    let
+      stadef j = i + (m * gap)
+      prval () = mul_gte_gte_gte {m, gap} ()
+    in
+      subcirculate_right_bptr_bptr {p} {n} {i, j}
+                                   (pf_arr | bp_i, bp_j)
+    end
+  else
     let
       stadef j = i + (m * gap)
 
