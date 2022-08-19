@@ -301,37 +301,34 @@ shell_sort_gap_pass
            gap    : size_t gap)
     :<!wrt> void =
   let
-    val bp_lstop = bptr_add<a> (bp_arr, gap)
-    and bp_rstop = bp_n
-
     fun
     loop {i : int | gap <= i; i <= n}
          .<n - i>.
          (pf_arr : !array_v (a, p_arr, n) |
           bp_i   : bptr (a, p_arr, i))
         :<!wrt> void =
-      if bp_i <> bp_rstop then
+      if bp_i <> bp_n then
         let
           fun
           inner_loop {m : int | 0 <= m}
-                     {j : int | gap <= j; j <= i}
-                     .<j - gap>.
+                     {j : int | 0 <= j; j <= i}
+                     .<j>.
                      (pf_arr : !array_v (a, p_arr, n),
                       pf_m   : MUL (m, gap, i - j) |
                       bp_j   : bptr (a, p_arr, j))
               :<> [m1 : int | 0 <= m1]
                   [k  : int | 0 <= k]
                   @(MUL (m1, gap, i - k) | bptr (a, p_arr, k)) =
-            if bptr_diff_unsigned<a> (bp_j, bp_lstop) < gap then
+            if bptr_diff_unsigned<a> (bp_j, bp_arr) < gap then
               @(pf_m | bp_j)
             else
               let
                 val bp_j1 = bptr_sub<a> (bp_j, gap)
               in
                 if lt<a> (pf_arr | bp_i, bp_j1) then
-                  @(pf_m | bp_j)
-                else
                   inner_loop (pf_arr, MULind pf_m | bp_j1)
+                else
+                  @(pf_m | bp_j)
               end
 
           val [m : int]
@@ -340,13 +337,13 @@ shell_sort_gap_pass
                 inner_loop (pf_arr, mul_make {0, gap} () | bp_i)
           prval () = mul_elim pf_m
           prval () = prop_verify {k + (m * gap) == i} ()
-          val () =
-            subcirculate_right_with_gap
-              {p_arr} {n} {k, m, gap} (pf_arr | bp_k, bp_i, gap)
         in
+          subcirculate_right_with_gap
+            {p_arr} {n} {k, m, gap} (pf_arr | bp_k, bp_i, gap);
+          loop (pf_arr | bptr_succ<a> bp_i)
         end
   in
-    loop (pf_arr | bp_lstop)
+    loop (pf_arr | bptr_add<a> (bp_arr, gap))
   end
 
 implement {a}
@@ -377,10 +374,7 @@ array_unstable_quicksort_small_sort_shell {n} (arr, n) =
       pass 4;
       shell_sort_gap_pass<a> (pf_arr | bp_arr, bp_n, i2sz 1);
 
-      let
-        prval () = view@ arr := pf_arr
-      in
-      end
+      { prval () = view@ arr := pf_arr }
     end
 
 implement {a}

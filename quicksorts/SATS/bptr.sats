@@ -246,7 +246,8 @@ subcirculate_right_bptr_bptr :
 
 (* Circular rotation right by one element, with a ‘gap’ (a positive
    stride). The value at the (i + (m * gap))th position gets moved to
-   the ith position. *)
+   the ith position. NOTE: most likely you will have to supply some of
+   the static arguments. *)
 fn {a : vt@ype}
 subcirculate_right_with_gap_bptr_bptr :
   {p         : addr}

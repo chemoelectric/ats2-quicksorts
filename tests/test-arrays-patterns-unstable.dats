@@ -116,9 +116,9 @@ array_unstable_quicksort_int
     (* array_unstable_quicksort$small_sort<int> (arr, n) = *)
     (*   array_unstable_quicksort_small_sort_insertion<int> (arr, n) *)
 
-    (* implement *)
-    (* array_unstable_quicksort$small_sort<int> (arr, n) = *)
-    (*   array_unstable_quicksort_small_sort_shell<int> (arr, n) *)
+    implement
+    array_unstable_quicksort$small_sort<int> (arr, n) =
+      array_unstable_quicksort_small_sort_shell<int> (arr, n)
   in
     array_unstable_quicksort<int> {n} (arr, n)
   end
@@ -151,7 +151,9 @@ test_arrays_with_int_keys () : void =
         val t22 = get_clock ()
         val t2 = t22 - t21
         val lst3 = list_vt2t (array2list (!p3, sz))
-        //val () = println! lst3
+        #if 1 #then
+          val () = println! lst3
+        #endif
       in
         assertloc (lst2 = lst3);
         print! "  qsort:";
