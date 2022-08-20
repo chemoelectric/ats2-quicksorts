@@ -185,7 +185,7 @@ array_unstable_quicksort_int
             {n   : int}
             (arr : &array (int, n),
              n   : size_t n)
-    :<cloref1> void =
+    :<!wrt> void =
   array_unstable_quicksort<int> {n} (arr, n)
 
 fn {}
