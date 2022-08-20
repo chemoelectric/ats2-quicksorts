@@ -209,92 +209,17 @@ make_an_ordered_prefix
       bp
     end
 
-fn {a  : vt@ype}
-insertion_position
-          {p_arr  : addr}
-          {n      : int}
-          {i      : pos | i < n}
-          (pf_arr : !array_v (a, p_arr, n) |
-           bp_arr : bptr_anchor (a, p_arr),
-           bp_i   : bptr (a, p_arr, i))
-    :<> [j : nat | j <= i]
-        bptr (a, p_arr, j) =
-  (*
-    A binary search.
+implement {a}
+insertion_sort$lt (pf_arr | bp_i, bp_j) =
+  lt<a> (pf_arr | bp_i, bp_j)
 
-    References:
-
-      * H. Bottenbruch, "Structure and use of ALGOL 60", Journal of
-        the ACM, Volume 9, Issue 2, April 1962, pp.161-221.
-        https://doi.org/10.1145/321119.321120
-
-        The general algorithm is described on pages 214 and 215.
-
-      * https://en.wikipedia.org/w/index.php?title=Binary_search_algorithm&oldid=1062988272#Alternative_procedure
-  *)
-  let
-    fun
-    loop {j, k : int | 0 <= j; j <= k; k < i}
-         .<k - j>.
-         (pf_arr : !array_v (a, p_arr, n) |
-          bp_j   : bptr (a, p_arr, j),
-          bp_k   : bptr (a, p_arr, k))
-        :<> [j1 : nat | j1 <= i]
-            bptr (a, p_arr, j1) =
-      if bp_j <> bp_k then
-        let
-          (* Find the point that is halfway between bp_j and bp_k,
-             rounding towards bp_k. *)
-          stadef h = k - ((k - j) / 2)
-          val bp_h : bptr (a, p_arr, h) =
-            bptr_sub<a>
-              (bp_k, half (bptr_diff_unsigned<a> (bp_k, bp_j)))
-        in
-          if lt<a> (pf_arr | bp_i, bp_h) then
-            loop (pf_arr | bp_j, bptr_pred<a> bp_h)
-          else
-            loop (pf_arr | bp_h, bp_k)
-        end
-      else if bp_j <> bp_arr then
-        bptr_succ<a> bp_j
-      else if lt<a> (pf_arr | bp_i, bp_arr) then
-        bp_arr
-      else
-        bptr_succ<a> bp_arr
-  in
-    loop (pf_arr | bp_arr, bptr_pred<a> bp_i)
-  end
+implement {a}
+insertion_sort$make_an_ordered_prefix (pf_arr | bp_arr, bp_n) =
+  make_an_ordered_prefix<a> (pf_arr | bp_arr, bp_n)
 
 implement {a}
 array_stable_quicksort_small_sort_insertion {n} (arr, n) =
-  if i2sz 2 <= n then
-    let
-      prval pf_arr = view@ arr
-      val p_arr = addr@ arr
-      prval [p_arr : addr] EQADDR () = eqaddr_make_ptr p_arr
-      val bp_arr = ptr2bptr_anchor p_arr
-      val bp_n = bptr_add<a> (bp_arr, n)
-      val bp_i = make_an_ordered_prefix<a> (pf_arr | bp_arr, bp_n)
-
-      fun
-      loop {i : pos | i <= n}
-           .<n - i>.
-           (pf_arr : !array_v (a, p_arr, n) >> _ |
-            bp_i   : bptr (a, p_arr, i))
-          :<!wrt> void =
-        if bp_i <> bp_n then
-          let
-            val bp_j = insertion_position<a> (pf_arr | bp_arr, bp_i)
-          in
-            subcirculate_right<a> (pf_arr | bp_j, bp_i);
-            loop (pf_arr | bptr_succ<a> bp_i)
-          end
-
-      val () = loop (pf_arr | bp_i)
-
-      prval () = view@ arr := pf_arr
-    in
-    end
+  insertion_sort<a> (arr, n)
 
 fn {a : vt@ype}
 array_select_pivot
