@@ -710,7 +710,7 @@ array_unstable_sort
             if n1 <= array_unstable_quicksort$small<a> () then
               let
                 val () =
-                  array_unstable_quicksort$small_sort (!p_arr1, n1)
+                  array_unstable_quicksort$small_sort<a> (!p_arr1, n1)
                 prval () = fpf_arr1 pf_arr1
               in
                 loop stk

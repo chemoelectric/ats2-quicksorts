@@ -21,6 +21,7 @@
 
 %{#
 #include <quicksorts/CATS/quicksorts.cats>
+#include <quicksorts/CATS/bptr.cats>
 %}
 
 (*------------------------------------------------------------------*)
@@ -59,30 +60,63 @@ fn {a : vt@ype}
 array_stable_quicksort$cmp :
   (&a, &a) -<> int
 
+(*------------------------------------------------------------------*)
+(* Customization of the sorting of ‘small’ subarrays.               *)
+(*                                                                  *)
+(* (Any method used has to be stable, of course.)                   *)
+(*                                                                  *)
+
+typedef array_stable_quicksort_small_sort_t (a : vt@ype) =
+  {n : nat}
+  (&array (a, n), size_t n) -< !wrt > void
+
+(* What ‘small’ sort should we use? *)
+fn {a : vt@ype}
+array_stable_quicksort$small_sort :
+  array_stable_quicksort_small_sort_t a
+
 (* When should we switch over to a ‘small’ sort? *)
 fn {a : vt@ype}
 array_stable_quicksort$small :
   () -<> [n : pos] size_t n
+
+(* Some ‘small’ sort choices: *)
+
+fn {a : vt@ype}   (* Some method, chosen for its supposed goodness. *)
+array_stable_quicksort_small_sort_default :
+  array_stable_quicksort_small_sort_t a
+
+fn {a : vt@ype}                 (* A stable binary insertion sort. *)
+array_stable_quicksort_small_sort_insertion :
+  array_stable_quicksort_small_sort_t a
+
+(*------------------------------------------------------------------*)
+(* Customization of pivoting.                                       *)
 
 typedef array_stable_quicksort_pivot_index_t (a : vt@ype) =
   {n : pos}
   (&array (a, n), size_t n) -<>
     [i : int | 0 <= i; i < n]
     size_t i
+
 fn {a : vt@ype}
 array_stable_quicksort$pivot_index :
   array_stable_quicksort_pivot_index_t a
 
-(* Some pivot strategies. *)
+(* Some pivot strategies: *)
+
 fn {a : vt@ype}   (* Some method, chosen for its supposed goodness. *)
 array_stable_quicksort_pivot_index_default :
   array_stable_quicksort_pivot_index_t a
+
 fn {a : vt@ype}              (* This seems to work well in general. *)
 array_stable_quicksort_pivot_index_random :
   array_stable_quicksort_pivot_index_t a
+
 fn {a : vt@ype}     (* Currently this works poorly on large arrays. *)
 array_stable_quicksort_pivot_index_middle :
   array_stable_quicksort_pivot_index_t a
+
 fn {a : vt@ype}     (* Currently this works poorly on large arrays. *)
 array_stable_quicksort_pivot_index_median_of_three :
   array_stable_quicksort_pivot_index_t a

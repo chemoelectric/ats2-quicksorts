@@ -23,9 +23,9 @@
 
 #include "share/atspre_staload.hats"
 staload "quicksorts/SATS/stable-quicksort.sats"
+staload "quicksorts/SATS/bptr.sats"
+staload _ = "quicksorts/DATS/bptr.dats"
 staload UN = "prelude/SATS/unsafe.sats"
-
-#define DEFAULT_ARRAY_INSERTION_SORT_THRESHOLD 80
 
 #ifdef ATS2_QUICKSORTS_WORKSPACE_THRESHOLD #then
   #define WORKSPACE_THRESHOLD ATS2_QUICKSORTS_WORKSPACE_THRESHOLD
@@ -46,6 +46,50 @@ staload UN = "prelude/SATS/unsafe.sats"
 #endif
 
 #include "quicksorts/DATS/SHARE/quicksorts.share.dats"
+
+fn {a : vt@ype}
+elem_lt_ptr1_ptr1
+          {p, q : addr}
+          (pf_p : !a @ p,
+           pf_q : !a @ q |
+           p    : ptr p,
+           q    : ptr q)
+    :<> bool =
+  array_stable_quicksort$lt<a> (!p, !q)
+
+fn {a : vt@ype}
+elem_lt_bptr_bptr
+          {p      : addr}
+          {i, j   : int}
+          (pf_i   : !a @ (p + (i * sizeof a)),
+           pf_j   : !a @ (p + (j * sizeof a)) |
+           bp_i   : bptr (a, p, i),
+           bp_j   : bptr (a, p, j))
+    :<> bool =
+  elem_lt_ptr1_ptr1<a> (pf_i, pf_j | bptr2ptr bp_i, bptr2ptr bp_j)
+
+fn {a : vt@ype}
+elem_lt_array_bptr_bptr
+          {p_arr  : addr}
+          {n      : int}
+          {i, j   : nat | i <= n - 1; j <= n - 1; i != j}
+          (pf_arr : !array_v (a, p_arr, n) |
+           bp_i   : bptr (a, p_arr, i),
+           bp_j   : bptr (a, p_arr, j))
+    :<> bool =
+  let
+    prval @(pf_i, pf_j, fpf) =
+      array_v_takeout2 {a} {p_arr} {n} {i, j} pf_arr
+    val is_lt =
+      elem_lt_bptr_bptr<a> (pf_i, pf_j | bp_i, bp_j)
+    prval () = pf_arr := fpf (pf_i, pf_j)
+  in
+    is_lt
+  end
+
+overload lt with elem_lt_ptr1_ptr1
+overload lt with elem_lt_bptr_bptr
+overload lt with elem_lt_array_bptr_bptr
 
 fn {a : vt@ype}
 array_element_lt
@@ -76,9 +120,19 @@ array_stable_quicksort$cmp (x, y) =
      prelude. *)
   gcompare_ref_ref<a> (x, y)
 
+#define DEFAULT_SMALL_SORT_THRESHOLD 80
+
 implement {a}
 array_stable_quicksort$small () =
-  i2sz DEFAULT_ARRAY_INSERTION_SORT_THRESHOLD
+  i2sz DEFAULT_SMALL_SORT_THRESHOLD
+
+implement {a}
+array_stable_quicksort$small_sort (arr, n) =
+  array_stable_quicksort_small_sort_default (arr, n)
+
+implement {a}
+array_stable_quicksort_small_sort_default (arr, n) =
+  array_stable_quicksort_small_sort_insertion (arr, n)
 
 implement {a}
 array_stable_quicksort$pivot_index {n} (arr, n) =
@@ -86,7 +140,6 @@ array_stable_quicksort$pivot_index {n} (arr, n) =
 
 implement {a}
 array_stable_quicksort_pivot_index_default {n} (arr, n) =
-  (* The default is random pivot, which I _highly_ recommend. *)
   array_stable_quicksort_pivot_index_random<a> {n} (arr, n)
 
 implement {a}
@@ -109,76 +162,63 @@ array_stable_quicksort_pivot_index_median_of_three {n} (arr, n) =
 
 fn {a : vt@ype}
 make_an_ordered_prefix
-          {n      : int | 2 <= n}
           {p_arr  : addr}
-          (pf_arr : !array_v (a, p_arr, n) >> _ |
-           p_arr  : ptr p_arr,
-           n      : size_t n)
-    :<!wrt> [prefix_length : int | 2 <= prefix_length;
-                                   prefix_length <= n]
-            size_t prefix_length =
-  let
-    macdef arr = !p_arr
-  in
-    if ~array_element_lt<a> (arr, i2sz 1, i2sz 0) then
-      let                       (* Non-decreasing order. *)
-        fun
-        loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
-             .<n - pfx_len>.
-             (arr     : &array (a, n) >> _,
-              pfx_len : size_t pfx_len)
-            :<> [prefix_length : int | 2 <= prefix_length;
-                                       prefix_length <= n]
-                size_t prefix_length =
-          if pfx_len = n then
-            pfx_len
-          else if array_element_lt<a>
-                    {n} {pfx_len, pfx_len - 1}
-                    (arr, pfx_len, pred pfx_len) then
-            pfx_len
-          else
-            loop (arr, succ pfx_len)
+          {n      : int | 2 <= n}
+          (pf_arr : !array_v (a, p_arr, n) |
+           bp_arr : bptr_anchor (a, p_arr),
+           bp_n   : bptr (a, p_arr, n))
+    :<!wrt> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
+            bptr (a, p_arr, pfx_len) =
+  if ~lt<a> (pf_arr | bptr_succ<a> bp_arr, bp_arr) then
+    let                       (* Non-decreasing order. *)
+      fun
+      loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
+           .<n - pfx_len>.
+           (pf_arr  : !array_v (a, p_arr, n) |
+            bp      : bptr (a, p_arr, pfx_len))
+          :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
+              bptr (a, p_arr, pfx_len) =
+        if bp = bp_n then
+          bp
+        else if lt<a> (pf_arr | bp, bptr_pred<a> bp) then
+          bp
+        else
+          loop (pf_arr | bptr_succ<a> bp)
+    in
+      loop (pf_arr | bptr_add<a> (bp_arr, 2))
+    end
+  else
+    let                         (* Monotonically decreasing order. *)
+      fun
+      loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
+           .<n - pfx_len>.
+           (pf_arr  : !array_v (a, p_arr, n) |
+            bp      : bptr (a, p_arr, pfx_len))
+          :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
+              bptr (a, p_arr, pfx_len) =
+        if bp = bp_n then
+          bp
+        else if ~lt<a> (pf_arr | bp, bptr_pred<a> bp) then
+          bp
+        else
+          loop (pf_arr | bptr_succ<a> bp)
 
-        val prefix_length = loop (arr, i2sz 2)
-      in
-        prefix_length
-      end
-    else
-      let                       (* Monotonically decreasing order. *)
-        fun
-        loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
-             .<n - pfx_len>.
-             (arr     : &array (a, n) >> _,
-              pfx_len : size_t pfx_len)
-            :<> [prefix_length : int | 2 <= prefix_length;
-                                       prefix_length <= n]
-                size_t prefix_length =
-          if pfx_len = n then
-            pfx_len
-          else if ~array_element_lt<a>
-                     {n} {pfx_len, pfx_len - 1}
-                     (arr, pfx_len, pred pfx_len) then
-            pfx_len
-          else
-            loop (arr, succ pfx_len)
-
-        val prefix_length = loop (arr, i2sz 2)
-      in
-        array_subreverse<a> (arr, i2sz 0, prefix_length);
-        prefix_length
-      end
-  end
+      val bp = loop (pf_arr | bptr_add<a> (bp_arr, 2))
+    in
+      subreverse<a> (pf_arr | bp_arr, bp);
+      bp
+    end
 
 fn {a  : vt@ype}
 insertion_position
+          {p_arr  : addr}
           {n      : int}
           {i      : pos | i < n}
-          {p_arr  : addr}
-          (pf_arr : !array_v (a, p_arr, n) >> _ |
-           p_arr  : ptr p_arr,
-           i      : size_t i)
+          (pf_arr : !array_v (a, p_arr, n) |
+           bp_arr : bptr_anchor (a, p_arr),
+           bp_i   : bptr (a, p_arr, i))
     :<> [j : nat | j <= i]
-        size_t j =
+        bptr (a, p_arr, j) =
   (*
     A binary search.
 
@@ -196,58 +236,64 @@ insertion_position
     fun
     loop {j, k : int | 0 <= j; j <= k; k < i}
          .<k - j>.
-         (arr : &array (a, n),
-          j   : size_t j,
-          k   : size_t k)
+         (pf_arr : !array_v (a, p_arr, n) |
+          bp_j   : bptr (a, p_arr, j),
+          bp_k   : bptr (a, p_arr, k))
         :<> [j1 : nat | j1 <= i]
-            size_t j1 =
-      if j <> k then
+            bptr (a, p_arr, j1) =
+      if bp_j <> bp_k then
         let
-          val h = k - half (k - j) (* (j + k) ceildiv 2 *)
-         in
-          if array_element_lt<a> {n} (arr, i, h) then
-            loop (arr, j, pred h)
+          (* Find the point that is halfway between bp_j and bp_k,
+             rounding towards bp_k. *)
+          stadef h = k - ((k - j) / 2)
+          val bp_h : bptr (a, p_arr, h) =
+            bptr_sub<a>
+              (bp_k, half (bptr_diff_unsigned<a> (bp_k, bp_j)))
+        in
+          if lt<a> (pf_arr | bp_i, bp_h) then
+            loop (pf_arr | bp_j, bptr_pred<a> bp_h)
           else
-            loop (arr, h, k)
+            loop (pf_arr | bp_h, bp_k)
         end
-      else if j <> i2sz 0 then
-        succ j
-      else if array_element_lt<a> {n} (arr, i, i2sz 0) then
-        i2sz 0
+      else if bp_j <> bp_arr then
+        bptr_succ<a> bp_j
+      else if lt<a> (pf_arr | bp_i, bp_arr) then
+        bp_arr
       else
-        i2sz 1
+        bptr_succ<a> bp_arr
   in
-    loop (!p_arr, i2sz 0, pred i)
+    loop (pf_arr | bp_arr, bptr_pred<a> bp_i)
   end
 
-fn {a : vt@ype}
-array_insertion_sort
-          {n       : nat}
-          {p_arr   : addr}
-          (pf_arr  : !array_v (a, p_arr, n) >> _ |
-           p_arr   : ptr p_arr,
-           n       : size_t n)
-    :<!wrt> void =
-  if n > 1 then
+implement {a}
+array_stable_quicksort_small_sort_insertion {n} (arr, n) =
+  if i2sz 2 <= n then
     let
+      prval pf_arr = view@ arr
+      val p_arr = addr@ arr
+      prval [p_arr : addr] EQADDR () = eqaddr_make_ptr p_arr
+      val bp_arr = ptr2bptr_anchor p_arr
+      val bp_n = bptr_add<a> (bp_arr, n)
+      val bp_i = make_an_ordered_prefix<a> (pf_arr | bp_arr, bp_n)
+
       fun
       loop {i : pos | i <= n}
            .<n - i>.
            (pf_arr : !array_v (a, p_arr, n) >> _ |
-            i      : size_t i)
+            bp_i   : bptr (a, p_arr, i))
           :<!wrt> void =
-        if i <> n then
+        if bp_i <> bp_n then
           let
-            val j = insertion_position<a> {n} (pf_arr | p_arr, i)
+            val bp_j = insertion_position<a> (pf_arr | bp_arr, bp_i)
           in
-            array_subcirculate_right<a> (!p_arr, j, i);
-            loop (pf_arr | succ i)
+            subcirculate_right<a> (pf_arr | bp_j, bp_i);
+            loop (pf_arr | bptr_succ<a> bp_i)
           end
 
-      val prefix_length =
-        make_an_ordered_prefix<a> (pf_arr | p_arr, n)
+      val () = loop (pf_arr | bp_i)
+
+      prval () = view@ arr := pf_arr
     in
-      loop (pf_arr | prefix_length)
     end
 
 fn {a : vt@ype}
@@ -634,7 +680,7 @@ array_stable_sort
             if n1 <= array_stable_quicksort$small<a> () then
               let
                 val () =
-                  array_insertion_sort<a> (pf_arr1 | p_arr1, n1)
+                  array_stable_quicksort$small_sort<a> (!p_arr1, n1)
                 prval () = fpf_arr1 pf_arr1
               in
                 loop (pf_work, pf_pivot_temp |

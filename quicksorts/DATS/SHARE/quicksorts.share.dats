@@ -121,32 +121,6 @@ my_array_copy
   in
   end
 
-extern fn
-move_bytes_right :
-  {k : int}
-  {n : int}
-  (ptr, size_t n, size_t k) -< !wrt > void = "mac#%"
-
-fn {a : vt@ype} (* FIXME: WILL I NEED THIS? *)   (* FIXME: WILL I NEED THIS? *)   (* FIXME: WILL I NEED THIS? *)
-array_subcirculate_right
-          {n    : int}
-          {i, j : int | i <= j; j < n}
-          (arr  : &array (a, n) >> _,
-           i    : size_t i,
-           j    : size_t j)
-    :<!wrt> void =
-  if i = j then
-    ()
-  else
-    let
-      val pi = ptr_add<a> (addr@ arr, i)
-      and pj = ptr_add<a> (addr@ arr, j)
-      val tmp = $UN.ptr0_get<a> pj
-    in
-      move_bytes_right (pi, (j - i) * sizeof<a>, sizeof<a>);
-      $UN.ptr0_set<a> (pi, tmp)
-    end
-
 (*------------------------------------------------------------------*)
 (* A simple linear congruential generator.                          *)
 

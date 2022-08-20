@@ -49,7 +49,7 @@ array_unstable_quicksort$cmp :
 (* Customization of the sorting of ‘small’ subarrays.               *)
 
 typedef array_unstable_quicksort_small_sort_t (a : vt@ype) =
-  {n      : nat}
+  {n : nat}
   (&array (a, n), size_t n) -< !wrt > void
 
 (* What ‘small’ sort should we use? *)
