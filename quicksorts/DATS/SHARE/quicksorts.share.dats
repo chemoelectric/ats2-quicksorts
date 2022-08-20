@@ -307,14 +307,66 @@ insertion_sort$lt :
     bool
 
 extern fn {a : vt@ype}
-insertion_sort$make_an_ordered_prefix :
+insertion_sort$gt_or_gte :
   {p_arr  : addr}
-  {n      : int | 2 <= n}
+  {n      : int}
+  {i, j   : nat | i <= n - 1; j <= n - 1; i != j}
   (!array_v (a, p_arr, n) |
-   bptr_anchor (a, p_arr),
-   bptr (a, p_arr, n)) -< !wrt >
-    [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
-    bptr (a, p_arr, pfx_len)
+   bptr (a, p_arr, i),
+   bptr (a, p_arr, j)) -<>
+    bool
+
+fn {a : vt@ype}
+make_an_ordered_prefix
+          {p_arr  : addr}
+          {n      : int | 2 <= n}
+          (pf_arr : !array_v (a, p_arr, n) |
+           bp_arr : bptr_anchor (a, p_arr),
+           bp_n   : bptr (a, p_arr, n))
+    :<!wrt> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
+            bptr (a, p_arr, pfx_len) =
+  if ~insertion_sort$lt<a>
+       (pf_arr | bptr_succ<a> bp_arr, bp_arr) then
+    let                       (* Non-decreasing order. *)
+      fun
+      loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
+           .<n - pfx_len>.
+           (pf_arr  : !array_v (a, p_arr, n) |
+            bp      : bptr (a, p_arr, pfx_len))
+          :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
+              bptr (a, p_arr, pfx_len) =
+        if bp = bp_n then
+          bp
+        else if insertion_sort$lt<a>
+                  (pf_arr | bp, bptr_pred<a> bp) then
+          bp
+        else
+          loop (pf_arr | bptr_succ<a> bp)
+    in
+      loop (pf_arr | bptr_add<a> (bp_arr, 2))
+    end
+  else
+    let (* Either non-increasing or monotonically decreasing order. *)
+      fun
+      loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
+           .<n - pfx_len>.
+           (pf_arr  : !array_v (a, p_arr, n) |
+            bp      : bptr (a, p_arr, pfx_len))
+          :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
+              bptr (a, p_arr, pfx_len) =
+        if bp = bp_n then
+          bp
+        else if insertion_sort$gt_or_gte<a>
+                  (pf_arr | bp, bptr_pred<a> bp) then
+          bp
+        else
+          loop (pf_arr | bptr_succ<a> bp)
+
+      val bp = loop (pf_arr | bptr_add<a> (bp_arr, 2))
+    in
+      subreverse<a> (pf_arr | bp_arr, bp);
+      bp
+    end
 
 fn {a : vt@ype}
 insertion_position
@@ -385,9 +437,7 @@ insertion_sort
       prval [p_arr : addr] EQADDR () = eqaddr_make_ptr p_arr
       val bp_arr = ptr2bptr_anchor p_arr
       val bp_n = bptr_add<a> (bp_arr, n)
-      val bp_i =
-        insertion_sort$make_an_ordered_prefix<a>
-          (pf_arr | bp_arr, bp_n)
+      val bp_i = make_an_ordered_prefix<a> (pf_arr | bp_arr, bp_n)
 
       fun
       loop {i : pos | i <= n}

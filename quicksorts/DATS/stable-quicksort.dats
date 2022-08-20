@@ -160,62 +160,14 @@ array_stable_quicksort_pivot_index_median_of_three {n} (arr, n) =
     quicksorts_pivot_index_median_of_three<a> {n} (arr, n)
   end
 
-fn {a : vt@ype}
-make_an_ordered_prefix
-          {p_arr  : addr}
-          {n      : int | 2 <= n}
-          (pf_arr : !array_v (a, p_arr, n) |
-           bp_arr : bptr_anchor (a, p_arr),
-           bp_n   : bptr (a, p_arr, n))
-    :<!wrt> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
-            bptr (a, p_arr, pfx_len) =
-  if ~lt<a> (pf_arr | bptr_succ<a> bp_arr, bp_arr) then
-    let                       (* Non-decreasing order. *)
-      fun
-      loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
-           .<n - pfx_len>.
-           (pf_arr  : !array_v (a, p_arr, n) |
-            bp      : bptr (a, p_arr, pfx_len))
-          :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
-              bptr (a, p_arr, pfx_len) =
-        if bp = bp_n then
-          bp
-        else if lt<a> (pf_arr | bp, bptr_pred<a> bp) then
-          bp
-        else
-          loop (pf_arr | bptr_succ<a> bp)
-    in
-      loop (pf_arr | bptr_add<a> (bp_arr, 2))
-    end
-  else
-    let                         (* Monotonically decreasing order. *)
-      fun
-      loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
-           .<n - pfx_len>.
-           (pf_arr  : !array_v (a, p_arr, n) |
-            bp      : bptr (a, p_arr, pfx_len))
-          :<> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
-              bptr (a, p_arr, pfx_len) =
-        if bp = bp_n then
-          bp
-        else if ~lt<a> (pf_arr | bp, bptr_pred<a> bp) then
-          bp
-        else
-          loop (pf_arr | bptr_succ<a> bp)
-
-      val bp = loop (pf_arr | bptr_add<a> (bp_arr, 2))
-    in
-      subreverse<a> (pf_arr | bp_arr, bp);
-      bp
-    end
-
 implement {a}
 insertion_sort$lt (pf_arr | bp_i, bp_j) =
   lt<a> (pf_arr | bp_i, bp_j)
 
 implement {a}
-insertion_sort$make_an_ordered_prefix (pf_arr | bp_arr, bp_n) =
-  make_an_ordered_prefix<a> (pf_arr | bp_arr, bp_n)
+insertion_sort$gt_or_gte (pf_arr | bp_i, bp_j) =
+  (* Greater than or equal to. *)
+  ~lt<a> (pf_arr | bp_i, bp_j)
 
 implement {a}
 array_stable_quicksort_small_sort_insertion {n} (arr, n) =
