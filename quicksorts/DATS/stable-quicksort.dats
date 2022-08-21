@@ -251,60 +251,81 @@ scan_run {p_arr    : addr}
     loop (pf_arr1, pf_pivot | bp_i)
   end
 
+extern fn {a : vt@ype}
+partition_before_or_after_pivot$lt_or_le
+          {p        : addr}
+          {p_pivot  : addr}
+          (pf_p     : !a @ p,
+           pf_pivot : !a @ p_pivot |
+           p        : ptr p,
+           p_pivot  : ptr p_pivot)
+    :<> bool
+
+extern fn {a : vt@ype}
+partition_before_or_after_pivot$gt_or_ge
+          {p        : addr}
+          {p_pivot  : addr}
+          (pf_p     : !a @ p,
+           pf_pivot : !a @ p_pivot |
+           p        : ptr p,
+           p_pivot  : ptr p_pivot)
+    :<> bool
+
 fn {a : vt@ype}
-partition_array_before_pivot___FIXME___
-          {p_arr       : addr}
-          {n           : int}
-          {n_before    : int | n_before <= n - 1}
-          {p_work      : addr}
-          {p_pivot     : addr}
-          (pf_before   : array_v (a, p_arr, n_before),
-           pf_work     : array_v (a?, p_work, n - 1),
-           pf_pivot    : !a @ p_pivot |
-           bp_arr      : bptr_anchor (a, p_arr),
-           bp_n_before : bptr (a, p_arr, n_before),
-           bp_work     : bptr_anchor (a, p_work),
-           p_pivot     : ptr p_pivot)
-    :<!wrt> [n_le, n_ge : nat | n_le + n_ge == n_before]
+partition_before_or_after_pivot
+          {p_arr    : addr}
+          {n_avail  : int}
+          {n_arr    : int | n_arr <= n_avail}
+          {p_avail  : addr}
+          {p_pivot  : addr}
+          (pf_arr   : array_v (a, p_arr, n_arr),
+           pf_avail : array_v (a?, p_avail, n_avail),
+           pf_pivot : !a @ p_pivot |
+           bp_arr   : bptr_anchor (a, p_arr),
+           bp_n_arr : bptr (a, p_arr, n_arr),
+           bp_avail : bptr_anchor (a, p_avail),
+           p_pivot  : ptr p_pivot)
+    :<!wrt> [n_le, n_ge : nat | n_le + n_ge == n_arr]
             @(array_v (a, p_arr, n_le),
               array_v (a?, p_arr + (n_le * sizeof a),
-                       n_before - n_le),
-              array_v (a, p_work, n_ge),
-              array_v (a?, p_work + (n_ge * sizeof a), n - 1 - n_ge) |
+                       n_arr - n_le),
+              array_v (a, p_avail, n_ge),
+              array_v (a?, p_avail + (n_ge * sizeof a),
+                       n_avail - n_ge) |
             bptr (a, p_arr, n_le),
-            bptr (a, p_work, n_ge)) =
+            bptr (a, p_avail, n_ge)) =
   let
-    prval () = lemma_array_v_param pf_before
-    prval () = lemma_array_v_param pf_work
+    prval () = lemma_array_v_param pf_arr
+    prval () = lemma_array_v_param pf_avail
 
     fun
-    loop {i          : nat | i <= n_before}
+    loop {i          : nat | i <= n_arr}
          {n_le, n_ge : nat | n_le + n_ge == i}
-         .<n_before - i>.
+         .<n_arr - i>.
          (pf_le      : array_v (a, p_arr, n_le),
           pf_between : array_v (a?, p_arr + (n_le * sizeof a),
                                 i - n_le),
-          pf_before  : array_v (a, p_arr + (i * sizeof a),
-                                n_before - i),
-          pf_ge      : array_v (a, p_work, n_ge),
-          pf_avail   : array_v (a?, p_work + (n_ge * sizeof a),
-                                n - 1 - n_ge),
+          pf_arr     : array_v (a, p_arr + (i * sizeof a),
+                                n_arr - i),
+          pf_ge      : array_v (a, p_avail, n_ge),
+          pf_avail   : array_v (a?, p_avail + (n_ge * sizeof a),
+                                n_avail - n_ge),
           pf_pivot   : !a @ p_pivot |
           bp_i       : bptr (a, p_arr, i),
           bp_le      : bptr (a, p_arr, n_le),
-          bp_ge      : bptr (a, p_work, n_ge))
-        :<!wrt> [n_le, n_ge : nat | n_le + n_ge == n_before]
+          bp_ge      : bptr (a, p_avail, n_ge))
+        :<!wrt> [n_le, n_ge : nat | n_le + n_ge == n_arr]
                 @(array_v (a, p_arr, n_le),
                   array_v (a?, p_arr + (n_le * sizeof a),
-                           n_before - n_le),
-                  array_v (a, p_work, n_ge),
-                  array_v (a?, p_work + (n_ge * sizeof a),
-                           n - 1 - n_ge) |
+                           n_arr - n_le),
+                  array_v (a, p_avail, n_ge),
+                  array_v (a?, p_avail + (n_ge * sizeof a),
+                           n_avail - n_ge) |
                 bptr (a, p_arr, n_le),
-                bptr (a, p_work, n_ge)) =
-      if bp_i = bp_n_before then
+                bptr (a, p_avail, n_ge)) =
+      if bp_i = bp_n_arr then
         let
-          prval () = array_v_unnil pf_before
+          prval () = array_v_unnil pf_arr
         in
           @(pf_le, pf_between, pf_ge, pf_avail | bp_le, bp_ge)
         end
@@ -312,33 +333,34 @@ partition_array_before_pivot___FIXME___
         let
           implement
           scan_run$pred<a> (pf_p, pf_pivot | p, p_pivot) =
-            lt<a> (pf_pivot, pf_p | p_pivot, p)
+            partition_before_or_after_pivot$lt_or_le<a>
+              (pf_pivot, pf_p | p_pivot, p)
           val [j : int] bp_j =
-            scan_run<a> (pf_before, pf_pivot |
+            scan_run<a> (pf_arr, pf_pivot |
                          bp_i, bptr_succ<a> bp_i,
-                         bp_n_before, p_pivot)
+                         bp_n_arr, p_pivot)
           val nmemb = bptr_diff_unsigned<a> (bp_j, bp_i)
 
-          prval @(pf_before1, pf_before) =
+          prval @(pf_arr1, pf_arr) =
             array_v_split {a} {p_arr + (i * sizeof a)}
-                          {n_before - i} {j - i}
-                          pf_before
+                          {n_arr - i} {j - i}
+                          pf_arr
           prval @(pf_avail1, pf_avail) =
-            array_v_split {a?} {p_work + (n_ge * sizeof a)}
-                          {n - 1 - n_ge} {j - i}
+            array_v_split {a?} {p_avail + (n_ge * sizeof a)}
+                          {n_avail - n_ge} {j - i}
                           pf_avail
 
-          val () = copy<a> (pf_avail1, pf_before1 |
+          val () = copy<a> (pf_avail1, pf_arr1 |
                             bptr2ptr bp_ge, bptr2ptr bp_i, nmemb)
 
-          prval pf_between = array_v_unsplit (pf_between, pf_before1)
+          prval pf_between = array_v_unsplit (pf_between, pf_arr1)
           prval pf_ge = array_v_unsplit (pf_ge, pf_avail1)
 
           val bp_ge = bptr_add<a> (bp_ge, nmemb)
         in
-          if bp_j = bp_n_before then
+          if bp_j = bp_n_arr then
             let
-              prval () = array_v_unnil pf_before
+              prval () = array_v_unnil pf_arr
             in
               @(pf_le, pf_between, pf_ge, pf_avail | bp_le, bp_ge)
             end
@@ -346,28 +368,30 @@ partition_array_before_pivot___FIXME___
             let
               implement
               scan_run$pred<a> (pf_p, pf_pivot | p, p_pivot) =
-                ~lt<a> (pf_pivot, pf_p | p_pivot, p)
+                partition_before_or_after_pivot$gt_or_ge<a>
+                  (pf_pivot, pf_p | p_pivot, p)
+
               val [k : int] bp_k =
-                scan_run<a> (pf_before, pf_pivot |
+                scan_run<a> (pf_arr, pf_pivot |
                              bp_j, bptr_succ<a> bp_j,
-                             bp_n_before, p_pivot)
+                             bp_n_arr, p_pivot)
               val nmemb = bptr_diff_unsigned<a> (bp_k, bp_j)
 
-              prval @(pf_before1, pf_before) =
+              prval @(pf_arr1, pf_arr) =
                 array_v_split {a} {p_arr + (j * sizeof a)}
-                              {n_before - j} {k - j}
-                              pf_before
+                              {n_arr - j} {k - j}
+                              pf_arr
 
-              val () = move_left<a> (pf_between, pf_before1 |
+              val () = move_left<a> (pf_between, pf_arr1 |
                                      bptr2ptr bp_le, bptr2ptr bp_j,
                                      nmemb)
 
               prval pf_le = array_v_unsplit (pf_le, pf_between)
-              prval pf_between = pf_before1
+              prval pf_between = pf_arr1
 
               val bp_le = bptr_add<a> (bp_le, nmemb)
             in
-              loop (pf_le, pf_between, pf_before,
+              loop (pf_le, pf_between, pf_arr,
                     pf_ge, pf_avail, pf_pivot |
                     bp_k, bp_le, bp_ge)
             end
@@ -375,23 +399,107 @@ partition_array_before_pivot___FIXME___
 
     implement
     scan_run$pred<a> (pf_p, pf_pivot | p, p_pivot) =
-      ~lt<a> (pf_pivot, pf_p | p_pivot, p)
+      partition_before_or_after_pivot$lt_or_le<a>
+        (pf_pivot, pf_p | p_pivot, p)
+
     val [n0_le : int] bp_le = 
       (* Skip elements that do not need to be moved. *)
-      scan_run<a> (pf_before, pf_pivot |
-                   bp_arr, bp_arr, bp_n_before, p_pivot)
+      scan_run<a> (pf_arr, pf_pivot |
+                   bp_arr, bp_arr, bp_n_arr, p_pivot)
 
-    prval @(pf_le, pf_before) =
-      array_v_split {a} {p_arr} {n_before} {n0_le} pf_before
+    prval @(pf_le, pf_arr) =
+      array_v_split {a} {p_arr} {n_arr} {n0_le} pf_arr
     prval pf_between =
       array_v_nil {a?} {p_arr + (n0_le * sizeof a)} ()
 
-    prval pf_ge = array_v_nil {a} {p_work} ()
-    prval pf_avail = pf_work
+    prval pf_ge = array_v_nil {a} {p_avail} ()
+    prval pf_avail = pf_avail
   in
-    loop (pf_le, pf_between, pf_before,
+    loop (pf_le, pf_between, pf_arr,
           pf_ge, pf_avail, pf_pivot |
-          bp_le, bp_le, bp_work)
+          bp_le, bp_le, bp_avail)
+  end
+
+fn {a : vt@ype}
+partition_before_pivot
+          {p_before    : addr}
+          {n_avail     : int}
+          {n_before    : int | n_before <= n_avail}
+          {p_avail     : addr}
+          {p_pivot     : addr}
+          (pf_before   : array_v (a, p_before, n_before),
+           pf_avail    : array_v (a?, p_avail, n_avail),
+           pf_pivot    : !a @ p_pivot |
+           bp_before   : bptr_anchor (a, p_before),
+           bp_n_before : bptr (a, p_before, n_before),
+           bp_avail    : bptr_anchor (a, p_avail),
+           p_pivot     : ptr p_pivot)
+    :<!wrt> [n_le, n_ge : nat | n_le + n_ge == n_before]
+            @(array_v (a, p_before, n_le),
+              array_v (a?, p_before + (n_le * sizeof a),
+                       n_before - n_le),
+              array_v (a, p_avail, n_ge),
+              array_v (a?, p_avail + (n_ge * sizeof a),
+                       n_avail - n_ge) |
+            bptr (a, p_before, n_le),
+            bptr (a, p_avail, n_ge)) =
+  let
+    implement
+    partition_before_or_after_pivot$lt_or_le<a> (pf_p, pf_pivot |
+                                                 p, p_pivot) =
+      (* Less than or equal to the pivot. *)
+      ~lt<a> (pf_pivot, pf_p | p_pivot, p)
+
+    implement
+    partition_before_or_after_pivot$gt_or_ge<a> (pf_p, pf_pivot |
+                                                 p, p_pivot) =
+      (* Strictly greater than the pivot. *)
+      lt<a> (pf_pivot, pf_p | p_pivot, p)
+  in
+    partition_before_or_after_pivot
+      (pf_before, pf_avail, pf_pivot |
+       bp_before, bp_n_before, bp_avail, p_pivot)
+  end
+
+fn {a : vt@ype}
+partition_after_pivot
+          {p_after    : addr}
+          {n_avail    : int}
+          {n_after    : int | n_after <= n_avail}
+          {p_avail    : addr}
+          {p_pivot    : addr}
+          (pf_after   : array_v (a, p_after, n_after),
+           pf_avail   : array_v (a?, p_avail, n_avail),
+           pf_pivot   : !a @ p_pivot |
+           bp_after   : bptr_anchor (a, p_after),
+           bp_n_after : bptr (a, p_after, n_after),
+           bp_avail   : bptr_anchor (a, p_avail),
+           p_pivot    : ptr p_pivot)
+    :<!wrt> [n_le, n_ge : nat | n_le + n_ge == n_after]
+            @(array_v (a, p_after, n_le),
+              array_v (a?, p_after + (n_le * sizeof a),
+                       n_after - n_le),
+              array_v (a, p_avail, n_ge),
+              array_v (a?, p_avail + (n_ge * sizeof a),
+                       n_avail - n_ge) |
+            bptr (a, p_after, n_le),
+            bptr (a, p_avail, n_ge)) =
+  let
+    implement
+    partition_before_or_after_pivot$lt_or_le<a> (pf_p, pf_pivot |
+                                                 p, p_pivot) =
+      (* Strictly less than the pivot. *)
+      lt<a> (pf_p, pf_pivot | p, p_pivot)
+
+    implement
+    partition_before_or_after_pivot$gt_or_ge<a> (pf_p, pf_pivot |
+                                                 p, p_pivot) =
+      (* Greater than or equal to the pivot. *)
+      ~lt<a> (pf_p, pf_pivot | p, p_pivot)
+  in
+    partition_before_or_after_pivot
+      (pf_after, pf_avail, pf_pivot |
+       bp_after, bp_n_after, bp_avail, p_pivot)
   end
 
 fn {a : vt@ype}
