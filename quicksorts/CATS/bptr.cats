@@ -46,6 +46,12 @@ ats2_quicksorts_bptr_bptr2ptr__ (atstype_ptr bp)
 }
 
 ats2_quicksorts_bptr_inline atstype_ptr
+ats2_quicksorts_bptr_bptr_reanchor__ (atstype_ptr bp)
+{
+  return bp;
+}
+
+ats2_quicksorts_bptr_inline atstype_ptr
 ats2_quicksorts_bptr_bptr_add_size__ (atstype_ptr bp,
                                       atstype_size j,
                                       atstype_size elemsz)

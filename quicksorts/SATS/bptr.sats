@@ -49,6 +49,12 @@ bptr2ptr :
   {i : int}
   (bptr (a, p, i)) -<> ptr (p + (i * sizeof a))
 
+fn {a : vt@ype}
+bptr_reanchor :
+  {p : addr}
+  {i : int}
+  bptr (a, p, i) -<> bptr_anchor (a, p + (i * sizeof a))
+
 (*------------------------------------------------------------------*)
 
 fn {a  : vt@ype}

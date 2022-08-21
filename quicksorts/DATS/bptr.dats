@@ -124,10 +124,24 @@ bptr2ptr {p} {i} bp =
       {a : vt@ype}
       {p : addr}
       {i : int}
-      (bptr (a, p, i)) -<>
+      bptr (a, p, i) -<>
         ptr (p + (i * sizeof a)) = "mac#%"
   in
     bptr2ptr__ {a} {p} {i} bp
+  end
+
+implement {a}
+bptr_reanchor {p} {i} bp =
+  let
+    extern fn
+    bptr_reanchor__ :
+      {a : vt@ype}
+      {p : addr}
+      {i : int}
+      bptr (a, p, i) -<>
+        bptr_anchor (a, p + (i * sizeof a)) = "mac#%"
+  in
+    bptr_reanchor__ {a} {p} {i} bp
   end
 
 implement {a} {tk}
