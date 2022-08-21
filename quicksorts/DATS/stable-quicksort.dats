@@ -335,31 +335,42 @@ partition_array_before_pivot___FIXME___
           prval pf_ge = array_v_unsplit (pf_ge, pf_avail1)
 
           val bp_ge = bptr_add<a> (bp_ge, nmemb)
-
-          implement
-          scan_run$pred<a> (pf_p, pf_pivot | p, p_pivot) =
-            ~lt<a> (pf_pivot, pf_p | p_pivot, p)
-          val [k : int] bp_k =
-            scan_run<a> (pf_before, pf_pivot |
-                         bp_j, bp_j, bp_n_before, p_pivot)
-          val nmemb = bptr_diff_unsigned<a> (bp_k, bp_j)
-
-          prval @(pf_before1, pf_before) =
-            array_v_split {a} {p_arr + (j * sizeof a)}
-                          {n_before - j} {k - j}
-                          pf_before
-
-          val () = move_left<a> (pf_between, pf_before1 |
-                                 bptr2ptr bp_le, bptr2ptr bp_j, nmemb)
-
-          prval pf_le = array_v_unsplit (pf_le, pf_between)
-          prval pf_between = pf_before1
-
-          val bp_le = bptr_add<a> (bp_le, nmemb)
         in
-          loop (pf_le, pf_between, pf_before,
-                pf_ge, pf_avail, pf_pivot |
-                bp_k, bp_le, bp_ge)
+          if bp_j = bp_n_before then
+            let
+              prval () = array_v_unnil pf_before
+            in
+              @(pf_le, pf_between, pf_ge, pf_avail | bp_le, bp_ge)
+            end
+          else
+            let
+              implement
+              scan_run$pred<a> (pf_p, pf_pivot | p, p_pivot) =
+                ~lt<a> (pf_pivot, pf_p | p_pivot, p)
+              val [k : int] bp_k =
+                scan_run<a> (pf_before, pf_pivot |
+                             bp_j, bptr_succ<a> bp_j,
+                             bp_n_before, p_pivot)
+              val nmemb = bptr_diff_unsigned<a> (bp_k, bp_j)
+
+              prval @(pf_before1, pf_before) =
+                array_v_split {a} {p_arr + (j * sizeof a)}
+                              {n_before - j} {k - j}
+                              pf_before
+
+              val () = move_left<a> (pf_between, pf_before1 |
+                                     bptr2ptr bp_le, bptr2ptr bp_j,
+                                     nmemb)
+
+              prval pf_le = array_v_unsplit (pf_le, pf_between)
+              prval pf_between = pf_before1
+
+              val bp_le = bptr_add<a> (bp_le, nmemb)
+            in
+              loop (pf_le, pf_between, pf_before,
+                    pf_ge, pf_avail, pf_pivot |
+                    bp_k, bp_le, bp_ge)
+            end
         end
 
     implement
