@@ -503,6 +503,118 @@ partition_after_pivot
   end
 
 fn {a : vt@ype}
+partition_given_pointers
+          {n       : pos}
+          {p_arr   : addr}
+          {p_work  : addr}
+          (pf_arr  : !array_v (a, p_arr, n),
+           pf_work : !array_v (a?, p_work, n - 1) |
+           p_arr   : ptr p_arr,
+           p_work  : ptr p_work,
+           n       : size_t n)
+    :<!wrt> [i_pivot_final : nat | i_pivot_final <= n - 1]
+            size_t i_pivot_final =
+  let
+    val [i_pivot_initial : int] i_pivot_initial =
+      array_stable_quicksort$pivot_index<a> (!p_arr, n)
+
+    stadef n_before = i_pivot_initial
+    stadef n_after = n - i_pivot_initial - 1
+
+    val n_before : size_t n_before = i_pivot_initial
+    and n_after : size_t n_after = n - i_pivot_initial - 1
+
+    stadef p_pivot_initial = p_arr + (i_pivot_initial * sizeof a)
+    val p_pivot_initial : ptr p_pivot_initial =
+      ptr_add<a> (p_arr, i_pivot_initial)
+
+    prval @(pf_before, pf_temp) =
+      array_v_split {a} {p_arr} {n} {i_pivot_initial} pf_arr
+    prval @(pf_pivot_initial, pf_after) =
+      array_v_uncons {a} {p_pivot_initial} {n - i_pivot_initial}
+                     pf_temp
+
+    stadef p_before = p_arr
+    stadef p_after = p_arr + (i_pivot_initial * sizeof a) + sizeof a
+    stadef p_avail = p_work
+
+    val p_before : ptr p_before = p_arr
+    and p_after : ptr p_after =
+      ptr_add<a> (p_arr, i_pivot_initial + 1)
+    and p_avail : ptr p_avail = p_work
+
+    prval pf_avail = pf_work
+
+    val bp_before = ptr2bptr_anchor<a> p_before
+    and bp_after = ptr2bptr_anchor<a> p_after
+    and bp_avail = ptr2bptr_anchor<a> p_avail
+
+    val bp_n_before = bptr_add<a> (bp_before, n_before)
+    and bp_n_after = bptr_add<a> (bp_after, n_after)
+
+    val [n_le1 : int, n_ge1 : int]
+        @(pf_le1, pf_unused1, pf_ge1, pf_avail1 | bp_le1, bp_ge1) =
+      partition_before_pivot
+        (pf_before, pf_avail, pf_pivot_initial |
+         bp_before, bp_n_before, bp_avail, p_pivot_initial)
+
+    val [n_le2 : int, n_ge2 : int]
+        @(pf_le2, pf_unused2, pf_ge2, pf_avail2 | bp_le2, bp_ge2) =
+      partition_after_pivot
+        (pf_after, pf_avail1, pf_pivot_initial |
+         bp_after, bp_n_after, bptr_reanchor bp_ge1,
+         p_pivot_initial)
+
+    val n_le1 : size_t n_le1 =
+      bptr_diff_unsigned<a> (bp_le1, bp_before)
+    and n_le2 : size_t n_le2 =
+      bptr_diff_unsigned<a> (bp_le2, bp_after)
+
+    stadef n_le = n_le1 + n_le2
+    stadef n_ge = n_ge1 + n_ge2
+    val n_le : size_t n_le = n_le1 + n_le2
+    val n_ge : size_t n_ge = n - n_le - 1
+
+    val i_pivot_final = n_le
+    val p_pivot_final = ptr_add<a> (p_arr, i_pivot_final)
+
+    val pivot = ptr_get<a> (pf_pivot_initial | p_pivot_initial)
+
+    prval pf_unused1 =
+      array_v_extend {a?} {p_arr + (n_le1 * sizeof a)}
+                     (pf_unused1, pf_pivot_initial)
+    val () =
+      move_left<a> (pf_unused1, pf_le2 |
+                    bptr2ptr bp_le1, p_after, n_le2)
+
+    prval pf_le = array_v_unsplit (pf_le1, pf_unused1)
+    prval @(pf_pivot_final, pf_unused1) = array_v_uncons pf_le2
+    val () = ptr_set<a> (pf_pivot_final | p_pivot_final, pivot)
+
+    prval pf_unused =
+      array_v_unsplit {a?} {p_arr + (n_le * sizeof a) + sizeof a}
+                      {n - n_le - 1 - (n_after - n_le2),
+                       n_after - n_le2}
+                      (pf_unused1, pf_unused2)
+    prval pf_ge =
+      array_v_unsplit {a} {p_avail} {n_ge1, n_ge2} (pf_ge1, pf_ge2)
+    val () = copy<a> (pf_unused, pf_ge |
+                      ptr1_succ<a> p_pivot_final,
+                      p_work, n - i_pivot_final - 1)
+    prval pf_avail1 = pf_ge
+    and pf_ge = pf_unused
+
+    prval () = pf_work :=
+      array_v_unsplit {a?} {p_work} {n_ge, n - 1 - n_ge}
+                      (pf_avail1, pf_avail2)
+    prval () = pf_arr :=
+      array_v_unsplit {a} {p_arr} {n_le + 1, n_ge}
+                      (array_v_extend (pf_le, pf_pivot_final), pf_ge)
+  in
+    i_pivot_final
+  end
+
+fn {a : vt@ype}
 partition_array_before_pivot
           {n         : pos}
           {n_before  : nat | n_before + 1 <= n}
