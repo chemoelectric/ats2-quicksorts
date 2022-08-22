@@ -1,10 +1,33 @@
 Quicksorts in ATS2/Postiats
 ---------------------------
 
-Quicksorts as ATS2 templates, configurable by the template
-mechanism. You can use either a strcmp-style function or a ‘less than’
-predicate. You can change the pivot selection method. You can
-configure when to switch over to the ‘small’ sort.
+Quicksorts as ATS2 templates, configurable and extensible by the
+template mechanism.
+
+For the comparison, you can use either a strcmp-style function
+(returning a signed integer) or a ‘less than’ predicate.
+
+Where random numbers are used, they are computed by a built-in linear
+congruential generator that is designed for speed.
+
+----
+
+#include "quicksorts/HATS/unstable-quicksort.hats"
+
+This is an array quicksort of the usual, unstable kind. It uses O(1)
+workspace.
+
+The current default pivot is the median of first, middle, and last
+elements. I have implemented other choices of pivot, should you prefer
+one of them: randomly chosen element, an element in the middle, or the
+median of three randomly chosen elements.
+
+The default ‘small’ sort is a binary insertion sort that first checks
+for an already-ordered prefix. You can use a Shell sort, instead, or
+write your own sort.
+
+You also can change the partitioning method. Two methods already are
+provided.
 
 ----
 
@@ -13,26 +36,8 @@ configure when to switch over to the ‘small’ sort.
 This is a *stable* array quicksort, and so (unlike most quicksorts)
 uses O(n) workspace. It is possible to provide your own workspace.
 
-The current default is to use a random pivot, via a built-in linear
-congruential generator.
-
-I have also implemented other pivot choices, but these currently do
-not work well at all with large arrays. I do not know why. My
-processor type is AMD Opteron 6344.
-
 The current ‘small’ sort is a binary insertion sort that first checks
-for an already-ordered prefix.
+for an already-ordered prefix. I have not implemented any others.
 
-----
-
-#include "quicksorts/HATS/unstable-quicksort.hats"
-
-This is an array quicksort of the move usual, unstable kind. It uses
-O(1) workspace and seems to perform well, even on large arrays.
-
-The current default is to use a median-of-three pivot. I have
-implemented other choices of pivot, should you prefer one of them:
-random pivot, and middle-element.
-
-The current ‘small’ sort is a binary insertion sort that first checks
-for an already-ordered prefix.
+The current default pivot is the median of three randomly chosen
+elements. You can also simply choose a pivot at random.

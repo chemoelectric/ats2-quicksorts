@@ -95,16 +95,20 @@ fn {a : vt@ype}   (* Some method, chosen for its supposed goodness. *)
 array_unstable_quicksort_pivot_index_default :
   array_unstable_quicksort_pivot_index_t a
 
-fn {a : vt@ype}
+fn {a : vt@ype}                 (* A randomly chosen element. *)
 array_unstable_quicksort_pivot_index_random :
   array_unstable_quicksort_pivot_index_t a
 
-fn {a : vt@ype}
+fn {a : vt@ype}                 (* An element in the middle. *)
 array_unstable_quicksort_pivot_index_middle :
   array_unstable_quicksort_pivot_index_t a
 
-fn {a : vt@ype}
+fn {a : vt@ype}      (* The median of left, middle, right elements. *)
 array_unstable_quicksort_pivot_index_median_of_three :
+  array_unstable_quicksort_pivot_index_t a
+
+fn {a : vt@ype}    (* The median of three randomly chosen elements. *)
+array_unstable_quicksort_pivot_index_median_of_three_random :
   array_unstable_quicksort_pivot_index_t a
 
 (*------------------------------------------------------------------*)

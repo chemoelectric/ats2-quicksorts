@@ -140,24 +140,22 @@ array_stable_quicksort$pivot_index {n} (arr, n) =
 
 implement {a}
 array_stable_quicksort_pivot_index_default {n} (arr, n) =
-  array_stable_quicksort_pivot_index_random<a> {n} (arr, n)
+  array_stable_quicksort_pivot_index_median_of_three_random<a>
+    {n} (arr, n)
 
 implement {a}
 array_stable_quicksort_pivot_index_random {n} (arr, n) =
   quicksorts_pivot_index_random<a> {n} (arr, n)
 
 implement {a}
-array_stable_quicksort_pivot_index_middle {n} (arr, n) =
-  quicksorts_pivot_index_middle<a> {n} (arr, n)
-
-implement {a}
-array_stable_quicksort_pivot_index_median_of_three {n} (arr, n) =
+array_stable_quicksort_pivot_index_median_of_three_random
+        {n} (arr, n) =
   let
     implement
     quicksorts$array_element_lt<a> (arr, i, j) =
       array_element_lt<a> (arr, i, j)
   in
-    quicksorts_pivot_index_median_of_three<a> {n} (arr, n)
+    quicksorts_pivot_index_median_of_three_random<a> {n} (arr, n)
   end
 
 implement {a}

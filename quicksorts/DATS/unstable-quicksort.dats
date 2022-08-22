@@ -155,6 +155,17 @@ array_unstable_quicksort_pivot_index_median_of_three {n} (arr, n) =
   end
 
 implement {a}
+array_unstable_quicksort_pivot_index_median_of_three_random
+          {n} (arr, n) =
+  let
+    implement
+    quicksorts$array_element_lt<a> (arr, i, j) =
+      array_element_lt<a> (arr, i, j)
+  in
+    quicksorts_pivot_index_median_of_three_random<a> {n} (arr, n)
+  end
+
+implement {a}
 insertion_sort$lt (pf_arr | bp_i, bp_j) =
   lt<a> (pf_arr | bp_i, bp_j)
 

@@ -322,6 +322,10 @@ extern fn {a : vt@ype}
 quicksorts_pivot_index_median_of_three :
   quicksorts_pivot_index_t a
 
+extern fn {a : vt@ype}
+quicksorts_pivot_index_median_of_three_random :
+  quicksorts_pivot_index_t a
+
 implement {a}
 quicksorts_pivot_index_random {n} (arr, n) =
   randint n
@@ -358,6 +362,46 @@ quicksorts_pivot_index_median_of_three {n} (arr, n) =
             i_middle
           else
             i_last
+        end
+    end
+
+implement {a}
+quicksorts_pivot_index_median_of_three_random {n} (arr, n) =
+  if n <= 2 then
+    i2sz 0
+  else
+    let
+      macdef lt = quicksorts$array_element_lt<a>
+
+      val i_first = randint n
+      and i_second = randint n
+      and i_third = randint n
+
+      val second_lt_first =
+        (if i_second = i_first then
+           false
+         else
+           lt {n} (arr, i_second, i_first)) : bool
+      and third_lt_first =
+        (if i_third = i_first then
+           false
+         else
+           lt {n} (arr, i_third, i_first)) : bool
+    in
+      if second_lt_first <> third_lt_first then
+        i_first
+      else
+        let
+          val second_lt_third =
+            (if i_second = i_third then
+               false
+             else
+               lt {n} (arr, i_second, i_third)) : bool
+        in
+          if second_lt_first <> second_lt_third then
+            i_second
+          else
+            i_third
         end
     end
 
