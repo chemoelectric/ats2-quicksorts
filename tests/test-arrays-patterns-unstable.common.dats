@@ -102,6 +102,7 @@ array_unstable_quicksort$lt<int> (x, y) =
 #define RANDOM    110
 #define MIDDLE    120
 #define MEDIAN3   130
+#define RANDOM3   140
 
 #define INSERTION 210
 #define SHELL     220

@@ -5,6 +5,7 @@ val_DEFAULT=0
 val_RANDOM=110
 val_MIDDLE=120
 val_MEDIAN3=130
+val_RANDOM3=140
 
 val_INSERTION=210
 val_SHELL=220
@@ -19,6 +20,7 @@ selection_value ()
         random ) echo ${val_RANDOM} ;;
         middle ) echo ${val_MIDDLE} ;;
         median3 ) echo ${val_MEDIAN3} ;;
+        random3 ) echo ${val_RANDOM3} ;;
         insertion ) echo ${val_INSERTION} ;;
         shell ) echo ${val_SHELL} ;;
         method1 ) echo ${val_METHOD1} ;;

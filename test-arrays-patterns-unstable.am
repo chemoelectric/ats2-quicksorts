@@ -993,7 +993,7 @@ tests/test-arrays-patterns-unstable-random3-default-default_tests.c: tests/test-
 tests/test-arrays-patterns-unstable-random3-default-default.dats: GNUmakefile
 	$(call v,GEN) \
 	printf '%s\n%s\n%s\n%s\n%s\n'\
-		'#define PIVOT_METHOD ' \
+		'#define PIVOT_METHOD 140' \
 		'#define SMALL_SORT 0' \
 		'#define SMALL_SIZE 0' \
 		'#define PARTITION_METHOD 0' \
@@ -1020,7 +1020,7 @@ tests/test-arrays-patterns-unstable-random3-default-method1_tests.c: tests/test-
 tests/test-arrays-patterns-unstable-random3-default-method1.dats: GNUmakefile
 	$(call v,GEN) \
 	printf '%s\n%s\n%s\n%s\n%s\n'\
-		'#define PIVOT_METHOD ' \
+		'#define PIVOT_METHOD 140' \
 		'#define SMALL_SORT 0' \
 		'#define SMALL_SIZE 0' \
 		'#define PARTITION_METHOD 310' \
@@ -1047,7 +1047,7 @@ tests/test-arrays-patterns-unstable-random3-default-method2_tests.c: tests/test-
 tests/test-arrays-patterns-unstable-random3-default-method2.dats: GNUmakefile
 	$(call v,GEN) \
 	printf '%s\n%s\n%s\n%s\n%s\n'\
-		'#define PIVOT_METHOD ' \
+		'#define PIVOT_METHOD 140' \
 		'#define SMALL_SORT 0' \
 		'#define SMALL_SIZE 0' \
 		'#define PARTITION_METHOD 320' \
@@ -1074,7 +1074,7 @@ tests/test-arrays-patterns-unstable-random3-insertion-default_tests.c: tests/tes
 tests/test-arrays-patterns-unstable-random3-insertion-default.dats: GNUmakefile
 	$(call v,GEN) \
 	printf '%s\n%s\n%s\n%s\n%s\n'\
-		'#define PIVOT_METHOD ' \
+		'#define PIVOT_METHOD 140' \
 		'#define SMALL_SORT 210' \
 		'#define SMALL_SIZE 80' \
 		'#define PARTITION_METHOD 0' \
@@ -1101,7 +1101,7 @@ tests/test-arrays-patterns-unstable-random3-insertion-method1_tests.c: tests/tes
 tests/test-arrays-patterns-unstable-random3-insertion-method1.dats: GNUmakefile
 	$(call v,GEN) \
 	printf '%s\n%s\n%s\n%s\n%s\n'\
-		'#define PIVOT_METHOD ' \
+		'#define PIVOT_METHOD 140' \
 		'#define SMALL_SORT 210' \
 		'#define SMALL_SIZE 80' \
 		'#define PARTITION_METHOD 310' \
@@ -1128,7 +1128,7 @@ tests/test-arrays-patterns-unstable-random3-insertion-method2_tests.c: tests/tes
 tests/test-arrays-patterns-unstable-random3-insertion-method2.dats: GNUmakefile
 	$(call v,GEN) \
 	printf '%s\n%s\n%s\n%s\n%s\n'\
-		'#define PIVOT_METHOD ' \
+		'#define PIVOT_METHOD 140' \
 		'#define SMALL_SORT 210' \
 		'#define SMALL_SIZE 80' \
 		'#define PARTITION_METHOD 320' \
@@ -1155,7 +1155,7 @@ tests/test-arrays-patterns-unstable-random3-shell-default_tests.c: tests/test-ar
 tests/test-arrays-patterns-unstable-random3-shell-default.dats: GNUmakefile
 	$(call v,GEN) \
 	printf '%s\n%s\n%s\n%s\n%s\n'\
-		'#define PIVOT_METHOD ' \
+		'#define PIVOT_METHOD 140' \
 		'#define SMALL_SORT 220' \
 		'#define SMALL_SIZE 350' \
 		'#define PARTITION_METHOD 0' \
@@ -1182,7 +1182,7 @@ tests/test-arrays-patterns-unstable-random3-shell-method1_tests.c: tests/test-ar
 tests/test-arrays-patterns-unstable-random3-shell-method1.dats: GNUmakefile
 	$(call v,GEN) \
 	printf '%s\n%s\n%s\n%s\n%s\n'\
-		'#define PIVOT_METHOD ' \
+		'#define PIVOT_METHOD 140' \
 		'#define SMALL_SORT 220' \
 		'#define SMALL_SIZE 350' \
 		'#define PARTITION_METHOD 310' \
@@ -1209,7 +1209,7 @@ tests/test-arrays-patterns-unstable-random3-shell-method2_tests.c: tests/test-ar
 tests/test-arrays-patterns-unstable-random3-shell-method2.dats: GNUmakefile
 	$(call v,GEN) \
 	printf '%s\n%s\n%s\n%s\n%s\n'\
-		'#define PIVOT_METHOD ' \
+		'#define PIVOT_METHOD 140' \
 		'#define SMALL_SORT 220' \
 		'#define SMALL_SIZE 350' \
 		'#define PARTITION_METHOD 320' \
