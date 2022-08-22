@@ -189,6 +189,9 @@ run_autoreconf() {
 (
     cd "${srcdir}"
 
+    echo "sh make-test-arrays-patterns-stable-am.sh > test-arrays-patterns-stable.am"
+    sh make-test-arrays-patterns-stable-am.sh > test-arrays-patterns-stable.am
+
     echo "sh make-test-arrays-patterns-unstable-am.sh > test-arrays-patterns-unstable.am"
     sh make-test-arrays-patterns-unstable-am.sh > test-arrays-patterns-unstable.am
 

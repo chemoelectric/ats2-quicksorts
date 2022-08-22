@@ -93,6 +93,38 @@ random_int (m : int, n : int)
 
 #define MAX_SZ 10000000
 
+#define DEFAULT   0
+
+#define RANDOM    110
+#define MIDDLE    120
+#define MEDIAN3   130
+#define RANDOM3   140
+
+#define INSERTION 210
+#define SHELL     220
+
+#define METHOD1   310
+#define METHOD2   320
+
+#ifndef PIVOT_METHOD #then
+  #error "No pivot method is specified.\n"
+#else
+  #if PIVOT_METHOD = DEFAULT #then
+    (* Nothing. *)
+  #elif PIVOT_METHOD = RANDOM #then
+    implement
+    array_stable_quicksort$pivot_index<int> (arr, n) =
+      array_stable_quicksort_pivot_index_random<int> (arr, n)
+  #elif PIVOT_METHOD = RANDOM3 #then
+    implement
+    array_stable_quicksort$pivot_index<int> (arr, n) =
+      array_stable_quicksort_pivot_index_median_of_three_random<int>
+        (arr, n)
+  #else
+    #error "Unrecognized pivot method.\n"
+  #endif
+#endif
+
 fn
 array_stable_quicksort_int
             {n   : int}
