@@ -127,6 +127,11 @@ array_unstable_quicksort$lt<int> (x, y) =
     array_unstable_quicksort$pivot_index<int> (arr, n) =
       array_unstable_quicksort_pivot_index_median_of_three<int>
         (arr, n)
+  #elif PIVOT_METHOD = RANDOM3 #then
+    implement
+    array_unstable_quicksort$pivot_index<int> (arr, n) =
+      array_unstable_quicksort_pivot_index_median_of_three_random<int>
+        (arr, n)
   #else
     #error "Unrecognized pivot method.\n"
   #endif
