@@ -109,16 +109,12 @@ fn {a : vt@ype}   (* Some method, chosen for its supposed goodness. *)
 array_stable_quicksort_pivot_index_default :
   array_stable_quicksort_pivot_index_t a
 
-fn {a : vt@ype}              (* This seems to work well in general. *)
+fn {a : vt@ype}                 (* A randomly chosen element. *)
 array_stable_quicksort_pivot_index_random :
   array_stable_quicksort_pivot_index_t a
 
-fn {a : vt@ype}     (* Currently this works poorly on large arrays. *)
-array_stable_quicksort_pivot_index_middle :
-  array_stable_quicksort_pivot_index_t a
-
-fn {a : vt@ype}     (* Currently this works poorly on large arrays. *)
-array_stable_quicksort_pivot_index_median_of_three :
+fn {a : vt@ype}    (* The median of three randomly chosen elements. *)
+array_stable_quicksort_pivot_index_median_of_three_random :
   array_stable_quicksort_pivot_index_t a
 
 (*------------------------------------------------------------------*)

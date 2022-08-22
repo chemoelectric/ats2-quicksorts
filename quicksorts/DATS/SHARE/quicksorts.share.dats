@@ -104,12 +104,12 @@ implement
 g1uint_mod<uint64_kind> (x, y) =
   g1uint_mod_uint64 (x, y)
 
-extern fn
+extern fn (* FIXME: DO I NEED THIS? *) (* FIXME: DO I NEED THIS? *) (* FIXME: DO I NEED THIS? *)
 copy_bytes :
   {n : int}
   (ptr, ptr, size_t n) -< !wrt > void = "mac#%"
 
-fn {a : vt@ype}
+fn {a : vt@ype} (* FIXME: DO I NEED THIS? *) (* FIXME: DO I NEED THIS? *) (* FIXME: DO I NEED THIS? *)
 my_array_copy
           {n : int}
           (dst : &array (a?, n) >> array (a, n),
@@ -120,6 +120,74 @@ my_array_copy
     val () = copy_bytes (addr@ dst, addr@ src, n * sizeof<a>)
     prval () = $UN.castview2void_at{array (a, n)} (view@ dst)
     prval () = $UN.castview2void_at{array (a?!, n)} (view@ src)
+  in
+  end
+
+(*------------------------------------------------------------------*)
+
+extern fn {a  : vt@ype}
+          {tk : tkind}
+copy_ptr_ptr :
+  {p_dst : addr}
+  {p_src : addr}
+  {nmemb : nat}
+  (!array_v (a?, p_dst, nmemb) >> array_v (a, p_dst, nmemb),
+   !array_v (a, p_src, nmemb) >> array_v (a?!, p_src, nmemb) |
+   ptr p_dst,
+   ptr p_src,
+   g1uint (tk, nmemb)) -< !wrt >
+    void
+
+extern fn {a  : vt@ype}
+          {tk : tkind}
+move_left_ptr_ptr :
+  {p_dst : addr}
+  {diff  : nat}
+  {nmemb : nat}
+  (!array_v (a?, p_dst, diff) >> array_v (a, p_dst, nmemb),
+   !array_v (a, p_dst + (diff * sizeof a), nmemb)
+    >> array_v (a?!, p_dst + (nmemb * sizeof a), diff) |
+   ptr p_dst,
+   ptr (p_dst + (diff * sizeof a)),
+   g1uint (tk, nmemb)) -< !wrt >
+    void
+
+overload copy with copy_ptr_ptr
+overload move_left with move_left_ptr_ptr
+
+implement {a} {tk}
+copy_ptr_ptr {p_dst} {p_src} {nmemb}
+             (pf_dst, pf_src | p_dst, p_src, nmemb) =
+  let
+    extern fn                   (* Unsafe memcpy. *)
+    memcpy : (Ptr, Ptr, Size_t) -< !wrt > void = "mac#%"
+
+    prval () = lemma_sizeof {a} ()
+    prval () = mul_gte_gte_gte {nmemb, sizeof a} ()
+
+    val () = memcpy (p_dst, p_src, g1u2u nmemb * sizeof<a>)
+
+    prval () = $UN.castview2void {array_v (a, p_dst, nmemb)} pf_dst
+    prval () = $UN.castview2void {array_v (a?!, p_src, nmemb)} pf_src
+  in
+  end
+
+implement {a} {tk}
+move_left_ptr_ptr {p_dst} {diff} {nmemb}
+                  (pf_left, pf_right | p_dst, p_src, nmemb) =
+  let
+    extern fn                   (* Unsafe memmove. *)
+    memmove : (Ptr, Ptr, Size_t) -< !wrt > void = "mac#%"
+
+    prval () = lemma_sizeof {a} ()
+    prval () = mul_gte_gte_gte {nmemb, sizeof a} ()
+
+    val () = memmove (p_dst, p_src, g1u2u nmemb * sizeof<a>)
+
+    prval () = $UN.castview2void {array_v (a, p_dst, nmemb)} pf_left
+    prval () =
+      $UN.castview2void
+        {array_v (a?!, p_dst + (nmemb * sizeof a), diff)} pf_right
   in
   end
 
@@ -254,6 +322,10 @@ extern fn {a : vt@ype}
 quicksorts_pivot_index_median_of_three :
   quicksorts_pivot_index_t a
 
+extern fn {a : vt@ype}
+quicksorts_pivot_index_median_of_three_random :
+  quicksorts_pivot_index_t a
+
 implement {a}
 quicksorts_pivot_index_random {n} (arr, n) =
   randint n
@@ -290,6 +362,46 @@ quicksorts_pivot_index_median_of_three {n} (arr, n) =
             i_middle
           else
             i_last
+        end
+    end
+
+implement {a}
+quicksorts_pivot_index_median_of_three_random {n} (arr, n) =
+  if n <= 2 then
+    i2sz 0
+  else
+    let
+      macdef lt = quicksorts$array_element_lt<a>
+
+      val i_first = randint n
+      and i_second = randint n
+      and i_third = randint n
+
+      val second_lt_first =
+        (if i_second = i_first then
+           false
+         else
+           lt {n} (arr, i_second, i_first)) : bool
+      and third_lt_first =
+        (if i_third = i_first then
+           false
+         else
+           lt {n} (arr, i_third, i_first)) : bool
+    in
+      if second_lt_first <> third_lt_first then
+        i_first
+      else
+        let
+          val second_lt_third =
+            (if i_second = i_third then
+               false
+             else
+               lt {n} (arr, i_second, i_third)) : bool
+        in
+          if second_lt_first <> second_lt_third then
+            i_second
+          else
+            i_third
         end
     end
 

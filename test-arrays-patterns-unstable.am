@@ -971,3 +971,246 @@ tests/test-arrays-patterns-unstable-median3-shell-method2.dats: GNUmakefile
 		'#define SMALL_SIZE 350' \
 		'#define PARTITION_METHOD 320' \
 		'#include "tests/test-arrays-patterns-unstable.common.dats"' > $(@)
+
+TESTS += tests/test-arrays-patterns-unstable-random3-default-default
+EXTRA_PROGRAMS += tests/test-arrays-patterns-unstable-random3-default-default
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-default-default
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-default-default_tests.c
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-default-default.dats
+tests_test_arrays_patterns_unstable_random3_default_default_SOURCES =
+tests_test_arrays_patterns_unstable_random3_default_default_SOURCES += tests/test-arrays-patterns-unstable-random3-default-default_tests.c
+tests_test_arrays_patterns_unstable_random3_default_default_DEPENDENCIES =
+tests_test_arrays_patterns_unstable_random3_default_default_DEPENDENCIES += tests/test-arrays-patterns-unstable-random3-default-default.dats
+tests_test_arrays_patterns_unstable_random3_default_default_DEPENDENCIES += libats2-quicksorts.la
+tests_test_arrays_patterns_unstable_random3_default_default_DEPENDENCIES += $(UNSTABLE_QUICKSORT_HATS)
+tests_test_arrays_patterns_unstable_random3_default_default_CPPFLAGS =
+tests_test_arrays_patterns_unstable_random3_default_default_CPPFLAGS += $(AM_CPPFLAGS)
+tests_test_arrays_patterns_unstable_random3_default_default_CPPFLAGS += -DATS_MEMALLOC_LIBC
+tests_test_arrays_patterns_unstable_random3_default_default_LDADD =
+tests_test_arrays_patterns_unstable_random3_default_default_LDADD += libats2-quicksorts.la
+tests/test-arrays-patterns-unstable-random3-default-default_tests.c: tests/test-arrays-patterns-unstable-random3-default-default.dats
+
+tests/test-arrays-patterns-unstable-random3-default-default.dats: GNUmakefile
+	$(call v,GEN) \
+	printf '%s\n%s\n%s\n%s\n%s\n'\
+		'#define PIVOT_METHOD ' \
+		'#define SMALL_SORT 0' \
+		'#define SMALL_SIZE 0' \
+		'#define PARTITION_METHOD 0' \
+		'#include "tests/test-arrays-patterns-unstable.common.dats"' > $(@)
+
+TESTS += tests/test-arrays-patterns-unstable-random3-default-method1
+EXTRA_PROGRAMS += tests/test-arrays-patterns-unstable-random3-default-method1
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-default-method1
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-default-method1_tests.c
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-default-method1.dats
+tests_test_arrays_patterns_unstable_random3_default_method1_SOURCES =
+tests_test_arrays_patterns_unstable_random3_default_method1_SOURCES += tests/test-arrays-patterns-unstable-random3-default-method1_tests.c
+tests_test_arrays_patterns_unstable_random3_default_method1_DEPENDENCIES =
+tests_test_arrays_patterns_unstable_random3_default_method1_DEPENDENCIES += tests/test-arrays-patterns-unstable-random3-default-method1.dats
+tests_test_arrays_patterns_unstable_random3_default_method1_DEPENDENCIES += libats2-quicksorts.la
+tests_test_arrays_patterns_unstable_random3_default_method1_DEPENDENCIES += $(UNSTABLE_QUICKSORT_HATS)
+tests_test_arrays_patterns_unstable_random3_default_method1_CPPFLAGS =
+tests_test_arrays_patterns_unstable_random3_default_method1_CPPFLAGS += $(AM_CPPFLAGS)
+tests_test_arrays_patterns_unstable_random3_default_method1_CPPFLAGS += -DATS_MEMALLOC_LIBC
+tests_test_arrays_patterns_unstable_random3_default_method1_LDADD =
+tests_test_arrays_patterns_unstable_random3_default_method1_LDADD += libats2-quicksorts.la
+tests/test-arrays-patterns-unstable-random3-default-method1_tests.c: tests/test-arrays-patterns-unstable-random3-default-method1.dats
+
+tests/test-arrays-patterns-unstable-random3-default-method1.dats: GNUmakefile
+	$(call v,GEN) \
+	printf '%s\n%s\n%s\n%s\n%s\n'\
+		'#define PIVOT_METHOD ' \
+		'#define SMALL_SORT 0' \
+		'#define SMALL_SIZE 0' \
+		'#define PARTITION_METHOD 310' \
+		'#include "tests/test-arrays-patterns-unstable.common.dats"' > $(@)
+
+TESTS += tests/test-arrays-patterns-unstable-random3-default-method2
+EXTRA_PROGRAMS += tests/test-arrays-patterns-unstable-random3-default-method2
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-default-method2
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-default-method2_tests.c
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-default-method2.dats
+tests_test_arrays_patterns_unstable_random3_default_method2_SOURCES =
+tests_test_arrays_patterns_unstable_random3_default_method2_SOURCES += tests/test-arrays-patterns-unstable-random3-default-method2_tests.c
+tests_test_arrays_patterns_unstable_random3_default_method2_DEPENDENCIES =
+tests_test_arrays_patterns_unstable_random3_default_method2_DEPENDENCIES += tests/test-arrays-patterns-unstable-random3-default-method2.dats
+tests_test_arrays_patterns_unstable_random3_default_method2_DEPENDENCIES += libats2-quicksorts.la
+tests_test_arrays_patterns_unstable_random3_default_method2_DEPENDENCIES += $(UNSTABLE_QUICKSORT_HATS)
+tests_test_arrays_patterns_unstable_random3_default_method2_CPPFLAGS =
+tests_test_arrays_patterns_unstable_random3_default_method2_CPPFLAGS += $(AM_CPPFLAGS)
+tests_test_arrays_patterns_unstable_random3_default_method2_CPPFLAGS += -DATS_MEMALLOC_LIBC
+tests_test_arrays_patterns_unstable_random3_default_method2_LDADD =
+tests_test_arrays_patterns_unstable_random3_default_method2_LDADD += libats2-quicksorts.la
+tests/test-arrays-patterns-unstable-random3-default-method2_tests.c: tests/test-arrays-patterns-unstable-random3-default-method2.dats
+
+tests/test-arrays-patterns-unstable-random3-default-method2.dats: GNUmakefile
+	$(call v,GEN) \
+	printf '%s\n%s\n%s\n%s\n%s\n'\
+		'#define PIVOT_METHOD ' \
+		'#define SMALL_SORT 0' \
+		'#define SMALL_SIZE 0' \
+		'#define PARTITION_METHOD 320' \
+		'#include "tests/test-arrays-patterns-unstable.common.dats"' > $(@)
+
+TESTS += tests/test-arrays-patterns-unstable-random3-insertion-default
+EXTRA_PROGRAMS += tests/test-arrays-patterns-unstable-random3-insertion-default
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-insertion-default
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-insertion-default_tests.c
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-insertion-default.dats
+tests_test_arrays_patterns_unstable_random3_insertion_default_SOURCES =
+tests_test_arrays_patterns_unstable_random3_insertion_default_SOURCES += tests/test-arrays-patterns-unstable-random3-insertion-default_tests.c
+tests_test_arrays_patterns_unstable_random3_insertion_default_DEPENDENCIES =
+tests_test_arrays_patterns_unstable_random3_insertion_default_DEPENDENCIES += tests/test-arrays-patterns-unstable-random3-insertion-default.dats
+tests_test_arrays_patterns_unstable_random3_insertion_default_DEPENDENCIES += libats2-quicksorts.la
+tests_test_arrays_patterns_unstable_random3_insertion_default_DEPENDENCIES += $(UNSTABLE_QUICKSORT_HATS)
+tests_test_arrays_patterns_unstable_random3_insertion_default_CPPFLAGS =
+tests_test_arrays_patterns_unstable_random3_insertion_default_CPPFLAGS += $(AM_CPPFLAGS)
+tests_test_arrays_patterns_unstable_random3_insertion_default_CPPFLAGS += -DATS_MEMALLOC_LIBC
+tests_test_arrays_patterns_unstable_random3_insertion_default_LDADD =
+tests_test_arrays_patterns_unstable_random3_insertion_default_LDADD += libats2-quicksorts.la
+tests/test-arrays-patterns-unstable-random3-insertion-default_tests.c: tests/test-arrays-patterns-unstable-random3-insertion-default.dats
+
+tests/test-arrays-patterns-unstable-random3-insertion-default.dats: GNUmakefile
+	$(call v,GEN) \
+	printf '%s\n%s\n%s\n%s\n%s\n'\
+		'#define PIVOT_METHOD ' \
+		'#define SMALL_SORT 210' \
+		'#define SMALL_SIZE 80' \
+		'#define PARTITION_METHOD 0' \
+		'#include "tests/test-arrays-patterns-unstable.common.dats"' > $(@)
+
+TESTS += tests/test-arrays-patterns-unstable-random3-insertion-method1
+EXTRA_PROGRAMS += tests/test-arrays-patterns-unstable-random3-insertion-method1
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-insertion-method1
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-insertion-method1_tests.c
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-insertion-method1.dats
+tests_test_arrays_patterns_unstable_random3_insertion_method1_SOURCES =
+tests_test_arrays_patterns_unstable_random3_insertion_method1_SOURCES += tests/test-arrays-patterns-unstable-random3-insertion-method1_tests.c
+tests_test_arrays_patterns_unstable_random3_insertion_method1_DEPENDENCIES =
+tests_test_arrays_patterns_unstable_random3_insertion_method1_DEPENDENCIES += tests/test-arrays-patterns-unstable-random3-insertion-method1.dats
+tests_test_arrays_patterns_unstable_random3_insertion_method1_DEPENDENCIES += libats2-quicksorts.la
+tests_test_arrays_patterns_unstable_random3_insertion_method1_DEPENDENCIES += $(UNSTABLE_QUICKSORT_HATS)
+tests_test_arrays_patterns_unstable_random3_insertion_method1_CPPFLAGS =
+tests_test_arrays_patterns_unstable_random3_insertion_method1_CPPFLAGS += $(AM_CPPFLAGS)
+tests_test_arrays_patterns_unstable_random3_insertion_method1_CPPFLAGS += -DATS_MEMALLOC_LIBC
+tests_test_arrays_patterns_unstable_random3_insertion_method1_LDADD =
+tests_test_arrays_patterns_unstable_random3_insertion_method1_LDADD += libats2-quicksorts.la
+tests/test-arrays-patterns-unstable-random3-insertion-method1_tests.c: tests/test-arrays-patterns-unstable-random3-insertion-method1.dats
+
+tests/test-arrays-patterns-unstable-random3-insertion-method1.dats: GNUmakefile
+	$(call v,GEN) \
+	printf '%s\n%s\n%s\n%s\n%s\n'\
+		'#define PIVOT_METHOD ' \
+		'#define SMALL_SORT 210' \
+		'#define SMALL_SIZE 80' \
+		'#define PARTITION_METHOD 310' \
+		'#include "tests/test-arrays-patterns-unstable.common.dats"' > $(@)
+
+TESTS += tests/test-arrays-patterns-unstable-random3-insertion-method2
+EXTRA_PROGRAMS += tests/test-arrays-patterns-unstable-random3-insertion-method2
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-insertion-method2
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-insertion-method2_tests.c
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-insertion-method2.dats
+tests_test_arrays_patterns_unstable_random3_insertion_method2_SOURCES =
+tests_test_arrays_patterns_unstable_random3_insertion_method2_SOURCES += tests/test-arrays-patterns-unstable-random3-insertion-method2_tests.c
+tests_test_arrays_patterns_unstable_random3_insertion_method2_DEPENDENCIES =
+tests_test_arrays_patterns_unstable_random3_insertion_method2_DEPENDENCIES += tests/test-arrays-patterns-unstable-random3-insertion-method2.dats
+tests_test_arrays_patterns_unstable_random3_insertion_method2_DEPENDENCIES += libats2-quicksorts.la
+tests_test_arrays_patterns_unstable_random3_insertion_method2_DEPENDENCIES += $(UNSTABLE_QUICKSORT_HATS)
+tests_test_arrays_patterns_unstable_random3_insertion_method2_CPPFLAGS =
+tests_test_arrays_patterns_unstable_random3_insertion_method2_CPPFLAGS += $(AM_CPPFLAGS)
+tests_test_arrays_patterns_unstable_random3_insertion_method2_CPPFLAGS += -DATS_MEMALLOC_LIBC
+tests_test_arrays_patterns_unstable_random3_insertion_method2_LDADD =
+tests_test_arrays_patterns_unstable_random3_insertion_method2_LDADD += libats2-quicksorts.la
+tests/test-arrays-patterns-unstable-random3-insertion-method2_tests.c: tests/test-arrays-patterns-unstable-random3-insertion-method2.dats
+
+tests/test-arrays-patterns-unstable-random3-insertion-method2.dats: GNUmakefile
+	$(call v,GEN) \
+	printf '%s\n%s\n%s\n%s\n%s\n'\
+		'#define PIVOT_METHOD ' \
+		'#define SMALL_SORT 210' \
+		'#define SMALL_SIZE 80' \
+		'#define PARTITION_METHOD 320' \
+		'#include "tests/test-arrays-patterns-unstable.common.dats"' > $(@)
+
+TESTS += tests/test-arrays-patterns-unstable-random3-shell-default
+EXTRA_PROGRAMS += tests/test-arrays-patterns-unstable-random3-shell-default
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-shell-default
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-shell-default_tests.c
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-shell-default.dats
+tests_test_arrays_patterns_unstable_random3_shell_default_SOURCES =
+tests_test_arrays_patterns_unstable_random3_shell_default_SOURCES += tests/test-arrays-patterns-unstable-random3-shell-default_tests.c
+tests_test_arrays_patterns_unstable_random3_shell_default_DEPENDENCIES =
+tests_test_arrays_patterns_unstable_random3_shell_default_DEPENDENCIES += tests/test-arrays-patterns-unstable-random3-shell-default.dats
+tests_test_arrays_patterns_unstable_random3_shell_default_DEPENDENCIES += libats2-quicksorts.la
+tests_test_arrays_patterns_unstable_random3_shell_default_DEPENDENCIES += $(UNSTABLE_QUICKSORT_HATS)
+tests_test_arrays_patterns_unstable_random3_shell_default_CPPFLAGS =
+tests_test_arrays_patterns_unstable_random3_shell_default_CPPFLAGS += $(AM_CPPFLAGS)
+tests_test_arrays_patterns_unstable_random3_shell_default_CPPFLAGS += -DATS_MEMALLOC_LIBC
+tests_test_arrays_patterns_unstable_random3_shell_default_LDADD =
+tests_test_arrays_patterns_unstable_random3_shell_default_LDADD += libats2-quicksorts.la
+tests/test-arrays-patterns-unstable-random3-shell-default_tests.c: tests/test-arrays-patterns-unstable-random3-shell-default.dats
+
+tests/test-arrays-patterns-unstable-random3-shell-default.dats: GNUmakefile
+	$(call v,GEN) \
+	printf '%s\n%s\n%s\n%s\n%s\n'\
+		'#define PIVOT_METHOD ' \
+		'#define SMALL_SORT 220' \
+		'#define SMALL_SIZE 350' \
+		'#define PARTITION_METHOD 0' \
+		'#include "tests/test-arrays-patterns-unstable.common.dats"' > $(@)
+
+TESTS += tests/test-arrays-patterns-unstable-random3-shell-method1
+EXTRA_PROGRAMS += tests/test-arrays-patterns-unstable-random3-shell-method1
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-shell-method1
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-shell-method1_tests.c
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-shell-method1.dats
+tests_test_arrays_patterns_unstable_random3_shell_method1_SOURCES =
+tests_test_arrays_patterns_unstable_random3_shell_method1_SOURCES += tests/test-arrays-patterns-unstable-random3-shell-method1_tests.c
+tests_test_arrays_patterns_unstable_random3_shell_method1_DEPENDENCIES =
+tests_test_arrays_patterns_unstable_random3_shell_method1_DEPENDENCIES += tests/test-arrays-patterns-unstable-random3-shell-method1.dats
+tests_test_arrays_patterns_unstable_random3_shell_method1_DEPENDENCIES += libats2-quicksorts.la
+tests_test_arrays_patterns_unstable_random3_shell_method1_DEPENDENCIES += $(UNSTABLE_QUICKSORT_HATS)
+tests_test_arrays_patterns_unstable_random3_shell_method1_CPPFLAGS =
+tests_test_arrays_patterns_unstable_random3_shell_method1_CPPFLAGS += $(AM_CPPFLAGS)
+tests_test_arrays_patterns_unstable_random3_shell_method1_CPPFLAGS += -DATS_MEMALLOC_LIBC
+tests_test_arrays_patterns_unstable_random3_shell_method1_LDADD =
+tests_test_arrays_patterns_unstable_random3_shell_method1_LDADD += libats2-quicksorts.la
+tests/test-arrays-patterns-unstable-random3-shell-method1_tests.c: tests/test-arrays-patterns-unstable-random3-shell-method1.dats
+
+tests/test-arrays-patterns-unstable-random3-shell-method1.dats: GNUmakefile
+	$(call v,GEN) \
+	printf '%s\n%s\n%s\n%s\n%s\n'\
+		'#define PIVOT_METHOD ' \
+		'#define SMALL_SORT 220' \
+		'#define SMALL_SIZE 350' \
+		'#define PARTITION_METHOD 310' \
+		'#include "tests/test-arrays-patterns-unstable.common.dats"' > $(@)
+
+TESTS += tests/test-arrays-patterns-unstable-random3-shell-method2
+EXTRA_PROGRAMS += tests/test-arrays-patterns-unstable-random3-shell-method2
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-shell-method2
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-shell-method2_tests.c
+CLEANFILES += tests/test-arrays-patterns-unstable-random3-shell-method2.dats
+tests_test_arrays_patterns_unstable_random3_shell_method2_SOURCES =
+tests_test_arrays_patterns_unstable_random3_shell_method2_SOURCES += tests/test-arrays-patterns-unstable-random3-shell-method2_tests.c
+tests_test_arrays_patterns_unstable_random3_shell_method2_DEPENDENCIES =
+tests_test_arrays_patterns_unstable_random3_shell_method2_DEPENDENCIES += tests/test-arrays-patterns-unstable-random3-shell-method2.dats
+tests_test_arrays_patterns_unstable_random3_shell_method2_DEPENDENCIES += libats2-quicksorts.la
+tests_test_arrays_patterns_unstable_random3_shell_method2_DEPENDENCIES += $(UNSTABLE_QUICKSORT_HATS)
+tests_test_arrays_patterns_unstable_random3_shell_method2_CPPFLAGS =
+tests_test_arrays_patterns_unstable_random3_shell_method2_CPPFLAGS += $(AM_CPPFLAGS)
+tests_test_arrays_patterns_unstable_random3_shell_method2_CPPFLAGS += -DATS_MEMALLOC_LIBC
+tests_test_arrays_patterns_unstable_random3_shell_method2_LDADD =
+tests_test_arrays_patterns_unstable_random3_shell_method2_LDADD += libats2-quicksorts.la
+tests/test-arrays-patterns-unstable-random3-shell-method2_tests.c: tests/test-arrays-patterns-unstable-random3-shell-method2.dats
+
+tests/test-arrays-patterns-unstable-random3-shell-method2.dats: GNUmakefile
+	$(call v,GEN) \
+	printf '%s\n%s\n%s\n%s\n%s\n'\
+		'#define PIVOT_METHOD ' \
+		'#define SMALL_SORT 220' \
+		'#define SMALL_SIZE 350' \
+		'#define PARTITION_METHOD 320' \
+		'#include "tests/test-arrays-patterns-unstable.common.dats"' > $(@)
