@@ -88,13 +88,6 @@ array_v_takeout2 {a} {p} {n} {i, j} pf_arr =
         lam (pf_i, pf_j) =<lin,prf> fpf_ji (pf_j, pf_i))
     end
 
-extern praxi
-discard_used_contents :
-  {a : vt@ype}
-  {p : addr}
-  {n : int}
-  array_v (a?!, p, n) -<prf> array_v (a?, p, n)
-
 extern fn
 g1uint_mod_uint64 :
   {x, y : int}
@@ -103,25 +96,6 @@ g1uint_mod_uint64 :
 implement
 g1uint_mod<uint64_kind> (x, y) =
   g1uint_mod_uint64 (x, y)
-
-extern fn (* FIXME: DO I NEED THIS? *) (* FIXME: DO I NEED THIS? *) (* FIXME: DO I NEED THIS? *)
-copy_bytes :
-  {n : int}
-  (ptr, ptr, size_t n) -< !wrt > void = "mac#%"
-
-fn {a : vt@ype} (* FIXME: DO I NEED THIS? *) (* FIXME: DO I NEED THIS? *) (* FIXME: DO I NEED THIS? *)
-my_array_copy
-          {n : int}
-          (dst : &array (a?, n) >> array (a, n),
-           src : &array (a, n) >> array (a?!, n),
-           n: size_t n)
-    :<!wrt> void =
-  let
-    val () = copy_bytes (addr@ dst, addr@ src, n * sizeof<a>)
-    prval () = $UN.castview2void_at{array (a, n)} (view@ dst)
-    prval () = $UN.castview2void_at{array (a?!, n)} (view@ src)
-  in
-  end
 
 (*------------------------------------------------------------------*)
 
