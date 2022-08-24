@@ -16,10 +16,10 @@ PATSHOME="@PKGCONFIG_PATSHOME@"
 CPPFLAGS="-I${pkgincludedir} -I${PATSHOME} -I${PATSHOME}/ccomp/runtime"
 
 # Options for patsopt.
-PATSOPTFLAGS="-IATS ${pkgincludedir} -IATS ATS2_QUICKSORTS_CHAR_BIT=${char_bit} -IATS ATS2_QUICKSORTS_STK_MAX=${bitsizeof_size_t}"
+PATSOPTFLAGS="-IATS ${pkgincludedir}"
 
 # Options for patscc.
-PATSCCFLAGS="-IIATS ${pkgincludedir} -IATS ATS2_QUICKSORTS_CHAR_BIT=${char_bit} -IATS ATS2_QUICKSORTS_STK_MAX=${bitsizeof_size_t}"
+PATSCCFLAGS="-IIATS ${pkgincludedir}"
 
 Name: ${package}
 Description: Quicksorts for ATS2

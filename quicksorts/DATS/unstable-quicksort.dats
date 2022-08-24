@@ -27,17 +27,7 @@ staload "quicksorts/SATS/bptr.sats"
 staload _ = "quicksorts/DATS/bptr.dats"
 staload UN = "prelude/SATS/unsafe.sats"
 
-#ifdef ATS2_QUICKSORTS_CHAR_BIT #then
-  #define CHAR_BIT ATS2_QUICKSORTS_CHAR_BIT
-#else
-  #define CHAR_BIT 8
-#endif
-
-#ifdef ATS2_QUICKSORTS_STK_MAX #then
-  #define STK_MAX ATS2_QUICKSORTS_STK_MAX
-#else
-  #define STK_MAX 64         (* Enough for size_t of up to 64 bits. *)
-#endif
+#define STK_MAX 64    (* Enough for arrays of up to 2**64 elements. *)
 
 #include "quicksorts/DATS/SHARE/quicksorts.share.dats"
 
@@ -696,8 +686,9 @@ array_unstable_quicksort {n} {m1} (arr, n) =
       prval () = lemma_array_param arr
       prval () = lemma_g1uint_param n
 
-      val () = $effmask_exn
-        assertloc (CHAR_BIT * sizeof<size_t> <= i2sz STK_MAX)
+      (* Check that n is not too large. This can happen only if size_t
+         is more than STK_MAX bits long. *)
+      val () = $effmask_exn assertloc (iseqz (n >> STK_MAX))
 
       prval @(pf_arr1, pf_arr2) =
         array_v_split {a} {..} {m1} {n} (view@ arr)
