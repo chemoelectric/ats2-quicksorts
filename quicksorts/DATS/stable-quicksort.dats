@@ -322,7 +322,7 @@ partition_before_or_after_pivot
             scan_run<a> (pf_arr, pf_pivot |
                          bp_i, bptr_succ<a> bp_i,
                          bp_n_arr, p_pivot)
-          val nmemb = bptr_diff_unsigned<a> (bp_j, bp_i)
+          val nmemb = bptr_diff<a> (bp_j, bp_i)
 
           prval @(pf_arr1, pf_arr) =
             array_v_split {a} {p_arr + (i * sizeof a)}
@@ -358,7 +358,7 @@ partition_before_or_after_pivot
                 scan_run<a> (pf_arr, pf_pivot |
                              bp_j, bptr_succ<a> bp_j,
                              bp_n_arr, p_pivot)
-              val nmemb = bptr_diff_unsigned<a> (bp_k, bp_j)
+              val nmemb = bptr_diff<a> (bp_k, bp_j)
 
               prval @(pf_arr1, pf_arr) =
                 array_v_split {a} {p_arr + (j * sizeof a)}
@@ -546,10 +546,8 @@ partition {n       : pos}
          bp_after, bp_n_after, bptr_reanchor bp_ge1,
          p_pivot_initial)
 
-    val n_le1 : size_t n_le1 =
-      bptr_diff_unsigned<a> (bp_le1, bp_before)
-    and n_le2 : size_t n_le2 =
-      bptr_diff_unsigned<a> (bp_le2, bp_after)
+    val n_le1 : size_t n_le1 = bptr_diff<a> (bp_le1, bp_before)
+    and n_le2 : size_t n_le2 = bptr_diff<a> (bp_le2, bp_after)
 
     stadef n_le = n_le1 + n_le2
     stadef n_ge = n_ge1 + n_ge2

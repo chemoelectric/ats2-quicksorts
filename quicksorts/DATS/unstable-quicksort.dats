@@ -197,7 +197,7 @@ shell_sort_gap_pass
               :<> [m1 : int | 0 <= m1]
                   [k  : int | 0 <= k]
                   @(MUL (m1, gap, i - k) | bptr (a, p_arr, k)) =
-            if bptr_diff_unsigned<a> (bp_j, bp_arr) < gap then
+            if bptr_diff<a> (bp_j, bp_arr) < gap then
               @(pf_m | bp_j)
             else
               let
@@ -346,7 +346,7 @@ array_unstable_quicksort_partition_method_1 {n} (arr, n) =
 
         prval () = prop_verify {i1 <= j1} ()
 
-        val diff = bptr_diff_unsigned<a> (bp_j1, bp_i1)
+        val diff = bptr_diff<a> (bp_j1, bp_i1)
       in
         if diff = i2sz 0 then
           bp_pivot
@@ -383,7 +383,7 @@ array_unstable_quicksort_partition_method_1 {n} (arr, n) =
 
     prval () = view@ arr := pf_arr
   in
-    bptr_diff_unsigned<a> (bp_pivot_final, bp_arr)
+    bptr_diff<a> (bp_pivot_final, bp_arr)
   end
 
 implement {a}
@@ -553,7 +553,7 @@ array_unstable_quicksort_partition_method_2 {n} (arr, n) =
 
     prval () = view@ arr := pf_arr
   in
-    bptr_diff_unsigned<a> (bp_pivot_final, bp_arr)
+    bptr_diff<a> (bp_pivot_final, bp_arr)
   end
 
 fn {a : vt@ype}
