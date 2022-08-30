@@ -197,7 +197,7 @@ shell_sort_gap_pass
               :<> [m1 : int | 0 <= m1]
                   [k  : int | 0 <= k]
                   @(MUL (m1, gap, i - k) | bptr (a, p_arr, k)) =
-            if bptr_diff<a> (bp_j, bp_arr) < gap then
+            if bp_j - bp_arr < gap then
               @(pf_m | bp_j)
             else
               let
@@ -218,10 +218,10 @@ shell_sort_gap_pass
         in
           subcirculate_right_with_gap
             {p_arr} {n} {k, m, gap} (pf_arr | bp_k, bp_i, gap);
-          loop (pf_arr | bptr_succ<a> bp_i)
+          loop (pf_arr | succ bp_i)
         end
   in
-    loop (pf_arr | bptr_add<a> (bp_arr, gap))
+    loop (pf_arr | bp_arr + gap)
   end
 
 implement {a}
@@ -232,7 +232,7 @@ array_unstable_quicksort_small_sort_shell {n} (arr, n) =
       val p_arr = addr@ arr
       prval [p_arr : addr] EQADDR () = eqaddr_make_ptr p_arr
       val bp_arr = ptr2bptr_anchor p_arr
-      val bp_n = bptr_add<a> (bp_arr, n)
+      val bp_n = bp_arr + n
 
       macdef pass (gap) =
         if array_unstable_quicksort$small () >= i2sz ,(gap) then
@@ -270,7 +270,7 @@ array_unstable_quicksort_partition_method_1 {n} (arr, n) =
     val p_arr = addr@ arr
     prval [p_arr : addr] EQADDR () = eqaddr_make_ptr p_arr
     val bp_arr = ptr2bptr_anchor p_arr
-    val bp_n = bptr_add<a> (bp_arr, n)
+    val bp_n = bp_arr + n
 
     fn {}
     move_i_rightwards
@@ -295,7 +295,7 @@ array_unstable_quicksort_partition_method_1 {n} (arr, n) =
           else if ~lt<a> (pf_arr | bp_i, bp_pivot) then
             bp_i
           else
-            loop (pf_arr | bptr_succ<a> bp_i)
+            loop (pf_arr | succ bp_i)
       in
         loop (pf_arr | bp_i)
       end
@@ -323,7 +323,7 @@ array_unstable_quicksort_partition_method_1 {n} (arr, n) =
           else if ~lt<a> (pf_arr | bp_pivot, bp_j) then
             bp_j
           else
-            loop (pf_arr | bptr_pred<a> bp_j)
+            loop (pf_arr | pred bp_j)
       in
         loop (pf_arr | bp_j)
       end
@@ -346,7 +346,7 @@ array_unstable_quicksort_partition_method_1 {n} (arr, n) =
 
         prval () = prop_verify {i1 <= j1} ()
 
-        val diff = bptr_diff<a> (bp_j1, bp_i1)
+        val diff = bp_j1 - bp_i1
       in
         if diff = i2sz 0 then
           bp_pivot
@@ -360,30 +360,29 @@ array_unstable_quicksort_partition_method_1 {n} (arr, n) =
                 val bp_pivot1 = bptr_sub<a> (bp_j1, half diff)
               in
                 interchange<a> (pf_arr | bp_pivot1, bp_j1);
-                loop (pf_arr | bptr_succ<a> bp_i1, bp_j1, bp_pivot1)
+                loop (pf_arr | succ bp_i1, bp_j1, bp_pivot1)
               end
             else if bp_j1 = bp_pivot then
               let               (* Keep the pivot between i and j. *)
-                val bp_pivot1 = bptr_add<a> (bp_i1, half diff)
+                val bp_pivot1 = bp_i1 + half diff
               in
                 interchange<a> (pf_arr | bp_pivot1, bp_i1);
-                loop (pf_arr | bp_i1, bptr_pred<a> bp_j1, bp_pivot1)
+                loop (pf_arr | bp_i1, pred bp_j1, bp_pivot1)
               end
             else
-              loop (pf_arr | bptr_succ<a> bp_i1, bptr_pred<a> bp_j1,
-                             bp_pivot)
+              loop (pf_arr | succ bp_i1, pred bp_j1, bp_pivot)
           end
       end
 
     val i_pivot_initial =
       array_unstable_quicksort$pivot_index<a> (arr, n)
     val bp_pivot_final =
-      loop (pf_arr | bp_arr, bptr_pred<a> bp_n,
-                     bptr_add<a> (bp_arr, i_pivot_initial))
+      loop (pf_arr | bp_arr, pred bp_n,
+                     bp_arr + i_pivot_initial)
 
     prval () = view@ arr := pf_arr
   in
-    bptr_diff<a> (bp_pivot_final, bp_arr)
+    bp_pivot_final - bp_arr
   end
 
 implement {a}
@@ -399,7 +398,7 @@ array_unstable_quicksort_partition_method_2 {n} (arr, n) =
     val p_arr = addr@ arr
     prval [p_arr : addr] EQADDR () = eqaddr_make_ptr p_arr
     val bp_arr = ptr2bptr_anchor p_arr
-    val bp_n = bptr_add<a> (bp_arr, n)
+    val bp_n = bp_arr + n
 
     fn {}
     move_i_rightwards
@@ -426,7 +425,7 @@ array_unstable_quicksort_partition_method_2 {n} (arr, n) =
           else if ~lt<a> (pf_arr | bp_i, bp_pivot) then
             bp_i
           else
-            loop (pf_arr | bptr_succ<a> bp_i)
+            loop (pf_arr | succ bp_i)
       in
         loop (pf_arr | bp_i)
       end
@@ -456,7 +455,7 @@ array_unstable_quicksort_partition_method_2 {n} (arr, n) =
           else if ~lt<a> (pf_arr | bp_pivot, bp_j) then
             bp_j
           else
-            loop (pf_arr | bptr_pred<a> bp_j)
+            loop (pf_arr | pred bp_j)
       in
         loop (pf_arr | bp_j)
       end
@@ -486,13 +485,13 @@ array_unstable_quicksort_partition_method_2 {n} (arr, n) =
 
           val bp_i =
             move_i_rightwards<>
-              (pf_arr | bptr_succ<a> bp_i, bp_j, bp_pivot)
+              (pf_arr | succ bp_i, bp_j, bp_pivot)
         in
           if bp_i <> bp_j then
             let
               val bp_j =
                 move_j_leftwards<>
-                  (pf_arr | bp_i, bptr_pred<a> bp_j, bp_pivot)
+                  (pf_arr | bp_i, pred bp_j, bp_pivot)
             in
               loop (pf_arr | bp_i, bp_j, bp_pivot)
             end
@@ -507,8 +506,8 @@ array_unstable_quicksort_partition_method_2 {n} (arr, n) =
           (* Put the pivot between the two parts of the partition. *)
           if (bp_pivot < bp_j) then
             begin
-              interchange<a> (pf_arr | bp_pivot, bptr_pred<a> bp_j);
-              bptr_pred<a> bp_j
+              interchange<a> (pf_arr | bp_pivot, pred bp_j);
+              pred bp_j
             end
           else
             begin
@@ -521,8 +520,8 @@ array_unstable_quicksort_partition_method_2 {n} (arr, n) =
           (* Put the pivot between the two parts of the partition. *)
           if (bp_j < bp_pivot) then
             begin
-              interchange<a> (pf_arr | bp_pivot, bptr_succ<a> bp_j);
-              bptr_succ<a> bp_j
+              interchange<a> (pf_arr | bp_pivot, succ bp_j);
+              succ bp_j
             end
           else
             begin
@@ -533,27 +532,27 @@ array_unstable_quicksort_partition_method_2 {n} (arr, n) =
 
     val i_pivot_initial =
       array_unstable_quicksort$pivot_index<a> (!p_arr, n)    
-    val bp_pivot_initial = bptr_add<a> (bp_arr, i_pivot_initial)
+    val bp_pivot_initial = bp_arr + i_pivot_initial
 
     (* Put the pivot in the middle, so it will be as near to other
        elements as possible. *)
     val i_pivot_middle = half n
-    val bp_pivot_middle = bptr_add<a> (bp_arr, i_pivot_middle)
+    val bp_pivot_middle = bp_arr + i_pivot_middle
     val () = interchange<a> (pf_arr | bp_pivot_initial,
                                       bp_pivot_middle)
 
     val bp_i =
       move_i_rightwards<>
-        (pf_arr | bp_arr, bptr_pred<a> bp_n, bp_pivot_middle)
+        (pf_arr | bp_arr, pred bp_n, bp_pivot_middle)
     val bp_j =
       move_j_leftwards<>
-        (pf_arr | bp_i, bptr_pred<a> bp_n, bp_pivot_middle)
+        (pf_arr | bp_i, pred bp_n, bp_pivot_middle)
 
     val bp_pivot_final = loop (pf_arr | bp_i, bp_j, bp_pivot_middle)
 
     prval () = view@ arr := pf_arr
   in
-    bptr_diff<a> (bp_pivot_final, bp_arr)
+    bp_pivot_final - bp_arr
   end
 
 fn {a : vt@ype}

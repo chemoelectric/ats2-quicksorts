@@ -412,7 +412,7 @@ make_an_ordered_prefix
     :<!wrt> [pfx_len : int | 2 <= pfx_len; pfx_len <= n]
             bptr (a, p_arr, pfx_len) =
   if ~insertion_sort$lt<a>
-       (pf_arr | bptr_succ<a> bp_arr, bp_arr) then
+       (pf_arr | succ bp_arr, bp_arr) then
     let                       (* Non-decreasing order. *)
       fun
       loop {pfx_len : int | 2 <= pfx_len; pfx_len <= n}
@@ -423,13 +423,12 @@ make_an_ordered_prefix
               bptr (a, p_arr, pfx_len) =
         if bp = bp_n then
           bp
-        else if insertion_sort$lt<a>
-                  (pf_arr | bp, bptr_pred<a> bp) then
+        else if insertion_sort$lt<a> (pf_arr | bp, pred bp) then
           bp
         else
-          loop (pf_arr | bptr_succ<a> bp)
+          loop (pf_arr | succ bp)
     in
-      loop (pf_arr | bptr_add<a> (bp_arr, 2))
+      loop (pf_arr | bp_arr + 2)
     end
   else
     let (* Either non-increasing or monotonically decreasing order. *)
@@ -443,12 +442,12 @@ make_an_ordered_prefix
         if bp = bp_n then
           bp
         else if insertion_sort$gt_or_gte<a>
-                  (pf_arr | bp, bptr_pred<a> bp) then
+                  (pf_arr | bp, pred bp) then
           bp
         else
-          loop (pf_arr | bptr_succ<a> bp)
+          loop (pf_arr | succ bp)
 
-      val bp = loop (pf_arr | bptr_add<a> (bp_arr, 2))
+      val bp = loop (pf_arr | bp_arr + 2)
     in
       subreverse<a> (pf_arr | bp_arr, bp);
       bp
@@ -492,22 +491,21 @@ insertion_position
              rounding towards bp_k. *)
           stadef h = k - ((k - j) / 2)
           val bp_h : bptr (a, p_arr, h) =
-            bptr_sub<a>
-              (bp_k, half (bptr_diff<a> (bp_k, bp_j)))
+            bp_k - half (bp_k - bp_j)
         in
           if insertion_sort$lt<a> (pf_arr | bp_i, bp_h) then
-            loop (pf_arr | bp_j, bptr_pred<a> bp_h)
+            loop (pf_arr | bp_j, pred bp_h)
           else
             loop (pf_arr | bp_h, bp_k)
         end
       else if bp_j <> bp_arr then
-        bptr_succ<a> bp_j
+        succ bp_j
       else if insertion_sort$lt<a> (pf_arr | bp_i, bp_arr) then
         bp_arr
       else
-        bptr_succ<a> bp_arr
+        succ bp_arr
   in
-    loop (pf_arr | bp_arr, bptr_pred<a> bp_i)
+    loop (pf_arr | bp_arr, pred bp_i)
   end
 
 fn {a : vt@ype}
@@ -522,7 +520,7 @@ insertion_sort
       val p_arr = addr@ arr
       prval [p_arr : addr] EQADDR () = eqaddr_make_ptr p_arr
       val bp_arr = ptr2bptr_anchor p_arr
-      val bp_n = bptr_add<a> (bp_arr, n)
+      val bp_n = bp_arr + n
       val bp_i = make_an_ordered_prefix<a> (pf_arr | bp_arr, bp_n)
 
       fun
@@ -536,7 +534,7 @@ insertion_sort
             val bp_j = insertion_position<a> (pf_arr | bp_arr, bp_i)
           in
             subcirculate_right<a> (pf_arr | bp_j, bp_i);
-            loop (pf_arr | bptr_succ<a> bp_i)
+            loop (pf_arr | succ bp_i)
           end
 
       val () = loop (pf_arr | bp_i)
