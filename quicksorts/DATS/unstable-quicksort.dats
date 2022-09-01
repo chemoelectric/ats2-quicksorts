@@ -43,12 +43,12 @@ elem_lt_ptr1_ptr1
 
 fn {a : vt@ype}
 elem_lt_bptr_bptr
-          {p      : addr}
-          {i, j   : int}
-          (pf_i   : !a @ (p + (i * sizeof a)),
-           pf_j   : !a @ (p + (j * sizeof a)) |
-           bp_i   : bptr (a, p, i),
-           bp_j   : bptr (a, p, j))
+          {p, q : addr}
+          {i, j : int}
+          (pf_i : !a @ (p + (i * sizeof a)),
+           pf_j : !a @ (q + (j * sizeof a)) |
+           bp_i : bptr (a, p, i),
+           bp_j : bptr (a, q, j))
     :<> bool =
   elem_lt_ptr1_ptr1<a> (pf_i, pf_j | bptr2ptr bp_i, bptr2ptr bp_j)
 
