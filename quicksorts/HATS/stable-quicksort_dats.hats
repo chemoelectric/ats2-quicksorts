@@ -16,8 +16,5 @@
   <https://www.gnu.org/licenses/>.
 *)
 
-(* You might use this include file, if you do not need to assign a
-   name to quicksorts/SATS/stable-quicksort.sats *)
-
-staload "quicksorts/SATS/stable-quicksort.sats"
-#include "quicksorts/HATS/stable-quicksort_dats.hats"
+staload _ = "quicksorts/DATS/stable-quicksort.dats"
+staload _ = "quicksorts/DATS/bptr.dats"

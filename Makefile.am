@@ -1,5 +1,5 @@
 #
-# Copyright © 2022 Barry Schwartz
+# Copyright © 2022, 2023 Barry Schwartz
 #
 # This program is free software: you can redistribute it and/or
 # modify it under the terms of the GNU General Public License, as
@@ -159,7 +159,9 @@ STABLE_QUICKSORT_DATS = quicksorts/DATS/stable-quicksort.dats
 STABLE_QUICKSORT_DATS_C = quicksorts/DATS/stable-quicksort_dats.c
 CLEANFILES += $(STABLE_QUICKSORT_DATS_C)
 
-STABLE_QUICKSORT_HATS = quicksorts/HATS/stable-quicksort.hats
+STABLE_QUICKSORT_HATS =
+STABLE_QUICKSORT_HATS += quicksorts/HATS/stable-quicksort_dats.hats
+STABLE_QUICKSORT_HATS += quicksorts/HATS/stable-quicksort.hats
 
 UNSTABLE_QUICKSORT_SATS = quicksorts/SATS/unstable-quicksort.sats
 UNSTABLE_QUICKSORT_SATS_C = quicksorts/SATS/unstable-quicksort_sats.c
@@ -169,7 +171,9 @@ UNSTABLE_QUICKSORT_DATS = quicksorts/DATS/unstable-quicksort.dats
 UNSTABLE_QUICKSORT_DATS_C = quicksorts/DATS/unstable-quicksort_dats.c
 CLEANFILES += $(UNSTABLE_QUICKSORT_DATS_C)
 
-UNSTABLE_QUICKSORT_HATS = quicksorts/HATS/unstable-quicksort.hats
+UNSTABLE_QUICKSORT_HATS =
+UNSTABLE_QUICKSORT_HATS += quicksorts/HATS/unstable-quicksort_dats.hats
+UNSTABLE_QUICKSORT_HATS += quicksorts/HATS/unstable-quicksort.hats
 
 QUICKSORTS_SHARE_DATS = quicksorts/DATS/SHARE/quicksorts.share.dats
 QUICKSORTS_CATS = quicksorts/CATS/quicksorts.cats
